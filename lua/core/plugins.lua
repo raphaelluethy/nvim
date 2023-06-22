@@ -44,7 +44,7 @@ local plugins = {{
 'mbbill/undotree', -- gitsigns
 'lewis6991/gitsigns.nvim', -- copilot 
 'zbirenbaum/copilot.lua', 'zbirenbaum/copilot-cmp', -- rust
-'simrat39/rust-tools.nvim', 'nvim-lua/plenary.nvim', 'mfussenegger/nvim-dap'}
+'simrat39/rust-tools.nvim', 'nvim-lua/plenary.nvim', 'mfussenegger/nvim-dap', "pmizio/typescript-tools.nvim"}
 
 local opts = {}
 

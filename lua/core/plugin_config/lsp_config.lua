@@ -25,11 +25,7 @@ lsp.on_attach(function(client, bufnr)
     })
 end)
 
--- lspconfig.rust_analyzer.setup {
---     capabilities = lsp.capabilities,
---     on_attach = lsp.on_attach,
---     cmd = {"rustup", "run", "stable", "rust-analyzer"}
--- }
+vim.lsp.buf.inlay_hint(0, true)
 
 lsp.setup()
 

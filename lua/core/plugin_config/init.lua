@@ -15,4 +15,4 @@ require('core.plugin_config.cmp_config')
 require('core.plugin_config.copilot')
 require('core.plugin_config.copilot_cmp')
 require('core.plugin_config.rust_tools')
-
+require('core.plugin_config.typescript_tools')
