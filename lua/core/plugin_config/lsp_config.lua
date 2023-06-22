@@ -1,6 +1,23 @@
 local lsp = require('lsp-zero').preset({})
 local lspconfig = require('lspconfig')
 
+vim.api.nvim_create_autocmd({'InsertEnter'}, {
+    pattern = '*',
+    callback = function()
+        if vim.bo.buftype ~= 'prompt' or not vim.tbl_contains({'TelescopePrompt'}, vim.bo.filetype) then
+            vim.lsp.buf.inlay_hint(0, true)
+        end
+    end
+})
+vim.api.nvim_create_autocmd({'InsertLeave'}, {
+    pattern = '*',
+    callback = function()
+        if vim.bo.buftype ~= 'prompt' or not vim.tbl_contains({'TelescopePrompt'}, vim.bo.filetype) then
+            vim.lsp.buf.inlay_hint(0, false)
+        end
+    end
+})
+
 lsp.ensure_installed({"tsserver", "eslint", "rust_analyzer", "lua_ls"})
 
 lsp.set_preferences({
@@ -24,8 +41,6 @@ lsp.on_attach(function(client, bufnr)
         buffer = bufnr
     })
 end)
-
-vim.lsp.buf.inlay_hint(0, true)
 
 lsp.setup()
 
