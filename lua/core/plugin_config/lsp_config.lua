@@ -25,6 +25,12 @@ lsp.on_attach(function(client, bufnr)
     })
 end)
 
+-- lspconfig.rust_analyzer.setup {
+--     capabilities = lsp.capabilities,
+--     on_attach = lsp.on_attach,
+--     cmd = {"rustup", "run", "stable", "rust-analyzer"}
+-- }
+
 lsp.setup()
 
 vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(vim.lsp.diagnostic.on_publish_diagnostics, {
@@ -44,3 +50,5 @@ vim.keymap.set("n", "K", vim.lsp.buf.hover, keymap_opts)
 vim.keymap.set("n", "gi", vim.lsp.buf.implementation, keymap_opts)
 vim.keymap.set("n", "gr", require("telescope.builtin").lsp_references, keymap_opts)
 vim.keymap.set("n", "gd", vim.lsp.buf.definition, keymap_opts)
+vim.keymap.set('n', '<leader>fs', ':lua vim.lsp.buf.format({async = true})<CR> <BAR> <cmd>update<CR>') -- format on save
+vim.keymap.set("n", "<leader>f", vim.lsp.buf.format)

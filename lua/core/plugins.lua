@@ -43,7 +43,8 @@ local plugins = {{
 'norcalli/nvim-colorizer.lua', -- undotree
 'mbbill/undotree', -- gitsigns
 'lewis6991/gitsigns.nvim', -- copilot 
-'github/copilot.vim'}
+'zbirenbaum/copilot.lua', 'zbirenbaum/copilot-cmp', -- rust
+'simrat39/rust-tools.nvim', 'nvim-lua/plenary.nvim', 'mfussenegger/nvim-dap'}
 
 local opts = {}
 
