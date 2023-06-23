@@ -1,5 +1,9 @@
 -- Enable telescope fzf native, if installed
-require('telescope').setup()
+require('telescope').setup({
+    defaults = {
+        color_devicons = true
+    }
+})
 local builtin = require('telescope.builtin')
 
 pcall(require('telescope').load_extension, 'fzf')
@@ -11,7 +15,7 @@ vim.keymap.set('n', '<leader>?', builtin.oldfiles, {
 vim.keymap.set('n', '<leader><space>', builtin.buffers, {
     desc = '[ ] Find existing buffers'
 })
-vim.keymap.set('n', '<leader>/', function()
+vim.keymap.set('n', '<leader>fz', function()
     -- You can pass additional configuration to telescope to change theme, layout, etc.
     builtin.current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
         winblend = 10,
