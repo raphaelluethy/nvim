@@ -2,7 +2,7 @@ local lsp = require('lsp-zero').preset({})
 local lspconfig = require('lspconfig')
 
 vim.api.nvim_create_autocmd({'InsertEnter'}, {
-    pattern = '*',
+    pattern = '*.ts,*.tsx,*.js,*.jsx,*.lua, *.rs',
     callback = function()
         if vim.bo.buftype ~= 'prompt' or not vim.tbl_contains({'TelescopePrompt'}, vim.bo.filetype) then
             vim.lsp.buf.inlay_hint(0, true)
@@ -10,7 +10,7 @@ vim.api.nvim_create_autocmd({'InsertEnter'}, {
     end
 })
 vim.api.nvim_create_autocmd({'InsertLeave'}, {
-    pattern = '*',
+    pattern = '*.ts,*.tsx,*.js,*.jsx,*.lua, *.rs',
     callback = function()
         if vim.bo.buftype ~= 'prompt' or not vim.tbl_contains({'TelescopePrompt'}, vim.bo.filetype) then
             vim.lsp.buf.inlay_hint(0, false)
