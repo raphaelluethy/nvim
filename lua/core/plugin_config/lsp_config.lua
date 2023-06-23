@@ -55,6 +55,10 @@ vim.diagnostic.config({
     virtual_text = true
 })
 
+vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(
+  vim.lsp.handlers.hover, { focusable = false }
+)
+
 vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, {})
 vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, keymap_opts)
 vim.keymap.set("n", "K", vim.lsp.buf.hover, keymap_opts)
