@@ -9,9 +9,8 @@ require("typescript-tools").setup({
             includeInlayEnumMemberValueHints = true,
             includeInlayFunctionLikeReturnTypeHints = true,
             includeInlayFunctionParameterTypeHints = true,
-            -- includeInlayPropertyDeclarationTypeHints = true,
-            includeInlayVariableTypeHints = true,
-            includeCompletionsForModuleExports = true,
+            includeInlayPropertyDeclarationTypeHints = true,
+            includeInlayVariableTypeHints = true
             quotePreference = "auto",
         },
         tsserver_format_options = {
