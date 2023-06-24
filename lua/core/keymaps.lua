@@ -16,3 +16,7 @@ vim.keymap.set("n", "<C-u>", "<C-u>zz")
 -- find tokens
 vim.keymap.set("n", "n", "nzzzv")
 vim.keymap.set("n", "N", "Nzzzv")
+
+-- exit insert mode
+vim.keymap.set("i", "jk", "<ESC>")
+vim.keymap.set("i", "jj", "<ESC>")

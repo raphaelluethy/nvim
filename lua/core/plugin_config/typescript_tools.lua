@@ -10,7 +10,7 @@ require("typescript-tools").setup({
             includeInlayFunctionLikeReturnTypeHints = true,
             includeInlayFunctionParameterTypeHints = true,
             includeInlayPropertyDeclarationTypeHints = true,
-            includeInlayVariableTypeHints = true
+            includeInlayVariableTypeHints = true,
             quotePreference = "auto",
         },
         tsserver_format_options = {
