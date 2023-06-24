@@ -1,6 +1,8 @@
 local lsp = require('lsp-zero').preset({})
 local lspconfig = require('lspconfig')
 
+-- enable inlay hints for the files mentioned in `pattern`
+-- at the moment I have to disable it for telescope seperately
 vim.api.nvim_create_autocmd({'InsertEnter'}, {
     pattern = '*.ts,*.tsx,*.js,*.jsx,*.lua, *.rs',
     callback = function()
@@ -9,6 +11,7 @@ vim.api.nvim_create_autocmd({'InsertEnter'}, {
         end
     end
 })
+-- also we need to exit it because unsupported plugins let the lsp crash
 vim.api.nvim_create_autocmd({'InsertLeave'}, {
     pattern = '*.ts,*.tsx,*.js,*.jsx,*.lua, *.rs',
     callback = function()
