@@ -29,18 +29,17 @@ local cmp_mappings = cmp.mapping.preset.insert({
 });
 
 cmp.setup({
+    experimental = {
+        ghost_text = true,
+    },
     sources = {{
         name = "copilot",
-        group_index = 2
     }, {
         name = 'nvim_lsp',
-        group_index = 2
     }, {
         name = 'path',
-        group_index = 2
     }, {
         name = 'luasnip',
-        group_index = 2
     }, {
         name = 'buffer',
         keyword_length = 5
