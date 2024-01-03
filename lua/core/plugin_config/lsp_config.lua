@@ -1,25 +1,25 @@
 local lsp = require('lsp-zero').preset({})
 local lspconfig = require('lspconfig')
 
--- enable inlay hints for the files mentioned in `pattern`
--- at the moment I have to disable it for telescope seperately
-vim.api.nvim_create_autocmd({ 'InsertEnter' }, {
-    pattern = '*.ts,*.tsx,*.js,*.jsx,*.lua, *.rs',
-    callback = function()
-        if vim.bo.buftype ~= 'prompt' or not vim.tbl_contains({ 'TelescopePrompt' }, vim.bo.filetype) then
-            vim.lsp.buf.inlay_hint(0, true)
-        end
-    end
-})
--- also we need to exit it because unsupported plugins let the lsp crash
-vim.api.nvim_create_autocmd({ 'InsertLeave' }, {
-    pattern = '*.ts,*.tsx,*.js,*.jsx,*.lua, *.rs',
-    callback = function()
-        if vim.bo.buftype ~= 'prompt' or not vim.tbl_contains({ 'TelescopePrompt' }, vim.bo.filetype) then
-            vim.lsp.buf.inlay_hint(0, false)
-        end
-    end
-})
+-- -- enable inlay hints for the files mentioned in `pattern`
+-- -- at the moment I have to disable it for telescope seperately
+-- vim.api.nvim_create_autocmd({ 'InsertEnter' }, {
+--     pattern = '*.ts,*.tsx,*.js,*.jsx,*.lua, *.rs',
+--     callback = function()
+--         if vim.bo.buftype ~= 'prompt' or not vim.tbl_contains({ 'TelescopePrompt' }, vim.bo.filetype) then
+--             vim.lsp.buf.inlay_hint(0, true)
+--         end
+--     end
+-- })
+-- -- also we need to exit it because unsupported plugins let the lsp crash
+-- vim.api.nvim_create_autocmd({ 'InsertLeave' }, {
+--     pattern = '*.ts,*.tsx,*.js,*.jsx,*.lua, *.rs',
+--     callback = function()
+--         if vim.bo.buftype ~= 'prompt' or not vim.tbl_contains({ 'TelescopePrompt' }, vim.bo.filetype) then
+--             vim.lsp.buf.inlay_hint(0, false)
+--         end
+--     end
+-- })
 
 lsp.ensure_installed({ "tsserver", "eslint", "rust_analyzer", "lua_ls" })
 

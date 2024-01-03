@@ -22,6 +22,10 @@ local plugins = {{
 'editorconfig/editorconfig-vim', -- comments
 'numToStr/Comment.nvim', -- lsp zero
 {
+    "ThePrimeagen/harpoon",
+    branch = "harpoon2",
+    requires = {{"nvim-lua/plenary.nvim"}}
+}, {
     'VonHeikemen/lsp-zero.nvim',
     branch = 'v2.x',
     dependencies = { -- LSP Support
@@ -35,7 +39,7 @@ local plugins = {{
     -- Autocompletion
     {'hrsh7th/nvim-cmp'}, -- Required
     {'hrsh7th/cmp-nvim-lsp'}, -- Required
-    {'L3MON4D3/LuaSnip'} -- Required
+    {'saadparwaiz1/cmp_luasnip'}, {'L3MON4D3/LuaSnip'} -- Requireddd
     }
 }, -- autopairs
 'windwp/nvim-autopairs', -- rainbow-parens

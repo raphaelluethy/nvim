@@ -20,3 +20,6 @@ vim.keymap.set("n", "N", "Nzzzv")
 -- exit insert mode
 vim.keymap.set("i", "jk", "<ESC>")
 vim.keymap.set("i", "jj", "<ESC>")
+
+-- hover
+-- vim.keymap.set("<C-h>", "<Cmd>lua vim.lsp.buf.hover()<CR>")
