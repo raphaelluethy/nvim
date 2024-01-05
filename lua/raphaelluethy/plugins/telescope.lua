@@ -1,7 +1,7 @@
 return {
     'nvim-telescope/telescope.nvim',
     tag = '0.1.5',
-    dependencies = {'nvim-lua/plenary.nvim'},
+    dependencies = { 'nvim-lua/plenary.nvim' },
     config = function()
         local builtin = require('telescope.builtin')
         -- vim.keymap.set('n', '<leader>ff', builtin.find_files, {})
@@ -72,6 +72,10 @@ return {
         vim.keymap.set('n', '<leader>sd', builtin.diagnostics, {
             desc = '[S]earch [D]iagnostics'
         })
-        vim.keymap.set('n', '<C-p>', builtin.git_files, {})
+        vim.keymap.set('n', '<C-p>', function()
+            builtin.git_files({
+                hidden = true,
+            })
+        end, {})
     end
 }
