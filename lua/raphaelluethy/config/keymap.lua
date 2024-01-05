@@ -1,9 +1,6 @@
--- clode buffer
+-- close buffer
 vim.keymap.set('n', '<leader>bd', '<CMD>bd<CR>')
 vim.keymap.set('n', '<leader>bn', '<CMD>bn<CR>')
-
--- search for buffers
-vim.keymap.set('n', '<leader>bb', '<CMD>Telescope buffers<CR>')
 
 -- move lines
 vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv")
@@ -19,10 +16,6 @@ vim.keymap.set("n", "N", "Nzzzv")
 
 -- exit insert mode
 vim.keymap.set("i", "jk", "<ESC>")
-vim.keymap.set("i", "jj", "<ESC>")
-
--- hover
--- vim.keymap.set("<C-h>", "<Cmd>lua vim.lsp.buf.hover()<CR>")
 
 -- move buffer
 vim.keymap.set("n","gn", ":bnext<cr>")
