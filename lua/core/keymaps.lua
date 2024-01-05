@@ -23,3 +23,7 @@ vim.keymap.set("i", "jj", "<ESC>")
 
 -- hover
 -- vim.keymap.set("<C-h>", "<Cmd>lua vim.lsp.buf.hover()<CR>")
+
+-- move buffer
+vim.keymap.set("n","gn", ":bnext<cr>")
+vim.keymap.set("n","gp", ":bprevious<cr>")
