@@ -1,7 +1,7 @@
 -- Enable telescope fzf native, if installed
 require('telescope').setup({
     defaults = {
-        color_devicons = true
+        color_devicons = true,
     }
 })
 local builtin = require('telescope.builtin')
@@ -31,6 +31,14 @@ vim.keymap.set('n', '<leader>gf', builtin.git_files, {
 vim.keymap.set('n', '<leader>sf', builtin.find_files, {
     desc = '[S]earch [F]iles'
 })
+vim.keymap.set('n', '<leader>sa', function()
+    builtin.find_files({
+        hidden = true,
+        no_ignore = true
+    })
+end, {
+    desc = '[S]earch [A]ll Files'
+})
 vim.keymap.set('n', '<leader>sh', builtin.help_tags, {
     desc = '[S]earch [H]elp'
 })
@@ -44,6 +52,8 @@ vim.keymap.set('n', '<leader>sd', builtin.diagnostics, {
     desc = '[S]earch [D]iagnostics'
 })
 vim.keymap.set('n', '<C-p>', builtin.git_files, {})
--- vim.keymap.set('n', '<leader>ps', function()
+
+
+--vim.keymap.set('n', '<leader>ps', function()
 -- 	builtin.grep_string({ search = vim.fn.input("Grep > ") })
 -- end)
