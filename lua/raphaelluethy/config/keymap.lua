@@ -20,3 +20,7 @@ vim.keymap.set("i", "jk", "<ESC>")
 -- move buffer
 vim.keymap.set("n","gn", ":bnext<cr>")
 vim.keymap.set("n","gp", ":bprevious<cr>")
+
+-- reselect after indent
+vim.keymap.set("v", "<", "<gv")
+vim.keymap.set("v", ">", ">gv")
