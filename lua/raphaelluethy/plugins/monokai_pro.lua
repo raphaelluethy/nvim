@@ -32,20 +32,25 @@ return {
                     italic = true
                 } -- attribute of tag in reactjs
             },
+            window = {
+                border = "rounded"
+            },
+            completion = {
+                border = "rounded"
+            },
+
             filter = 'spectrum', -- classic | octagon | pro | machine | ristretto | spectrum
             inc_search = 'background', -- underline | background
             background_clear = { -- "float_win",
             'toggleterm', 'telescope', 'which-key', 'renamer', 'notify', -- "nvim-tree",
-            'neo-tree' -- "bufferline", -- better used if background of `neo-tree` or `nvim-tree` is cleared
-            }, -- "float_win", "toggleterm", "telescope", "which-key", "renamer", "neo-tree", "nvim-tree", "bufferline"
+            'neo-tree', 'float_win' -- "bufferline", -- better used if background of `neo-tree` or `nvim-tree` is cleared
+            },
             plugins = {
                 indent_blankline = {
                     context_highlight = 'default', -- default | pro
                     context_start_underline = false
                 }
-            },
-            override = function(c)
-            end
+            }
         }
         vim.cmd [[colorscheme monokai-pro]]
 
