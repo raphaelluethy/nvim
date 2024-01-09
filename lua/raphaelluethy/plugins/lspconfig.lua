@@ -10,7 +10,7 @@ return {
         require("fidget").setup()
         require("mason").setup()
         require("mason-lspconfig").setup({
-            ensure_installed = {"lua_ls", "rust_analyzer", "tsserver", "gopls", "sqls"},
+            ensure_installed = {"lua_ls", "rust_analyzer", "tsserver", "gopls", "sqls" },
             handlers = {function(server_name) -- default handler
                 require("lspconfig")[server_name].setup {
                     on_attach = function(client, bufnr)
