@@ -26,5 +26,8 @@ vim.keymap.set("v", "<", "<gv")
 vim.keymap.set("v", ">", ">gv")
 
 -- Redirect change operations to the blackhole to avoid spoiling 'y' register content
-vim.api.nvim_set_keymap('n', 'c', '"_c', { noremap = true })
-vim.api.nvim_set_keymap('n', 'C', '"_C', { noremap = true })
+-- Shortcut to use blackhole register by default
+vim.keymap.set('v', 'c', '"_c')
+vim.keymap.set('v', 'C', '"_C')
+vim.keymap.set('n', 'c', '"_c')
+vim.keymap.set('n', 'C', '"_C')
