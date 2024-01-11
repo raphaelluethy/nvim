@@ -18,9 +18,13 @@ vim.keymap.set("n", "N", "Nzzzv")
 vim.keymap.set("i", "jk", "<ESC>")
 
 -- move buffer
-vim.keymap.set("n","gn", ":bnext<cr>")
-vim.keymap.set("n","gp", ":bprevious<cr>")
+vim.keymap.set("n", "gn", ":bnext<cr>")
+vim.keymap.set("n", "gp", ":bprevious<cr>")
 
 -- reselect after indent
 vim.keymap.set("v", "<", "<gv")
 vim.keymap.set("v", ">", ">gv")
+
+-- Redirect change operations to the blackhole to avoid spoiling 'y' register content
+vim.api.nvim_set_keymap('n', 'c', '"_c', { noremap = true })
+vim.api.nvim_set_keymap('n', 'C', '"_C', { noremap = true })
