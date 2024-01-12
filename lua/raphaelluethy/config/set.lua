@@ -56,4 +56,4 @@ vim.opt.smartindent = true
 
 vim.g.backspace = 'indent,eol,start'
 
-vim.o.conceallevel = 1
+vim.o.conceallevel = 0
