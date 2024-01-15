@@ -59,3 +59,7 @@ vim.g.backspace = 'indent,eol,start'
 vim.o.conceallevel = 0
 
 vim.o.scrolloff=8
+
+-- undo dir
+vim.opt.undodir = vim.fn.expand('~/.local/share/nvim/undo//')
+vim.o.undofile = true
