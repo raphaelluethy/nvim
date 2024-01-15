@@ -7,6 +7,7 @@ return {
         -- show shorthand date indicators
         vim.g['undotree_ShortIndicators'] = 1
 
+        -- keymap
         vim.keymap.set("n", "<leader>u", vim.cmd.UndotreeToggle)
     end
 }
