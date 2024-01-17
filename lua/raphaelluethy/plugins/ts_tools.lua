@@ -1,7 +1,6 @@
 return {
     "pmizio/typescript-tools.nvim",
-    dependencies = {"nvim-lua/plenary.nvim", "neovim/nvim-lspconfig"},
-    opts = {},
+    dependencies = { "nvim-lua/plenary.nvim", "neovim/nvim-lspconfig" },
     config = function()
         require("typescript-tools").setup {
             settings = {
@@ -31,14 +30,13 @@ return {
                     }
                 },
                 tsserver_file_preferences = {
-                    includeInlayParameterNameHints = "all",
+                    includeInlayParameterNameHints = "none", -- "literals", "all" are currently buggy
                     includeCompletionsForModuleExports = true,
                     quotePreference = "auto"
                 },
                 tsserver_format_options = {
                     allowIncompleteCompletions = false,
                     allowRenameOfImportPath = false,
-                    s
                 }
             }
         }

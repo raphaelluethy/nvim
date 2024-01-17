@@ -31,3 +31,7 @@ vim.keymap.set('v', 'c', '"_c')
 vim.keymap.set('v', 'C', '"_C')
 vim.keymap.set('n', 'c', '"_c')
 vim.keymap.set('n', 'C', '"_C')
+
+-- save
+vim.keymap.set('n', '<leader>w', '<CMD>w<CR>')
+vim.keymap.set('n', '<leader>s', '<CMD>w<CR>')
