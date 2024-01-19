@@ -11,8 +11,15 @@ autocmd('LspAttach', {
         local opts = {
             buffer = e.buf
         }
+
         vim.keymap.set("n", "gd", function()
             vim.lsp.buf.definition()
+        end, opts)
+        vim.keymap.set("n", "gi", function()
+            vim.lsp.buf.implementation()
+        end, opts)
+        vim.keymap.set("n", "gr", function()
+            vim.lsp.buf.references()
         end, opts)
         vim.keymap.set("n", "K", function()
             vim.lsp.buf.hover()
@@ -41,5 +48,11 @@ autocmd('LspAttach', {
         vim.keymap.set("i", "<C-h>", function()
             vim.lsp.buf.signature_help()
         end, opts)
+
+        -- vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, {})
+        -- vim.keymap.set("n", "gi", vim.lsp.buf.implementation, keymap_opts)
+        -- vim.keymap.set("n", "gr", require("telescope.builtin").lsp_references, keymap_opts)
+        -- vim.keymap.set("n", "gd", vim.lsp.buf.definition, keymap_opts)
+       
     end
 })

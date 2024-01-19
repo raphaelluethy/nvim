@@ -68,21 +68,22 @@ return {
         })
         require("lspconfig.ui.windows").default_options.border = "rounded"
 
-        vim.keymap.set("n", "gd", function()
-            vim.lsp.buf.definition()
-        end, opts)
-        vim.keymap.set("n", "K", function()
-            vim.lsp.buf.hover()
-        end, opts)
-        vim.keymap.set("n", "<leader>ca", function()
-            vim.lsp.buf.code_action()
-        end, opts)
-        vim.keymap.set("n", "<leader>vrr", function()
-            vim.lsp.buf.references()
-        end, opts)
-        vim.keymap.set("i", "<C-h>", function()
-            vim.lsp.buf.signature_help()
-        end, opts)
+        --
+        -- vim.keymap.set("n", "gd", function()
+        --     vim.lsp.buf.definition()
+        -- end, opts)
+        -- vim.keymap.set("n", "K", function()
+        --     vim.lsp.buf.hover()
+        -- end, opts)
+        -- vim.keymap.set("n", "<leader>ca", function()
+        --     vim.lsp.buf.code_action()
+        -- end, opts)
+        -- vim.keymap.set("n", "<leader>vrr", function()
+        --     vim.lsp.buf.references()
+        -- end, opts)
+        -- vim.keymap.set("i", "<C-h>", function()
+        --     vim.lsp.buf.signature_help()
+        -- end, opts)
 
         -- enable inline diagnostics
         vim.diagnostic.config({
@@ -97,69 +98,6 @@ return {
                 prefix = ""
             }
         })
-
-        vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, {})
-        vim.keymap.set("n", "gi", vim.lsp.buf.implementation, keymap_opts)
-        vim.keymap.set("n", "gr", require("telescope.builtin").lsp_references, keymap_opts)
-        vim.keymap.set("n", "gd", vim.lsp.buf.definition, keymap_opts)
-        vim.keymap.set('n', '<leader>fs', ':lua vim.lsp.buf.format({async = true})<CR> <BAR> <cmd>update<CR>') -- format on save
-        vim.keymap.set("n", "<leader>f", vim.lsp.buf.format)
-        vim.keymap.set("n", "<leader>F", ":Format<CR>")
+        vim.keymap.set('n', '<leader>lf', ':lua vim.lsp.buf.format({async = true})<CR> <BAR> <cmd>update<CR>') -- format on save
     end
 }
-
--- "VonHeikemen/lsp-zero.nvim",
--- branch = "v3.x",
--- dependencies = { -- LSP Support
--- {'williamboman/mason.nvim'}, {'williamboman/mason-lspconfig.nvim'}, {'neovim/nvim-lspconfig'},
--- {'hrsh7th/cmp-nvim-lsp'}, {'hrsh7th/nvim-cmp'}, {'L3MON4D3/LuaSnip'}},
--- config = function()
---     local lsp_zero = require('lsp-zero')
---
---     lsp_zero.on_attach(function(client, bufnr)
---         -- see :help lsp-zero-keybindings
---         -- to learn the available actions
---         lsp_zero.default_keymaps({
---             buffer = bufnr
---         })
---     end)
---
---     -- see :help lsp-zero-guide:integrate-with-mason-nvim
---     -- to learn how to use mason.nvim with lsp-zero
---     require('mason').setup({})
---     require('mason-lspconfig').setup({
---         handlers = {lsp_zero.default_setup}
---     })
---
---     vim.keymap.set("n", "gd", function()
---         vim.lsp.buf.definition()
---     end, opts)
---     vim.keymap.set("n", "K", function()
---         vim.lsp.buf.hover()
---     end, opts)
---     vim.keymap.set("n", "<leader>ca", function()
---         vim.lsp.buf.code_action()
---     end, opts)
---     vim.keymap.set("n", "<leader>vrr", function()
---         vim.lsp.buf.references()
---     end, opts)
---     vim.keymap.set("i", "<C-h>", function()
---         vim.lsp.buf.signature_help()
---     end, opts)
---
---     -- enable inline diagnostics
---     vim.diagnostic.config({
---         virtual_text = true
---     })
---
---     vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, {
---         focusable = false
---     })
---
---     vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, {})
---     vim.keymap.set("n", "gi", vim.lsp.buf.implementation, keymap_opts)
---     vim.keymap.set("n", "gr", require("telescope.builtin").lsp_references, keymap_opts)
---     vim.keymap.set("n", "gd", vim.lsp.buf.definition, keymap_opts)
---     vim.keymap.set('n', '<leader>fs', ':lua vim.lsp.buf.format({async = true})<CR> <BAR> <cmd>update<CR>') -- format on save
---     vim.keymap.set("n", "<leader>f", vim.lsp.buf.format)
--- end
