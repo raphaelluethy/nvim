@@ -38,7 +38,7 @@ vim.o.timeoutlen = 500
 
 -- draw options
 vim.o.redrawtime = 1500
-vim.o.lazyredraw = true
+-- vim.o.lazyredraw = true
 
 -- Set completeopt to have a better completion experience
 vim.o.completeopt = 'menuone,noselect'
