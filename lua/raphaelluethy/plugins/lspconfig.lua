@@ -59,13 +59,12 @@ return {
                 }),
             }
         })
-
-        vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, {
-            border = "rounded"
-        })
-        vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, {
-            border = "rounded"
-        })
+        -- vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, {
+        --     border = "rounded"
+        -- })
+        -- vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, {
+        --     border = "rounded"
+        -- })
         require("lspconfig.ui.windows").default_options.border = "rounded"
 
         --
@@ -98,6 +97,9 @@ return {
                 prefix = ""
             }
         })
-        vim.keymap.set('n', '<leader>lf', ':lua vim.lsp.buf.format({async = true})<CR> <BAR> <cmd>update<CR>') -- format on save
+        local wk = require("which-key")
+        wk.register({
+            ["<leader>lf"] = { ':lua vim.lsp.buf.format({async = true})<CR> <BAR> <cmd>update<CR>', "Format File with LSP"}
+        })
     end
 }

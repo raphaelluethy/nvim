@@ -12,6 +12,26 @@ autocmd('LspAttach', {
             buffer = e.buf
         }
 
+        vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(
+            vim.lsp.handlers.hover,
+            { focusable = false }
+        )
+
+        vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(
+            vim.lsp.handlers.signature_help,
+            { focusable = false }
+        )
+
+
+        vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, {
+            border = "rounded"
+        })
+        -- vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, {
+        --     border = "rounded"
+        -- })
+
+
+
         vim.keymap.set("n", "gd", function()
             vim.lsp.buf.definition()
         end, opts)
@@ -53,6 +73,5 @@ autocmd('LspAttach', {
         -- vim.keymap.set("n", "gi", vim.lsp.buf.implementation, keymap_opts)
         -- vim.keymap.set("n", "gr", require("telescope.builtin").lsp_references, keymap_opts)
         -- vim.keymap.set("n", "gd", vim.lsp.buf.definition, keymap_opts)
-       
     end
 })
