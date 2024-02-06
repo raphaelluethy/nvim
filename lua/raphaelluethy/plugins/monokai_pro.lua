@@ -11,7 +11,7 @@ return {
                     italic = true
                 },
                 keyword = {
-                    italic = true
+                    italic = false
                 }, -- any other keyword
                 type = {
                     italic = true
@@ -32,13 +32,6 @@ return {
                     italic = true
                 } -- attribute of tag in reactjs
             },
-            window = {
-                border = "rounded"
-            },
-            completion = {
-                border = "rounded"
-            },
-
             filter = 'spectrum', -- classic | octagon | pro | machine | ristretto | spectrum
             inc_search = 'background', -- underline | background
             background_clear = { -- "float_win",

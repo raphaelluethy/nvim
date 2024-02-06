@@ -59,12 +59,16 @@ return {
                 }),
             }
         })
+        -- local _border = "single"
         -- vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, {
-        --     border = "rounded"
+        --     border = _border
         -- })
         -- vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, {
-        --     border = "rounded"
+        --     border = _border
         -- })
+        -- vim.diagnostic.config {
+        --     float = { border = _border }
+        -- }
         require("lspconfig.ui.windows").default_options.border = "rounded"
 
         --
@@ -99,7 +103,7 @@ return {
         })
         local wk = require("which-key")
         wk.register({
-            ["<leader>lf"] = { ':lua vim.lsp.buf.format({async = true})<CR> <BAR> <cmd>update<CR>', "Format File with LSP"}
+            ["<leader>lf"] = { ':lua vim.lsp.buf.format({async = true})<CR> <BAR> <cmd>update<CR>', "Format File with LSP" }
         })
     end
 }

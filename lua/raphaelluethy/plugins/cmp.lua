@@ -41,29 +41,13 @@ return {
             ["<C-Space>"] = cmp.mapping.complete()
         });
 
-        local border = {
-            { "╭", "CmpBorder" },
-            { "─", "CmpBorder" },
-            { "╮", "CmpBorder" },
-            { "│", "CmpBorder" },
-            { "╯", "CmpBorder" },
-            { "─", "CmpBorder" },
-            { "╰", "CmpBorder" },
-            { "│", "CmpBorder" },
-        }
-
-
         local lspkind = require('lspkind')
         cmp.setup({
             window = {
-                documentation = {
-                    border = border,
-                },
-                completion = {
-                    border = border,
-                },
+                completion = cmp.config.window.bordered(),
+                documentation = cmp.config.window.bordered(),
             },
-            snippet = {
+                snippet = {
                 -- REQUIRED - you must specify a snippet engine
                 expand = function(args)
                     -- vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
