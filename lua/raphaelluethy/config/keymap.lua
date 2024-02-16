@@ -1,5 +1,5 @@
 -- close buffer
-vim.keymap.set('n', '<leader>bd', '<CMD>bd<CR>')
+vim.keymap.set('n', '<leader>bd!', '<CMD>bd<CR>')
 vim.keymap.set('n', '<leader>bn', '<CMD>bn<CR>')
 
 -- move lines
