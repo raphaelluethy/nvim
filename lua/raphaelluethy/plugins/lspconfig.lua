@@ -53,9 +53,9 @@ return {
                         tsserver = {
                             on = {
                                 importAll = true
-                            }
-                        }
-                    }
+                            },
+                        },
+                    },
                 }),
             }
         })
