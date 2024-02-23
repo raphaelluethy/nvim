@@ -64,7 +64,11 @@ return {
                 })
             end, "Find all files"},
             ["<leader>sh"] = {builtin.help_tags, "Find help tags"},
-            ["<leader>sf"] = {builtin.find_files, "Find files"},
+            ["<leader>sf"] = { function()
+                builtin.find_files({
+                    hidden = true,
+                })
+            end, "Find files"},
             ["<leader>gf"] = {builtin.git_files, "Find git files"},
         })
     end

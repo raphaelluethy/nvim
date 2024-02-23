@@ -1,17 +1,12 @@
 return {
     "neovim/nvim-lspconfig",
-    opts = {
-        inlay_hints = {
-            enabled = true
-        }
-    },
-    dependencies = { "williamboman/mason.nvim", "williamboman/mason-lspconfig.nvim", "j-hui/fidget.nvim" },
+    dependencies = {"williamboman/mason.nvim", "williamboman/mason-lspconfig.nvim", "j-hui/fidget.nvim"},
     config = function()
         require("fidget").setup()
         require("mason").setup()
         require("mason-lspconfig").setup({
-            ensure_installed = { "lua_ls", "rust_analyzer", "tsserver", "gopls", "sqls" },
-            handlers = { function(server_name) -- default handler
+            ensure_installed = {"lua_ls", "rust_analyzer", "tsserver", "gopls", "sqls"},
+            handlers = {function(server_name) -- default handler
                 require("lspconfig")[server_name].setup {
                     on_attach = function(client, bufnr)
                         if client.server_capabilities.inlayHintProvider then
@@ -23,7 +18,7 @@ return {
                 settings = {
                     Lua = {
                         diagnostics = {
-                            globals = { "vim" }
+                            globals = {"vim"}
                         },
                         telemetry = {
                             enable = false
@@ -47,17 +42,15 @@ return {
                         staticcheck = true
                     }
                 }
-            }),
-                require("lspconfig").tsserver.setup({
-                    settings = {
-                        tsserver = {
-                            on = {
-                                importAll = true
-                            },
-                        },
-                    },
-                }),
-            }
+            }), require("lspconfig").tsserver.setup({
+                settings = {
+                    tsserver = {
+                        on = {
+                            importAll = true
+                        }
+                    }
+                }
+            })}
         })
         -- local _border = "single"
         -- vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, {
@@ -103,7 +96,8 @@ return {
         })
         local wk = require("which-key")
         wk.register({
-            ["<leader>lf"] = { ':lua vim.lsp.buf.format({async = true})<CR> <BAR> <cmd>update<CR>', "Format File with LSP" }
+            ["<leader>lf"] = {':lua vim.lsp.buf.format({async = true})<CR> <BAR> <cmd>update<CR>',
+                              "Format File with LSP"}
         })
     end
 }
