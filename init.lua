@@ -75,3 +75,10 @@ autocmd('LspAttach', {
         -- vim.keymap.set("n", "gd", vim.lsp.buf.definition, keymap_opts)
     end
 })
+
+autocmd('TextYankPost', {
+    group = vim.api.nvim_create_augroup('raphaelluethy-highlight-yank', { clear = true }),
+    callback = function()
+      vim.highlight.on_yank()
+    end,
+  })
