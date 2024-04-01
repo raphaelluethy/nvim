@@ -1,84 +1,51 @@
-require("raphaelluethy")
+require 'raphaelluethy.config.set'
+require 'raphaelluethy.config.auto_cmds'
+require 'raphaelluethy.config.keymaps'
 
-local augroup = vim.api.nvim_create_augroup
-local RaphaelluethyGroup = augroup('raphaelluethy', {})
+-- [[ Install `lazy.nvim` plugin manager ]]
+--    See `:help lazy.nvim.txt` or https://github.com/folke/lazy.nvim for more info
+local lazypath = vim.fn.stdpath 'data' .. '/lazy/lazy.nvim'
+if not vim.loop.fs_stat(lazypath) then
+    local lazyrepo = 'https://github.com/folke/lazy.nvim.git'
+    vim.fn.system { 'git', 'clone', '--filter=blob:none', '--branch=stable', lazyrepo, lazypath }
+end ---@diagnostic disable-next-line: undefined-field
+vim.opt.rtp:prepend(lazypath)
 
-local autocmd = vim.api.nvim_create_autocmd
-
-autocmd('LspAttach', {
-    group = RaphaelluethyGroup,
-    callback = function(e)
-        local opts = {
-            buffer = e.buf
-        }
-        --
-        -- vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(
-        --     vim.lsp.handlers.hover,
-        --     { focusable = false }
-        -- )
-        --
-        -- vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(
-        --     vim.lsp.handlers.signature_help,
-        --     { focusable = false }
-        -- )
-        --
-        --
-        -- vim.lsp.handlers["textDocument/hover"] = vim.lsp.with(vim.lsp.handlers.hover, {
-        --     border = "rounded"
-        -- })
-        -- vim.lsp.handlers["textDocument/signatureHelp"] = vim.lsp.with(vim.lsp.handlers.signature_help, {
-        --     border = "rounded"
-        -- })
+-- [[ Configure and install plugins ]]
+--
+--  To check the current status of your plugins, run
+--    :Lazy
+--
+--  You can press `?` in this menu for help. Use `:q` to close the window
+--
+--  To update plugins you can run
+--    :Lazy update
+--
+-- NOTE: Here is where you install your plugins
 
 
-
-        vim.keymap.set("n", "gd", function()
-            vim.lsp.buf.definition()
-        end, opts)
-        vim.keymap.set("n", "gi", function()
-            vim.lsp.buf.implementation()
-        end, opts)
-        vim.keymap.set("n", "gr", function()
-            vim.lsp.buf.references()
-        end, opts)
-        vim.keymap.set("n", "K", function()
-            vim.lsp.buf.hover()
-        end, opts)
-        vim.keymap.set("n", "<leader>vws", function()
-            vim.lsp.buf.workspace_symbol()
-        end, opts)
-        vim.keymap.set("n", "<leader>vd", function()
-            vim.diagnostic.open_float()
-        end, opts)
-        vim.keymap.set("n", "[d", function()
-            vim.diagnostic.goto_next()
-        end, opts)
-        vim.keymap.set("n", "]d", function()
-            vim.diagnostic.goto_prev()
-        end, opts)
-        vim.keymap.set("n", "<leader>ca", function()
-            vim.lsp.buf.code_action()
-        end, opts)
-        vim.keymap.set("n", "<leader>rr", function()
-            vim.lsp.buf.references()
-        end, opts)
-        vim.keymap.set("n", "<leader>rn", function()
-            vim.lsp.buf.rename()
-        end, opts)
-        vim.keymap.set("i", "<C-h>", function()
-            vim.lsp.buf.signature_help()
-        end, opts)
-
-        -- vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, {})
-        -- vim.keymap.set("n", "gi", vim.lsp.buf.implementation, keymap_opts)
-        -- vim.keymap.set("n", "gr", require("telescope.builtin").lsp_references, keymap_opts)
-        -- vim.keymap.set("n", "gd", vim.lsp.buf.definition, keymap_opts)
-    end
+require('lazy').setup({ { import = "raphaelluethy.plugins" } }, {
+    ui = {
+        -- If you are using a Nerd Font: set icons to an empty table which will use the
+        -- default lazy.nvim defined Nerd Font icons, otherwise define a unicode icons table
+        icons = vim.g.have_nerd_font and {} or {
+            cmd = '⌘',
+            config = '🛠',
+            event = '📅',
+            ft = '📂',
+            init = '⚙',
+            keys = '🗝',
+            plugin = '🔌',
+            runtime = '💻',
+            require = '🌙',
+            source = '📄',
+            start = '🚀',
+            task = '📌',
+            lazy = '💤 ',
+        },
+    },
+    silent = true,
 })
 
-autocmd('TextYankPost', {
-    group = vim.api.nvim_create_augroup('raphaelluethy-highlight-yank', { clear = true }),
-    callback = function()
-      vim.highlight.on_yank()
-    end,
-  })
+-- The line beneath this is called `modeline`. See `:help modeline`
+-- vim: ts=2 sts=2 sw=2 et

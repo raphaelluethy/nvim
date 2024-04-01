@@ -1,19 +1,17 @@
 return {
-	"nvimdev/lspsaga.nvim",
-	config = function()
-		require("lspsaga").setup({
-			lightbulb = {
-				virtual_text = false,
-			},
-			diagnostic = {
-				on_insert = false,
-			},
-		})
-
-		vim.keymap.set("n", "<leader>cal", "<CMD>Lspsaga code_action<CR>", { noremap = true, silent = true })
-	end,
-	dependencies = {
-		"nvim-treesitter/nvim-treesitter", -- optional
-		"nvim-tree/nvim-web-devicons", -- optional
-	},
+    'nvimdev/lspsaga.nvim',
+    dependencies = {
+        'nvim-treesitter/nvim-treesitter', -- optional
+        'nvim-tree/nvim-web-devicons'      -- optional
+    },
+    config = function()
+        require('lspsaga').setup({
+            lightbulb = {
+                enable = true,
+                virtual_text = false
+            }
+        })
+        vim.keymap.set('n', '<leader>lrn', '<CMD>Lspsaga rename <CR>', { desc = '[R]e[n]ame' })
+        vim.keymap.set('n', '<leader>lrnp', '<CMD>Lspsaga rename ++project <CR>', { desc = '[R]e[n]ame' })
+    end,
 }

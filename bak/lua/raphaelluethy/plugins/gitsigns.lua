@@ -5,6 +5,6 @@ return {
             signcolumn = true -- Toggle with `:Gitsigns toggle_signs`
         })
 
-        vim.keymap.set('n', '<leader>gh', ':Gitsigns toggle_current_line_blame<CR>', {})
+        vim.keymap.set('n', '<leader>gh', ':Gitsigns blame_line<CR>', {})
     end
 }

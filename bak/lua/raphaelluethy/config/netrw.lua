@@ -12,7 +12,7 @@ vim.keymap.set('n', '<leader>b', function()
     else
         vim.cmd('e . | :Ex')
     end
-end)-- setup netrw
+end) -- setup netrw
 
 vim.g.netrw_fastbrowse = 0
 vim.g.netrw_liststyle = 3
