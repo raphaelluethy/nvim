@@ -4,5 +4,6 @@ test.sh
 .luarc.json
 nvim
 
+bak/
 spell/
 lazy-lock.json
