@@ -67,4 +67,3 @@ vim.keymap.set('n', 'C', '"_C')
 
 -- save
 vim.keymap.set('n', '<leader>w', '<CMD>w<CR>')
-vim.keymap.set('n', '<leader>s', '<CMD>w<CR>')
