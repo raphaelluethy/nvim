@@ -27,36 +27,32 @@ vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right win
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
 
-
 -- close buffer
 vim.keymap.set('n', '<leader>bd!', '<CMD>bd<CR>')
 vim.keymap.set('n', '<leader>bn', '<CMD>bn<CR>')
 
 -- move lines
-vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv")
-vim.keymap.set("v", "K", ":m '<-2<CR>gv=gv")
+vim.keymap.set('v', 'J', ":m '>+1<CR>gv=gv")
+vim.keymap.set('v', 'K', ":m '<-2<CR>gv=gv")
 
 -- up and down
-vim.keymap.set("n", "<C-d>", "<C-d>zz")
-vim.keymap.set("n", "<C-u>", "<C-u>zz")
+vim.keymap.set('n', '<C-d>', '<C-d>zz')
+vim.keymap.set('n', '<C-u>', '<C-u>zz')
 
 -- find tokens
-vim.keymap.set("n", "n", "nzzzv")
-vim.keymap.set("n", "N", "Nzzzv")
-
--- exit insert mode
-vim.keymap.set("i", "jk", "<ESC>")
+vim.keymap.set('n', 'n', 'nzzzv')
+vim.keymap.set('n', 'N', 'Nzzzv')
 
 -- move buffer
-vim.keymap.set("n", "gn", ":bnext<cr>")
-vim.keymap.set("n", "gp", ":bprevious<cr>")
+vim.keymap.set('n', 'gn', ':bnext<cr>')
+vim.keymap.set('n', 'gp', ':bprevious<cr>')
 
 -- close buffer
-vim.keymap.set("n", "<leader>x", ":bd!<cr>")
+vim.keymap.set('n', '<leader>x', ':bd!<cr>')
 
 -- reselect after indent
-vim.keymap.set("v", "<", "<gv")
-vim.keymap.set("v", ">", ">gv")
+vim.keymap.set('v', '<', '<gv')
+vim.keymap.set('v', '>', '>gv')
 
 -- Redirect change operations to the blackhole to avoid spoiling 'y' register content
 -- Shortcut to use blackhole register by default
