@@ -54,6 +54,7 @@ return { -- Fuzzy Finder (files, lsp, etc)
             --   },
             -- },
             -- pickers = {}
+            preview = { treesitter = { disable = { 'dart' } } },
             extensions = {
                 ['ui-select'] = {
                     require('telescope.themes').get_dropdown(),

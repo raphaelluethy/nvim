@@ -208,5 +208,6 @@ return { -- LSP Configuration & Plugins
         vim.diagnostic.config {
             float = { border = _border }
         }
+        require 'lspconfig'.dartls.setup {}
     end,
 }
