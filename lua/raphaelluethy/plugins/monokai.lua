@@ -19,8 +19,8 @@ return {
             filter = 'spectrum',                   -- classic | octagon | pro | machine | ristretto | spectrum
             -- Enable this will disable filter option
             background_clear = {
-                'float_win',
-                'toggleterm',
+                -- 'float_win',
+                -- 'toggleterm',
                 'telescope',
                 --     -- "which-key",
                 --     "renamer",
@@ -36,7 +36,7 @@ return {
                 --     },
                 indent_blankline = {
                     context_highlight = 'pro', -- default | pro
-                    context_start_underline = true,
+                    context_start_underline = false,
                 },
             },
             override = function()
@@ -45,23 +45,25 @@ return {
                 }
             end,
         }
-        vim.cmd.colorscheme 'monokai-pro'
-        vim.cmd.hi 'Comment gui=none'
-        local set_hl_for_floating_window = function()
-            vim.api.nvim_set_hl(0, 'NormalFloat', {
-                link = 'Normal',
-            })
-            vim.api.nvim_set_hl(0, 'FloatBorder', {
-                bg = 'none',
+        function run_theme()
+            vim.cmd.colorscheme 'monokai-pro'
+            vim.cmd.hi 'Comment gui=none'
+            local set_hl_for_floating_window = function()
+                vim.api.nvim_set_hl(0, 'FloatBorder', {
+                    fg = '#ffffff',
+                    bg = 'none',
+                })
+            end
+
+            set_hl_for_floating_window()
+
+            vim.api.nvim_create_autocmd('ColorScheme', {
+                pattern = '*',
+                desc = 'Avoid overwritten by loading color schemes later',
+                callback = set_hl_for_floating_window,
             })
         end
 
-        set_hl_for_floating_window()
-
-        vim.api.nvim_create_autocmd('ColorScheme', {
-            pattern = '*',
-            desc = 'Avoid overwritten by loading color schemes later',
-            callback = set_hl_for_floating_window,
-        })
+        run_theme()
     end,
 }
