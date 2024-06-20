@@ -108,5 +108,12 @@ return { -- Fuzzy Finder (files, lsp, etc)
     vim.keymap.set('n', '<leader>sn', function()
       builtin.find_files { cwd = vim.fn.stdpath 'config' }
     end, { desc = '[S]earch [N]eovim files' })
+
+    -- load refactoring Telescope extension
+    require('telescope').load_extension 'refactoring'
+
+    vim.keymap.set({ 'n', 'x' }, '<leader>rr', function()
+      require('telescope').extensions.refactoring.refactors()
+    end)
   end,
 }
