@@ -1,19 +1,22 @@
-return { -- LSP Configuration & Plugins
+return {             -- LSP Configuration & Plugins
     'neovim/nvim-lspconfig',
     dependencies = { -- Automatically install LSPs and related tools to stdpath for Neovim
-    'williamboman/mason.nvim', 'williamboman/mason-lspconfig.nvim', 'WhoIsSethDaniel/mason-tool-installer.nvim',
+        'williamboman/mason.nvim',
+        'williamboman/mason-lspconfig.nvim',
+        'WhoIsSethDaniel/mason-tool-installer.nvim',
 
-    -- Useful status updates for LSP.
-    -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
-    {
-        'j-hui/fidget.nvim',
-        opts = {}
-    }, -- `neodev` configures Lua LSP for your Neovim config, runtime and plugins
-    -- used for completion, annotations and signatures of Neovim apis
-    {
-        'folke/neodev.nvim',
-        opts = {}
-    }},
+        -- Useful status updates for LSP.
+        -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
+        {
+            'j-hui/fidget.nvim',
+            opts = {},
+        }, -- `neodev` configures Lua LSP for your Neovim config, runtime and plugins
+        -- used for completion, annotations and signatures of Neovim apis
+        {
+            'folke/neodev.nvim',
+            opts = {},
+        },
+    },
     config = function()
         -- Brief aside: **What is LSP?**
         --
@@ -22,10 +25,10 @@ return { -- LSP Configuration & Plugins
         -- LSP stands for Language Server Protocol. It's a protocol that helps editors
         -- and language tooling communicate in a standardized fashion.
         --
-        -- In general, you have a "server" which is some tool built to understand a particular
+        -- In general, you have a 'server' which is some tool built to understand a particular
         -- language (such as `gopls`, `lua_ls`, `rust_analyzer`, etc.). These Language Servers
         -- (sometimes called LSP servers, but that's kind of like ATM Machine) are standalone
-        -- processes that communicate with some "client" - in this case, Neovim!
+        -- processes that communicate with some 'client' - in this case, Neovim!
         --
         -- LSP provides Neovim with features like:
         --  - Go to definition
@@ -46,7 +49,7 @@ return { -- LSP Configuration & Plugins
         --    function will be executed to configure the current buffer
         vim.api.nvim_create_autocmd('LspAttach', {
             group = vim.api.nvim_create_augroup('raphaelluethy-lsp-attach', {
-                clear = true
+                clear = true,
             }),
             callback = function(event)
                 -- NOTE: Remember that Lua is a real programming language, and as such it is possible
@@ -57,7 +60,7 @@ return { -- LSP Configuration & Plugins
                 local map = function(keys, func, desc)
                     vim.keymap.set('n', keys, func, {
                         buffer = event.buf,
-                        desc = 'LSP: ' .. desc
+                        desc = 'LSP: ' .. desc,
                     })
                 end
 
@@ -104,11 +107,11 @@ return { -- LSP Configuration & Plugins
 
                 vim.keymap.set('i', '<C-s>', vim.lsp.buf.signature_help, {
                     buffer = event.buf,
-                    desc = 'Show [S]ignature Help'
+                    desc = 'Show [S]ignature Help',
                 })
                 vim.keymap.set('n', '<C-s>', vim.lsp.buf.signature_help, {
                     buffer = event.buf,
-                    desc = 'Show [S]ignature Help'
+                    desc = 'Show [S]ignature Help',
                 })
 
                 -- The following two autocommands are used to highlight references of the
@@ -116,19 +119,19 @@ return { -- LSP Configuration & Plugins
                 --    See `:help CursorHold` for information about when this is executed
                 --
                 -- When you move your cursor, the highlights will be cleared (the second autocommand).
-                local client = vim.lsp.get_client_by_id(event.data.client_id)
-                if client and client.server_capabilities.documentHighlightProvider then
-                    vim.api.nvim_create_autocmd({'CursorHold', 'CursorHoldI'}, {
-                        buffer = event.buf,
-                        callback = vim.lsp.buf.document_highlight
-                    })
+                --     local client = vim.lsp.get_client_by_id(event.data.client_id)
+                --     if client and client.server_capabilities.documentHighlightProvider then
+                --         vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
+                --             buffer = event.buf,
+                --             callback = vim.lsp.buf.document_highlight
+                --         })
 
-                    vim.api.nvim_create_autocmd({'CursorMoved', 'CursorMovedI'}, {
-                        buffer = event.buf,
-                        callback = vim.lsp.buf.clear_references
-                    })
-                end
-            end
+                --         vim.api.nvim_create_autocmd({ 'CursorMoved', 'CursorMovedI' }, {
+                --             buffer = event.buf,
+                --             callback = vim.lsp.buf.clear_references
+                --         })
+                --     end
+            end,
         })
 
         -- LSP servers and clients are able to communicate to each other what features they support.
@@ -149,13 +152,15 @@ return { -- LSP Configuration & Plugins
         --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
         vim.filetype.add {
             extension = {
-                templ = 'templ'
-            }
+                templ = 'templ',
+            },
         }
 
         local servers = {
             -- clangd = {},
             gopls = {},
+            templ = {},
+            vtsls = {},
             -- pyright = {},
             rust_analyzer = {},
             -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
@@ -168,20 +173,22 @@ return { -- LSP Configuration & Plugins
             --
 
             tailwindcss = {
-                filetypes = {'templ', 'astro', 'javascript', 'typescript', 'react'},
-                init_options = {
-                    userLanguages = {
-                        templ = 'html'
+                settings = {
+                    tailwindCSS = {
+                        includeLanguages = {
+                            templ = "html"
+                        }
                     }
-                }
+                },
+
             },
 
             html = {
-                filetypes = {'templ'}
+                filetypes = { 'html', 'templ' },
             },
 
             htmx = {
-                filetypes = {'html', 'templ'}
+                filetypes = { 'html', 'templ' },
             },
 
             lua_ls = {
@@ -191,13 +198,13 @@ return { -- LSP Configuration & Plugins
                 settings = {
                     Lua = {
                         completion = {
-                            callSnippet = 'Replace'
-                        }
+                            callSnippet = 'Replace',
+                        },
                         -- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
                         -- diagnostics = { disable = { 'missing-fields' } },
-                    }
-                }
-            }
+                    },
+                },
+            },
         }
 
         -- Ensure the servers and tools above are installed
@@ -211,40 +218,43 @@ return { -- LSP Configuration & Plugins
         -- You can add other tools here that you want Mason to install
         -- for you, so that they are available from within Neovim.
         local ensure_installed = vim.tbl_keys(servers or {})
-        vim.list_extend(ensure_installed, {'stylua' -- Used to format Lua code
+        vim.list_extend(ensure_installed, {
+            'stylua', -- Used to format Lua code
         })
         require('mason-tool-installer').setup {
-            ensure_installed = ensure_installed
+            ensure_installed = ensure_installed,
         }
 
         require('mason-lspconfig').setup {
-            handlers = {function(server_name)
-                local server = servers[server_name] or {}
-                -- This handles overriding only values explicitly passed
-                -- by the server configuration above. Useful when disabling
-                -- certain features of an LSP (for example, turning off formatting for tsserver)
-                server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
-                require('lspconfig')[server_name].setup(server)
-            end}
+            handlers = {
+                function(server_name)
+                    local server = servers[server_name] or {}
+                    -- This handles overriding only values explicitly passed
+                    -- by the server configuration above. Useful when disabling
+                    -- certain features of an LSP (for example, turning off formatting for tsserver)
+                    server.capabilities = vim.tbl_deep_extend('force', {}, capabilities, server.capabilities or {})
+                    require('lspconfig')[server_name].setup(server)
+                end,
+            },
         }
         local _border = 'rounded' -- 'single' | 'double' | 'rounded' | 'solid'
 
         vim.lsp.handlers['textDocument/hover'] = vim.lsp.with(vim.lsp.handlers.hover, {
-            border = _border
+            border = _border,
         })
 
         vim.lsp.handlers['textDocument/signatureHelp'] = vim.lsp.with(vim.lsp.handlers.signature_help, {
-            border = _border
+            border = _border,
         })
 
         vim.diagnostic.config {
             float = {
-                border = _border
-            }
+                border = _border,
+            },
         }
         vim.keymap.set('n', 'gh', vim.diagnostic.open_float, {
-            desc = 'Show diagnostic [E]rror messages'
+            desc = 'Show diagnostic [E]rror messages',
         })
         -- require 'lspconfig'.dartls.setup {}
-    end
+    end,
 }
