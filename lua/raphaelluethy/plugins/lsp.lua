@@ -176,11 +176,10 @@ return {             -- LSP Configuration & Plugins
                 settings = {
                     tailwindCSS = {
                         includeLanguages = {
-                            templ = "html"
-                        }
-                    }
+                            templ = 'html',
+                        },
+                    },
                 },
-
             },
 
             html = {
@@ -255,6 +254,6 @@ return {             -- LSP Configuration & Plugins
         vim.keymap.set('n', 'gh', vim.diagnostic.open_float, {
             desc = 'Show diagnostic [E]rror messages',
         })
-        -- require 'lspconfig'.dartls.setup {}
+        require 'lspconfig'.dartls.setup {}
     end,
 }
