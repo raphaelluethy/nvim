@@ -1,5 +1,6 @@
 require 'raphaelluethy.config.set'
 require 'raphaelluethy.config.auto_cmds'
+require 'raphaelluethy.config.commands'
 require 'raphaelluethy.config.keymaps'
 
 
