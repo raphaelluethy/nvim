@@ -1,24 +1,31 @@
--- Settings for when neovim is running inside of vscode 
+-- Settings for when neovim is running inside of vscode
 vim.keymap.set('n', 'H', "<Cmd>lua require('vscode-neovim').call('workbench.action.previousEditor')<CR>", {
-    desc = ''
+  desc = '',
 })
 vim.keymap.set('n', 'L', "<Cmd>lua require('vscode-neovim').call('workbench.action.nextEditor')<CR>", {
-    desc = ''
+  desc = '',
 })
 
 -- <Cmd>lua require('vscode-neovim').call('editor.action.formatSelection')<CR>
 vim.keymap.set('n', '<leader>w', "<Cmd>lua require('vscode-neovim').call('workbench.action.files.save')<CR>", {
-    desc = ''
+  desc = '',
 })
 vim.keymap.set('n', '<leader>f', "<Cmd>lua require('vscode-neovim').call('editor.action.formatDocument')<CR>", {
-    desc = ''
+  desc = '',
 })
 
 vim.keymap.set('n', '<leader>e', "<Cmd>lua require('vscode-neovim').call('workbench.action.quickOpen')<CR>", {
-    desc = ''
+  desc = '',
 })
 
 vim.keymap.set('n', '<leader>sp', "<Cmd>lua require('vscode-neovim').call('workbench.action.quickOpen')<CR>", {
-    desc = ''
+  desc = '',
 })
 
+vim.keymap.set('n', '<leader>sc', "<Cmd>lua require('vscode-neovim').call('workbench.scm.focus')<CR>", {
+  desc = '',
+})
+
+vim.keymap.set('n', 'gr', "<Cmd>lua require('vscode-neovim').call('editor.action.goToReferences')<CR>", {
+  desc = '',
+})
