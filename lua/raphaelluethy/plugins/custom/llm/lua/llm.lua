@@ -399,7 +399,6 @@ function M.invoke_llm_and_stream_into_float(opts, make_curl_args_fn, handle_data
                     active_job:shutdown()
                     print 'LLM streaming cancelled'
                     active_job = nil
-                    -- vim.api.nvim_win_close(win, true)
                 end
             end
         })
