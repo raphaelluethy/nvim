@@ -22,6 +22,3 @@ vim.keymap.set('n', '<leader>sp', "<Cmd>lua require('vscode-neovim').call('workb
     desc = ''
 })
 
-vim.keymap.set('n', '<C-b>', "<Cmd>lua require('vscode-neovim').call('workbench.action.toggleSidebarVisibility')<CR>", {
-    desc = ''
-})
