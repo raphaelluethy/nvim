@@ -229,7 +229,6 @@ local function get_prompt(opts, visual_lines)
     end
     local prompt = ''
     local file_type = vim.api.nvim_get_option_value('filetype', {})
-    print(visual_lines)
 
     if visual_lines then
         -- embed the visual lines in the prompt in a code block with a language hint
@@ -369,9 +368,7 @@ function M.invoke_llm_and_stream_into_float(opts, make_curl_args_fn, handle_data
     vim.api.nvim_clear_autocmds {
         group = group,
     }
-
     local visual_selection = M.get_visual_selection()
-
     -- Create a floating input for additional prompt
     local input_buf = vim.api.nvim_create_buf(false, true)
     local input_width = math.floor(vim.o.columns * 0.6)
