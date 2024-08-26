@@ -64,9 +64,7 @@ vim.keymap.set('n', 'C', '"_C')
 -- save
 vim.keymap.set('n', '<leader>w', '<CMD>w<CR>')
 
-
-vim.keymap.set('n', '<leader>ht', require('raphaelluethy.config.inlay_utils').toggle_inlay_hints,
-    { desc = 'Toggle inlay hints' })
+vim.keymap.set('n', '<leader>ht', require('raphaelluethy.config.inlay_utils').toggle_inlay_hints, { desc = 'Toggle inlay hints' })
 
 -- quickfix
 vim.keymap.set('n', '<leader>co', '<CMD>copen<CR>')

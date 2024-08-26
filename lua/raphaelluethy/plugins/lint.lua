@@ -1,81 +1,80 @@
-return {{ -- Linting
+return {
+  { -- Linting
     'mfussenegger/nvim-lint',
-    event = {'BufReadPre', 'BufNewFile'},
+    event = { 'BufReadPre', 'BufNewFile' },
     config = function()
-        local lint = require 'lint'
-        -- lint.linters_by_ft = {
-        --     markdown = { 'markdownlint' },
-        -- }
+      local lint = require 'lint'
+      -- lint.linters_by_ft = {
+      --     markdown = { 'markdownlint' },
+      -- }
 
-        -- To allow other plugins to add linters to require('lint').linters_by_ft,
-        -- instead set linters_by_ft like this:
-        -- lint.linters_by_ft = lint.linters_by_ft or {}
-        -- lint.linters_by_ft['markdown'] = { 'markdownlint' }
-        --
-        -- However, note that this will enable a set of default linters,
-        -- which will cause errors unless these tools are available:
-        -- {
-        --   clojure = { "clj-kondo" },
-        --   dockerfile = { "hadolint" },
-        --   inko = { "inko" },
-        --   janet = { "janet" },
-        --   json = { "jsonlint" },
-        --   markdown = { "vale" },
-        --   rst = { "vale" },
-        --   ruby = { "ruby" },
-        --   terraform = { "tflint" },
-        --   text = { "vale" }
-        -- }
-        --
-        -- You can disable the default linters by setting their filetypes to nil:
-        -- lint.linters_by_ft['clojure'] = nil
-        -- lint.linters_by_ft['dockerfile'] = nil
-        -- lint.linters_by_ft['inko'] = nil
-        -- lint.linters_by_ft['janet'] = nil
-        lint.linters_by_ft['json'] = nil
-        lint.linters_by_ft['markdown'] = nil
-        -- lint.linters_by_ft['rst'] = nil
-        -- lint.linters_by_ft['ruby'] = nil
-        -- lint.linters_by_ft['terraform'] = nil
-        lint.linters_by_ft['text'] = nil
+      -- To allow other plugins to add linters to require('lint').linters_by_ft,
+      -- instead set linters_by_ft like this:
+      -- lint.linters_by_ft = lint.linters_by_ft or {}
+      -- lint.linters_by_ft['markdown'] = { 'markdownlint' }
+      --
+      -- However, note that this will enable a set of default linters,
+      -- which will cause errors unless these tools are available:
+      -- {
+      --   clojure = { "clj-kondo" },
+      --   dockerfile = { "hadolint" },
+      --   inko = { "inko" },
+      --   janet = { "janet" },
+      --   json = { "jsonlint" },
+      --   markdown = { "vale" },
+      --   rst = { "vale" },
+      --   ruby = { "ruby" },
+      --   terraform = { "tflint" },
+      --   text = { "vale" }
+      -- }
+      --
+      -- You can disable the default linters by setting their filetypes to nil:
+      -- lint.linters_by_ft['clojure'] = nil
+      -- lint.linters_by_ft['dockerfile'] = nil
+      -- lint.linters_by_ft['inko'] = nil
+      -- lint.linters_by_ft['janet'] = nil
+      lint.linters_by_ft['json'] = nil
+      lint.linters_by_ft['markdown'] = nil
+      -- lint.linters_by_ft['rst'] = nil
+      -- lint.linters_by_ft['ruby'] = nil
+      -- lint.linters_by_ft['terraform'] = nil
+      lint.linters_by_ft['text'] = nil
 
-        -- Create autocommand which carries out the actual linting
-        -- on the specified events.
-        local lint_augroup = vim.api.nvim_create_augroup('lint', {
-            clear = true
-        })
-        vim.api.nvim_create_autocmd({'BufEnter', 'BufWritePost', 'InsertLeave'}, {
-            group = lint_augroup,
-            callback = function()
-                -- Check if the buffer type or file type is one that we want to ignore
-                local buftype_ignore = {'nofile', 'nowrite', 'quickfix', 'popup', 'help'}
-                local filetype_ignore = {'NvimTree', 'Telescope'}
-                local cur_buftype = vim.bo.buftype
-                local cur_filetype = vim.bo.filetype
+      -- Create autocommand which carries out the actual linting
+      -- on the specified events.
+      local lint_augroup = vim.api.nvim_create_augroup('lint', {
+        clear = true,
+      })
+      vim.api.nvim_create_autocmd({ 'BufEnter', 'BufWritePost', 'InsertLeave' }, {
+        group = lint_augroup,
+        callback = function()
+          -- Check if the buffer type or file type is one that we want to ignore
+          local buftype_ignore = { 'nofile', 'nowrite', 'quickfix', 'popup', 'help' }
+          local filetype_ignore = { 'NvimTree', 'Telescope' }
+          local cur_buftype = vim.bo.buftype
+          local cur_filetype = vim.bo.filetype
 
-                if not vim.tbl_contains(buftype_ignore, cur_buftype) and
-                    not vim.tbl_contains(filetype_ignore, cur_filetype) then
-                    local lint = require('lint')
-                    local linters = lint.linters_by_ft[vim.bo.filetype] or {}
+          if not vim.tbl_contains(buftype_ignore, cur_buftype) and not vim.tbl_contains(filetype_ignore, cur_filetype) then
+            local lint = require 'lint'
+            local linters = lint.linters_by_ft[vim.bo.filetype] or {}
 
-                    for _, linter in ipairs(linters) do
-                        if vim.fn.executable(linter) == 0 then
-                            vim.notify(string.format(
-                                "Linter '%s' not found. Please install it or remove from your config.", linter),
-                                vim.log.levels.WARN)
-                            return
-                        end
-                    end
-
-                    local success, error_msg = pcall(function()
-                        lint.try_lint()
-                    end)
-
-                    if not success then
-                        vim.notify("Linting failed: " .. error_msg, vim.log.levels.WARN)
-                    end
-                end
+            for _, linter in ipairs(linters) do
+              if vim.fn.executable(linter) == 0 then
+                vim.notify(string.format("Linter '%s' not found. Please install it or remove from your config.", linter), vim.log.levels.WARN)
+                return
+              end
             end
-        })
-    end
-}}
+
+            local success, error_msg = pcall(function()
+              lint.try_lint()
+            end)
+
+            if not success then
+              vim.notify('Linting failed: ' .. error_msg, vim.log.levels.WARN)
+            end
+          end
+        end,
+      })
+    end,
+  },
+}
