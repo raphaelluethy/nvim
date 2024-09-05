@@ -71,3 +71,6 @@ vim.keymap.set('n', '<leader>co', '<CMD>copen<CR>')
 vim.keymap.set('n', '<leader>cc', '<CMD>cclose<CR>')
 vim.keymap.set('n', '<leader>cn', '<CMD>cnext<CR>')
 vim.keymap.set('n', '<leader>cp', '<CMD>cprev<CR>')
+
+-- avante
+vim.keymap.set('n', '<leader>ac', '<CMD>AvanteClear<cr>', { desc = '[A]vante clear chat' })
