@@ -43,16 +43,31 @@ return {
     {
       -- Make sure to set this up properly if you have lazy=true
       'MeanderingProgrammer/render-markdown.nvim',
-      opts = {},
-      ft = { 'markdown', 'Avante' },
       config = function()
         require('render-markdown').setup {
           file_types = { 'markdown', 'Avante' },
-          code = { style = 'language' },
+          code = {
+            enabled = true,
+            sign = true,
+            style = 'language',
+            position = 'left',
+            language_pad = 0,
+            disable_background = { 'diff' },
+            width = 'full',
+            left_pad = 0,
+            right_pad = 0,
+            min_width = 0,
+            border = 'thin',
+            -- Highlight for code blocks
+            highlight = 'NormalFloat',
+            -- Highlight for inline code
+            highlight_inline = 'NormalFloat',
+          },
+          heading = { sign = false, icons = {} },
+          dash = { enabled = false },
+          link = { enabled = false },
+          bullet = { enabled = false },
         }
-
-        vim.api.nvim_set_hl(0, 'RenderMarkdownCode', {})
-        vim.api.nvim_set_hl(0, 'RenderMarkdownCodeInline', {})
       end,
     },
   },

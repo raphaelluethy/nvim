@@ -21,7 +21,7 @@ return {
       -- Enable this will disable filter option
       background_clear = {
         -- 'float_win',
-        -- 'toggleterm',
+        'toggleterm',
         'telescope',
         --     -- "which-key",
         --     "renamer",
