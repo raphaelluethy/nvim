@@ -26,8 +26,8 @@ return {
         --     -- "which-key",
         --     "renamer",
         --     "notify",
-        --     -- "nvim-tree",
-        'neo-tree',
+        'nvim-tree',
+        -- 'neo-tree',
         --     -- "bufferline", -- better used if background of `neo-tree` or `nvim-tree` is cleared
         -- }, -- "float_win", "toggleterm", "telescope", "which-key", "renamer", "neo-tree", "nvim-tree", "bufferline"
         -- plugins = {
