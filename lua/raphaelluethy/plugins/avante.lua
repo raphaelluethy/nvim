@@ -6,7 +6,7 @@ return {
   opts = {
     provider = 'claude',
     hints = {
-      enabled = false,
+      enabled = true,
     },
   },
   build = 'make',
@@ -67,6 +67,7 @@ return {
           dash = { enabled = false },
           link = { enabled = false },
           bullet = { enabled = false },
+          quote = { enabled = true },
         }
       end,
     },

@@ -15,3 +15,8 @@ create_user_command(
   require('raphaelluethy.config.inlay_utils').disable_inlay_hints,
   { desc = 'Enable/Disable inlay hints on current buffer' }
 )
+create_user_command('OpenMarked', function()
+  vim.cmd('silent !open -a "Marked 2" ' .. vim.fn.expand '%')
+end, {
+  desc = 'Open file in Marked 2',
+})
