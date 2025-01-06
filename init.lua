@@ -115,6 +115,36 @@ vim.keymap.set('n', '<leader>co', '<CMD>copen<CR>', {
   desc = 'Toggle Quickfix List',
 })
 
+-- move lines
+vim.keymap.set('v', 'J', ":m '>+1<CR>gv=gv", {
+  desc = 'Move line down',
+})
+vim.keymap.set('v', 'K', ":m '<-2<CR>gv=gv", {
+  desc = 'Move line up',
+})
+
+-- reselect after indent
+vim.keymap.set('v', '<', '<gv', {
+  desc = 'Reselect after indent',
+})
+vim.keymap.set('v', '>', '>gv', {
+  desc = 'Reselect after indent',
+})
+
+-- Redirect change operations to the blackhole to avoid spoiling 'y' register content
+-- Shortcut to use blackhole register by default
+vim.keymap.set('v', 'c', '"_c')
+vim.keymap.set('v', 'C', '"_C')
+vim.keymap.set('n', 'c', '"_c')
+vim.keymap.set('n', 'C', '"_C')
+
+-- remove no information available notification when using hover
+vim.lsp.handlers['textDocument/hover'] = vim.lsp.with(vim.lsp.handlers.hover, {
+  silent = true,
+  focus = false,
+  focusable = true,
+})
+
 vim.api.nvim_create_autocmd('TextYankPost', {
   desc = 'Highlight when yanking (copying) text',
   group = vim.api.nvim_create_augroup('raphaelluethy-highlight-yank', {
@@ -293,6 +323,15 @@ require('lazy').setup({
       })
       vim.keymap.set('n', '<leader>sf', builtin.find_files, {
         desc = '[S]earch [F]iles',
+      })
+      vim.keymap.set(
+        'n',
+        '<leader>sa',
+        "<cmd>lua require'telescope.builtin'.find_files({ find_command = {'rg', '--files', '--hidden', '-g', '!.git' }})<cr>",
+        { desc = '[S]earch [A]ll Files' }
+      )
+      vim.keymap.set('n', '<leader>sp', builtin.git_files, {
+        desc = '[S]earch [P]roject',
       })
       vim.keymap.set('n', '<leader>ss', builtin.builtin, {
         desc = '[S]earch [S]elect Telescope',
@@ -598,9 +637,9 @@ require('lazy').setup({
         lua = { 'stylua' },
         -- Conform can also run multiple formatters sequentially
         python = { 'isort', 'black' },
-        --
         -- You can use 'stop_after_first' to run the first available formatter from the list
-        -- javascript = { "prettierd", "prettier", stop_after_first = true },
+        javascript = { 'prettierd', 'prettier', stop_after_first = true },
+        typescript = { 'prettierd', 'prettier', stop_after_first = true },
       },
     },
   },
@@ -676,7 +715,7 @@ require('lazy').setup({
 
           -- If you prefer more traditional completion keymaps,
           -- you can uncomment the following lines
-          -- ['<CR>'] = cmp.mapping.confirm { select = true },
+          ['<CR>'] = cmp.mapping.confirm { select = true },
           -- ['<Tab>'] = cmp.mapping.select_next_item(),
           -- ['<S-Tab>'] = cmp.mapping.select_prev_item(),
 
@@ -830,7 +869,19 @@ require('lazy').setup({
     main = 'nvim-treesitter.configs', -- Sets main module to use for opts
     -- [[ Configure Treesitter ]] See `:help nvim-treesitter`
     opts = {
-      ensure_installed = { 'bash', 'c', 'diff', 'html', 'lua', 'luadoc', 'markdown', 'markdown_inline', 'query', 'vim', 'vimdoc' },
+      ensure_installed = {
+        'bash',
+        'c',
+        'diff',
+        'html',
+        'lua',
+        'luadoc',
+        'markdown',
+        'markdown_inline',
+        'query',
+        'vim',
+        'vimdoc',
+      },
       -- Autoinstall languages that are not installed
       auto_install = true,
       highlight = {
@@ -865,19 +916,19 @@ require('lazy').setup({
       cmp.event:on('confirm_done', cmp_autopairs.on_confirm_done())
     end,
   },
-  {
-    'Exafunction/codeium.vim',
-    event = 'BufEnter',
-    config = function()
-      vim.g.codeium_no_map_tab = 1
-      vim.keymap.set('i', '<C-j>', function()
-        return vim.fn['codeium#Accept']()
-      end, {
-        expr = true,
-        silent = true,
-      })
-    end,
-  },
+  -- {
+  --   'Exafunction/codeium.vim',
+  --   event = 'BufEnter',
+  --   config = function()
+  --     vim.g.codeium_no_map_tab = 1
+  --     vim.keymap.set('i', '<C-j>', function()
+  --       return vim.fn['codeium#Accept']()
+  --     end, {
+  --       expr = true,
+  --       silent = true,
+  --     })
+  --   end,
+  -- },
   {
     'folke/snacks.nvim',
     priority = 1000,
@@ -1076,12 +1127,6 @@ require('lazy').setup({
           Snacks.toggle.inlay_hints():map '<leader>uh'
           Snacks.toggle.indent():map '<leader>ug'
           Snacks.toggle.dim():map '<leader>uD'
-
-          -- remove no information available notification when using hover
-          vim.lsp.handlers['textDocument/hover'] = vim.lsp.with(vim.lsp.handlers.hover, {
-            border = 'none',
-            silent = true,
-          })
 
           ---@type table<number, {token:lsp.ProgressToken, msg:string, done:boolean}[]>
           local progress = vim.defaulttable()
