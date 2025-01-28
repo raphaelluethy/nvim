@@ -50,10 +50,13 @@ vim.opt.splitbelow = true
 --  See `:help 'list'`
 --  and `:help 'listchars'`
 vim.opt.list = true
+-- :set listchars=tab:▸\ ,space:·,trail:•,extends:>,precedes:<
 vim.opt.listchars = {
-  tab = '» ',
-  trail = '·',
-  nbsp = '␣',
+  tab = '▸ ',
+  trail = '•',
+  space = '·',
+  extends = '>',
+  precedes = '<',
 }
 
 -- Preview substitutions live, as you type!
@@ -74,6 +77,10 @@ vim.opt.shiftwidth = 4
 -- Clear highlights on search when pressing <Esc> in normal mode
 --  See `:help hlsearch`
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
+
+vim.keymap.set('n', 'gh', vim.diagnostic.open_float, {
+  desc = 'Show diagnostic [E]rror messages',
+})
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, {
@@ -141,7 +148,7 @@ vim.keymap.set('n', 'C', '"_C')
 -- remove no information available notification when using hover
 vim.lsp.handlers['textDocument/hover'] = vim.lsp.with(vim.lsp.handlers.hover, {
   silent = true,
-  focus = false,
+  focus = true,
   focusable = true,
 })
 
@@ -537,8 +544,16 @@ require('lazy').setup({
         --    https://github.com/pmizio/typescript-tools.nvim
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
-        ts_ls = {},
+        -- ts_ls = {},
+        vtsls = {},
         --
+        --
+        emmet_ls = {
+          filetypes = { 'css', 'eruby', 'html', 'javascript', 'javascriptreact', 'less', 'pass', 'scss', 'svelte', 'pug', 'typescriptreact', 'vue' },
+        },
+        tinymist = {
+          offset_encoding = 'utf-8',
+        },
 
         lua_ls = {
           -- cmd = { ... },
@@ -636,10 +651,17 @@ require('lazy').setup({
       formatters_by_ft = {
         lua = { 'stylua' },
         -- Conform can also run multiple formatters sequentially
-        python = { 'isort', 'black' },
+        python = { 'ruff' },
         -- You can use 'stop_after_first' to run the first available formatter from the list
         javascript = { 'prettierd', 'prettier', stop_after_first = true },
         typescript = { 'prettierd', 'prettier', stop_after_first = true },
+        typst = { 'prettypst' },
+      },
+      formatters = {
+        prettypst = {
+          args = { '--use-std-in', '--use-std-out' },
+          stdin = true,
+        },
       },
     },
   },
@@ -662,12 +684,12 @@ require('lazy').setup({
           -- `friendly-snippets` contains a variety of premade snippets.
           --    See the README about individual language/framework/plugin snippets:
           --    https://github.com/rafamadriz/friendly-snippets
-          -- {
-          --   'rafamadriz/friendly-snippets',
-          --   config = function()
-          --     require('luasnip.loaders.from_vscode').lazy_load()
-          --   end,
-          -- },
+          {
+            'rafamadriz/friendly-snippets',
+            config = function()
+              require('luasnip.loaders.from_vscode').lazy_load()
+            end,
+          },
         },
       },
       'saadparwaiz1/cmp_luasnip', -- Adds other completion capabilities.
@@ -916,19 +938,6 @@ require('lazy').setup({
       cmp.event:on('confirm_done', cmp_autopairs.on_confirm_done())
     end,
   },
-  -- {
-  --   'Exafunction/codeium.vim',
-  --   event = 'BufEnter',
-  --   config = function()
-  --     vim.g.codeium_no_map_tab = 1
-  --     vim.keymap.set('i', '<C-j>', function()
-  --       return vim.fn['codeium#Accept']()
-  --     end, {
-  --       expr = true,
-  --       silent = true,
-  --     })
-  --   end,
-  -- },
   {
     'folke/snacks.nvim',
     priority = 1000,
@@ -963,6 +972,9 @@ require('lazy').setup({
         enabled = true,
       },
       lazygit = {
+        enabled = true,
+      },
+      scratch = {
         enabled = true,
       },
       styles = {
@@ -1077,6 +1089,20 @@ require('lazy').setup({
             },
           }
         end,
+      },
+      {
+        '<leader>.',
+        function()
+          Snacks.scratch()
+        end,
+        desc = 'Toggle Scratch Buffer',
+      },
+      {
+        '<leader>S',
+        function()
+          Snacks.scratch.select()
+        end,
+        desc = 'Select Scratch Buffer',
       },
     },
     init = function()
