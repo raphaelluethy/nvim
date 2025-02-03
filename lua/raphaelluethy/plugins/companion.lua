@@ -60,6 +60,49 @@ return {
               },
             })
           end,
+          hyper = function()
+            return require('codecompanion.adapters').extend('openai', {
+              env = {
+                api_key = 'HYPER_API_KEY',
+              },
+              name = 'hyperbolic',
+              url = 'https://api.hyperbolic.xyz/v1/chat/completions',
+              schema = {
+                model = {
+                  default = 'deepseek-ai/DeepSeek-R1',
+                },
+              },
+              max_tokens = {
+                default = 8192,
+              },
+              temperature = {
+                default = 0.1,
+              },
+              handlers = {
+                form_messages = function(_, messages)
+                  for _, msg in ipairs(messages) do
+                    -- Remove 'id' and 'opts' properties from all messages
+                    msg.id = nil
+                    msg.opts = nil
+                    -- Ensure 'name' is a string if present, otherwise remove it
+                    if msg.name then
+                      msg.name = tostring(msg.name)
+                    else
+                      msg.name = nil
+                    end
+                    -- Ensure only supported properties are present
+                    local supported_props = { role = true, content = true, name = true }
+                    for prop in pairs(msg) do
+                      if not supported_props[prop] then
+                        msg[prop] = nil
+                      end
+                    end
+                  end
+                  return { messages = messages }
+                end,
+              },
+            })
+          end,
           deepseek_reasoner = function()
             return require('codecompanion.adapters').extend('deepseek', {
               env = {
@@ -68,7 +111,16 @@ return {
               schema = {
                 model = {
                   default = 'deepseek-reasoner',
-                  -- default = 'deepseek-chat',
+                  options = {
+                    'deepseek-reasoner',
+                    'deepseek-coder-33b-instruct',
+                    'deepseek-chat',
+                  },
+                },
+                temperature = {
+                  default = 0.7,
+                  min = 0,
+                  max = 1.5,
                 },
               },
             })
@@ -99,7 +151,7 @@ return {
         },
         strategies = {
           chat = {
-            adapter = 'groq',
+            adapter = 'hyper',
           },
           inline = {
             adapter = 'anthropic',
@@ -123,6 +175,14 @@ return {
       })
 
       vim.cmd [[cab cc CodeCompanion]]
+
+      vim.api.nvim_create_autocmd('FileType', {
+        pattern = 'codecompanion',
+        callback = function()
+          vim.keymap.set('n', '<C-c>', '<cmd>CodeCompanionChat Close<CR>', { buffer = true, desc = 'Close chat' })
+          vim.keymap.set('n', '<C-s>', '<cmd>CodeCompanionChat Submit<CR>', { buffer = true, desc = 'Submit message' })
+        end,
+      })
     end,
   },
 }
