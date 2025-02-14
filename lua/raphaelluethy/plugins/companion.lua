@@ -103,36 +103,14 @@ return {
               },
             })
           end,
-          deepseek_reasoner = function()
-            return require('codecompanion.adapters').extend('deepseek', {
+          openai = function()
+            return require('codecompanion.adapters').extend('openai', {
               env = {
-                api_key = 'DEEPSEEK_API_KEY',
+                api_key = 'OPENAI_API_KEY',
               },
               schema = {
                 model = {
-                  default = 'deepseek-reasoner',
-                  options = {
-                    'deepseek-reasoner',
-                    'deepseek-coder-33b-instruct',
-                    'deepseek-chat',
-                  },
-                },
-                temperature = {
-                  default = 0.7,
-                  min = 0,
-                  max = 1.5,
-                },
-              },
-            })
-          end,
-          deepseek = function()
-            return require('codecompanion.adapters').extend('deepseek', {
-              env = {
-                api_key = 'DEEPSEEK_API_KEY',
-              },
-              schema = {
-                model = {
-                  default = 'deepseek-chat',
+                  default = 'o3-mini',
                 },
               },
             })
@@ -151,7 +129,7 @@ return {
         },
         strategies = {
           chat = {
-            adapter = 'hyper',
+            adapter = 'anthropic',
           },
           inline = {
             adapter = 'anthropic',
