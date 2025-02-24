@@ -1,21 +1,38 @@
 return {
-  {
-    'Exafunction/codeium.vim',
-    config = function()
-      -- Change '<C-g>' here to any keycode you like.
-      vim.keymap.set('i', '<M-l>', function()
-        return vim.fn['codeium#Accept']()
-      end, { expr = true, silent = true })
-      -- vim.keymap.set('i', '<c-;>', function()
-      --   return vim.fn['codeium#CycleCompletions'](1)
-      -- end, { expr = true, silent = true })
-      -- vim.keymap.set('i', '<c-,>', function()
-      --   return vim.fn['codeium#CycleCompletions'](-1)
-      -- end, { expr = true, silent = true })
-      -- vim.keymap.set('i', '<c-x>', function()
-      --   return vim.fn['codeium#Clear']()
-      -- end, { expr = true, silent = true })
-      vim.g.codeium_disable_bindings = 1
-    end,
-  },
+  -- {
+  --   'Exafunction/codeium.nvim',
+  --   dependencies = {
+  --     'nvim-lua/plenary.nvim',
+  --     'hrsh7th/nvim-cmp',
+  --   },
+  --   config = function()
+  --     require('codeium').setup {
+  --       -- Optionally disable cmp source if using virtual text only
+  --       enable_cmp_source = false,
+  --       virtual_text = {
+  --         enabled = true,
+  --         manual = false,
+  --         map_keys = true,
+  --         -- The key to press when hitting the accept keybinding but no completion is showing.
+  --         -- Defaults to \t normally or <c-n> when a popup is showing.
+  --         accept_fallback = nil,
+  --         -- Key bindings for managing completions in virtual text mode.
+  --         key_bindings = {
+  --           -- Accept the current completion.
+  --           accept = false,
+  --           -- Accept the next word.
+  --           accept_word = false,
+  --           -- Accept the next line.
+  --           accept_line = '<M-l>',
+  --           -- Clear the virtual text.
+  --           clear = false,
+  --           -- Cycle to the next completion.
+  --           next = '<M-]>',
+  --           -- Cycle to the previous completion.
+  --           prev = '<M-[>',
+  --         },
+  --       },
+  --     }
+  --   end,
+  -- },
 }
