@@ -152,12 +152,10 @@ vim.keymap.set('v', 'C', '"_C')
 vim.keymap.set('n', 'c', '"_c')
 vim.keymap.set('n', 'C', '"_C')
 
--- remove no information available notification when using hover
-vim.lsp.handlers['textDocument/hover'] = vim.lsp.with(vim.lsp.handlers.hover, {
-  silent = true,
-  focus = true,
-  focusable = true,
-})
+-- remove defaults
+vim.keymap.del('n', 'grr')
+vim.keymap.del('n', 'gra')
+vim.keymap.del('n', 'grn')
 
 vim.api.nvim_create_autocmd('TextYankPost', {
   desc = 'Highlight when yanking (copying) text',
@@ -283,8 +281,8 @@ require('lazy').setup({
   },
   { -- Fuzzy Finder (files, lsp, etc)
     'nvim-telescope/telescope.nvim',
+    tag = '0.1.8',
     event = 'VimEnter',
-    branch = '0.1.x',
     dependencies = {
       'nvim-lua/plenary.nvim',
       { -- If encountering errors, see telescope-fzf-native README for installation instructions
@@ -475,6 +473,13 @@ require('lazy').setup({
             local highlight_augroup = vim.api.nvim_create_augroup('raphaelluethy-lsp-highlight', {
               clear = false,
             })
+            
+            -- Set highlight groups with custom colors instead of linking to Visual
+            -- This makes the references stand out with a different color
+            vim.api.nvim_set_hl(0, 'LspReferenceText', { bg = '#3a3a3a' })
+            vim.api.nvim_set_hl(0, 'LspReferenceRead', { bg = '#3a3a3a' })
+            vim.api.nvim_set_hl(0, 'LspReferenceWrite', { bg = '#3a3a3a' })
+            
             vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
               buffer = event.buf,
               group = highlight_augroup,
@@ -811,39 +816,6 @@ require('lazy').setup({
   -- 		vim.cmd.hi("Comment gui=none")
   -- 	end,
   -- },
-  {
-    'loctvl842/monokai-pro.nvim',
-    config = function()
-      require('monokai-pro').setup {
-        filter = 'spectrum',
-        indent_blankline = {
-          context_highlight = 'pro', -- default | pro
-          context_start_underline = false,
-        },
-      }
-
-      local function run_theme()
-        vim.cmd.colorscheme 'monokai-pro'
-        --     vim.cmd.hi 'Comment gui=none'
-        --     local set_hl_for_floating_window = function()
-        --         vim.api.nvim_set_hl(0, 'FloatBorder', {
-        --             fg = '#ffffff',
-        --             bg = 'none'
-        --         })
-        --     end
-
-        --     set_hl_for_floating_window()
-
-        --     vim.api.nvim_create_autocmd('ColorScheme', {
-        --         pattern = '*',
-        --         desc = 'Avoid overwritten by loading color schemes later',
-        --         callback = set_hl_for_floating_window
-        --     })
-      end
-
-      run_theme()
-    end,
-  }, -- Highlight todo, notes, etc in comments
   {
     'folke/todo-comments.nvim',
     event = 'VimEnter',
