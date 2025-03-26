@@ -152,10 +152,11 @@ vim.keymap.set('v', 'C', '"_C')
 vim.keymap.set('n', 'c', '"_c')
 vim.keymap.set('n', 'C', '"_C')
 
--- remove defaults
-vim.keymap.del('n', 'grr')
-vim.keymap.del('n', 'gra')
-vim.keymap.del('n', 'grn')
+-- -- remove defaults
+vim.keymap.del('', 'grr')
+vim.keymap.del('', 'gra')
+vim.keymap.del('', 'grn')
+vim.keymap.del('', 'gri')
 
 vim.api.nvim_create_autocmd('TextYankPost', {
   desc = 'Highlight when yanking (copying) text',
@@ -473,13 +474,13 @@ require('lazy').setup({
             local highlight_augroup = vim.api.nvim_create_augroup('raphaelluethy-lsp-highlight', {
               clear = false,
             })
-            
+
             -- Set highlight groups with custom colors instead of linking to Visual
             -- This makes the references stand out with a different color
             vim.api.nvim_set_hl(0, 'LspReferenceText', { bg = '#3a3a3a' })
             vim.api.nvim_set_hl(0, 'LspReferenceRead', { bg = '#3a3a3a' })
             vim.api.nvim_set_hl(0, 'LspReferenceWrite', { bg = '#3a3a3a' })
-            
+
             vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
               buffer = event.buf,
               group = highlight_augroup,
@@ -796,6 +797,7 @@ require('lazy').setup({
           {
             name = 'path',
           },
+          -- { name = 'codeium' },
         },
       }
     end,

@@ -15,7 +15,7 @@ return {
 
     -- optionally set the colorscheme within lazy config
     init = function()
-      vim.cmd [[colorscheme poimandres]]
+      -- vim.cmd [[colorscheme poimandres]]
     end,
   },
 }

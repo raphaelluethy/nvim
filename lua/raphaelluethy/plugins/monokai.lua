@@ -30,7 +30,7 @@ return {
         --     })
       end
 
-      -- run_theme()
+      run_theme()
     end,
   }, -- Highlight todo, notes, etc in comments
 }
