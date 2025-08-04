@@ -81,6 +81,7 @@ vim.opt.colorcolumn = '80'
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
+vim.keymap.set('i', 'kj', '<ESC>', { noremap = true, silent = true })
 -- Clear highlights on search when pressing <Esc> in normal mode
 --  See `:help hlsearch`
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
@@ -424,10 +425,10 @@ require('lazy').setup({
     'neovim/nvim-lspconfig',
     dependencies = { -- Automatically install LSPs and related tools to stdpath for Neovim
       {
-        'williamboman/mason.nvim',
+        'mason-org/mason.nvim',
         config = true,
       }, -- NOTE: Must be loaded before dependants
-      'williamboman/mason-lspconfig.nvim',
+      'mason-org/mason-lspconfig.nvim',
       'WhoIsSethDaniel/mason-tool-installer.nvim', -- Useful status updates for LSP.
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
       {
@@ -558,8 +559,8 @@ require('lazy').setup({
         --    https://github.com/pmizio/typescript-tools.nvim
         --
         -- But for many setups, the LSP (`ts_ls`) will work just fine
-        -- ts_ls = {},
-        vtsls = {},
+        ts_ls = {},
+        -- vtsls = {},
         --
         --
         emmet_ls = {
