@@ -15,6 +15,11 @@ return {
 		"nvim-telescope/telescope.nvim",
 	},
 	config = function()
+		-- Get default capabilities (can be extended by nvim-cmp if available)
+		local capabilities = vim.lsp.protocol.make_client_capabilities()
+
+		-- LspAttach: Runs when an LSP client attaches to a buffer
+		-- Sets up keymaps, document highlighting, and inlay hints
 		vim.api.nvim_create_autocmd("LspAttach", {
 			group = vim.api.nvim_create_augroup("raphaelluethy-lsp-attach", {
 				clear = true,
@@ -27,57 +32,56 @@ return {
 						desc = "LSP: " .. desc,
 					})
 				end
+
+				-- Navigation keymaps
 				map("gd", require("telescope.builtin").lsp_definitions, "[G]oto [D]efinition")
-
 				map("gr", require("telescope.builtin").lsp_references, "[G]oto [R]eferences")
-
 				map("gI", require("telescope.builtin").lsp_implementations, "[G]oto [I]mplementation")
-
+				map("gD", vim.lsp.buf.declaration, "[G]oto [D]eclaration")
 				map("<leader>D", require("telescope.builtin").lsp_type_definitions, "Type [D]efinition")
 
+				-- Symbol search keymaps
 				map("<leader>ds", require("telescope.builtin").lsp_document_symbols, "[D]ocument [S]ymbols")
-
-				-- Fuzzy find all the symbols in your current workspace.
-				--  Similar to document symbols, except searches over your entire project.
 				map("<leader>ws", require("telescope.builtin").lsp_dynamic_workspace_symbols, "[W]orkspace [S]ymbols")
 
-				-- map("<leader>rn", vim.lsp.buf.rename, "[R]e[n]ame")
-
+				-- Code actions
 				map("<leader>ca", vim.lsp.buf.code_action, "[C]ode [A]ction", { "n", "x" })
 
-				map("gD", vim.lsp.buf.declaration, "[G]oto [D]eclaration")
-
 				local client = vim.lsp.get_client_by_id(event.data.client_id)
+
+				-- Document highlighting: highlights all references to symbol under cursor
 				if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight) then
 					local highlight_augroup = vim.api.nvim_create_augroup("raphaelluethy-lsp-highlight", {
 						clear = false,
 					})
 
-					-- Set highlight groups with custom colors instead of linking to Visual
-					-- This makes the references stand out with a different color
+					-- Set custom highlight colors for LSP references
 					vim.api.nvim_set_hl(0, "LspReferenceText", { bg = "#3a3a3a" })
 					vim.api.nvim_set_hl(0, "LspReferenceRead", { bg = "#3a3a3a" })
 					vim.api.nvim_set_hl(0, "LspReferenceWrite", { bg = "#3a3a3a" })
 
+					-- CursorHold/CursorHoldI: Highlight references when cursor stops moving
 					vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
 						buffer = event.buf,
 						group = highlight_augroup,
 						callback = function()
-							-- Only enable LSP document highlighting for smaller files
+							-- Only enable for smaller files to avoid performance issues
 							if vim.api.nvim_buf_line_count(event.buf) <= 3000 then
 								vim.lsp.buf.document_highlight()
 							end
 						end,
 					})
 
+					-- CursorMoved/CursorMovedI: Clear highlights when cursor moves
 					vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
 						buffer = event.buf,
 						group = highlight_augroup,
 						callback = vim.lsp.buf.clear_references,
 					})
 
+					-- LspDetach: Clean up highlights when LSP detaches
 					vim.api.nvim_create_autocmd("LspDetach", {
-						group = vim.api.nvim_create_augroup("kickstart-lsp-detach", {
+						group = vim.api.nvim_create_augroup("raphaelluethy-lsp-detach", {
 							clear = true,
 						}),
 						callback = function(event2)
@@ -90,10 +94,7 @@ return {
 					})
 				end
 
-				-- The following code creates a keymap to toggle inlay hints in your
-				-- code, if the language server you are using supports them
-				--
-				-- This may be unwanted, since they displace some of your code
+				-- Inlay hints: toggle keymap if supported
 				if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
 					map("<leader>th", function()
 						vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({
@@ -110,8 +111,6 @@ return {
 			ty = {},
 			rust_analyzer = {},
 			vtsls = {},
-			--
-			--
 			emmet_ls = {
 				filetypes = {
 					"css",
@@ -133,9 +132,6 @@ return {
 			},
 
 			lua_ls = {
-				-- cmd = { ... },
-				-- filetypes = { ... },
-				-- capabilities = {},
 				settings = {
 					Lua = {
 						completion = {
@@ -143,43 +139,35 @@ return {
 						},
 						diagnostics = {
 							-- Define global variables that LuaLS will recognize
-							globals = { "vim", "Snacks" }, -- add your globals here
+							globals = { "vim", "Snacks" },
 							disable = { "missing-fields" },
 						},
-						-- You can toggle below to ignore Lua_LS's noisy `missing-fields` warnings
-						-- diagnostics = { disable = { 'missing-fields' } },
 					},
 				},
 			},
 		}
 
-		-- Ensure the servers and tools above are installed
-		--  To check the current status of installed tools and/or manually install
-		--  other tools, you can run
-		--    :Mason
-		--
-		--  You can press `g?` for help in this menu.
+		-- Setup Mason for LSP and tool installation
+		-- Run :Mason to check status or manually install tools (press g? for help)
 		require("mason").setup()
 
-		-- You can add other tools here that you want Mason to install
-		-- for you, so that they are available from within Neovim.
+		-- Configure tools to ensure installation
 		local ensure_installed = vim.tbl_keys(servers or {})
 		vim.list_extend(ensure_installed, {
-			"stylua", -- Used to format Lua code
+			"stylua", -- Lua formatter
 		})
 		require("mason-tool-installer").setup({
 			ensure_installed = ensure_installed,
 		})
 
+		-- Setup LSP servers with Mason
 		require("mason-lspconfig").setup({
 			ensure_installed = servers,
 			automatic_installation = false,
 			handlers = {
 				function(server_name)
 					local server = servers[server_name] or {}
-					-- This handles overriding only values explicitly passed
-					-- by the server configuration above. Useful when disabling
-					-- certain features of an LSP (for example, turning off formatting for ts_ls)
+					-- Merge capabilities, allowing server-specific overrides
 					server.capabilities = vim.tbl_deep_extend("force", {}, capabilities, server.capabilities or {})
 					require("lspconfig")[server_name].setup(server)
 				end,
