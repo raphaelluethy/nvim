@@ -3,34 +3,49 @@ return {
 		"loctvl842/monokai-pro.nvim",
 		config = function()
 			require("monokai-pro").setup({
-				filter = "spectrum",
 				transparent_background = true,
-				indent_blankline = {
-					context_highlight = "pro", -- default | pro
-					context_start_underline = false,
+				devicons = true,
+				filter = "spectrum", -- classic | octagon | pro | machine | ristretto | spectrum
+				inc_search = "background", -- underline | background
+				background_clear = {
+					"nvim-tree",
+					-- "neo-tree",
+					-- "bufferline",
+					"float_win",
+					"telescope",
+					"toggleterm",
 				},
+				plugins = {
+					bufferline = {
+						underline_selected = true,
+						underline_visible = false,
+						underline_fill = true,
+						bold = false,
+					},
+				},
+				-- override = function(c)
+				-- 	return {
+				-- 		-- ColorColumn = { bg = c.editor.background },
+				-- 		-- Mine
+				-- 		DashboardRecent = { fg = c.base.magenta },
+				-- 		DashboardProject = { fg = c.base.blue },
+				-- 		DashboardConfiguration = { fg = c.base.white },
+				-- 		DashboardSession = { fg = c.base.green },
+				-- 		DashboardLazy = { fg = c.base.cyan },
+				-- 		DashboardServer = { fg = c.base.yellow },
+				-- 		DashboardQuit = { fg = c.base.red },
+				-- 		IndentBlanklineChar = { fg = c.base.dimmed4 },
+				-- 		NeoTreeStatusLine = { link = "StatusLine" },
+				-- 		-- mini.hipatterns
+				-- 		MiniHipatternsFixme = { fg = c.base.black, bg = c.base.red, bold = true }, -- FIXME
+				-- 		MiniHipatternsTodo = { fg = c.base.black, bg = c.base.blue, bold = true }, -- TODO
+				-- 		MiniHipatternsHack = { fg = c.base.black, bg = c.base.yellow, bold = true }, -- HACK
+				-- 		MiniHipatternsNote = { fg = c.base.black, bg = c.base.green, bold = true }, -- NOTE
+				-- 		MiniHipatternsWip = { fg = c.base.black, bg = c.base.cyan, bold = true }, -- WIP
+				-- 	}
+				-- end,
 			})
-
-			local function run_theme()
-				vim.cmd.colorscheme("monokai-pro")
-				--     vim.cmd.hi 'Comment gui=none'
-				--     local set_hl_for_floating_window = function()
-				--         vim.api.nvim_set_hl(0, 'FloatBorder', {
-				--             fg = '#ffffff',
-				--             bg = 'none'
-				--         })
-				--     end
-
-				--     set_hl_for_floating_window()
-
-				--     vim.api.nvim_create_autocmd('ColorScheme', {
-				--         pattern = '*',
-				--         desc = 'Avoid overwritten by loading color schemes later',
-				--         callback = set_hl_for_floating_window
-				--     })
-			end
-
-			run_theme()
+			vim.cmd([[colorscheme monokai-pro]])
 		end,
-	}, -- Highlight todo, notes, etc in comments
+	},
 }

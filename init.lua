@@ -4,6 +4,10 @@ vim.g.maplocalleader = " "
 -- Set to true if you have a Nerd Font installed and selected in the terminal
 vim.g.have_nerd_font = true
 
+vim.o.winborder = "rounded"
+
+vim.opt.pumblend = 0
+vim.opt.winblend = 0
 -- [[ Setting options ]]
 
 -- See `:help vim.opt`
@@ -84,6 +88,12 @@ vim.opt.colorcolumn = "80"
 -- Clear highlights on search when pressing <Esc> in normal mode
 --  See `:help hlsearch`
 vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>")
+
+vim.diagnostic.enable = true
+vim.diagnostic.config({
+	virtual_lines = false,
+	virtual_text = true,
+})
 
 vim.keymap.set("n", "gh", vim.diagnostic.open_float, {
 	desc = "Show diagnostic [E]rror messages",
