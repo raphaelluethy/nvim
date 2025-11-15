@@ -1,18 +1,17 @@
 return {
 	-- Main LSP Configuration
 	"neovim/nvim-lspconfig",
-	dependencies = { -- Automatically install LSPs and related tools to stdpath for Neovim
-		{
-			"mason-org/mason.nvim",
-			config = true,
-		}, -- NOTE: Must be loaded before dependants
-		"mason-org/mason-lspconfig.nvim",
-		"WhoIsSethDaniel/mason-tool-installer.nvim", -- Useful status updates for LSP.
-		{
-			"j-hui/fidget.nvim",
-			opts = {},
-		}, -- Allows extra capabilities provided by nvim-cmp
-		"nvim-telescope/telescope.nvim",
+	event = { "BufReadPost" },
+	cmd = { "LspInfo", "LspInstall", "LspUninstall", "Mason" },
+	dependencies = {
+		-- LSP installer plugins
+		"williamboman/mason.nvim",
+		"williamboman/mason-lspconfig.nvim",
+		"WhoIsSethDaniel/mason-tool-installer.nvim",
+		-- Integrate blink w/ LSP
+		"hrsh7th/cmp-nvim-lsp",
+		-- Progress indicator for LSP
+		{ "j-hui/fidget.nvim" },
 	},
 	config = function()
 		-- Get default capabilities (can be extended by nvim-cmp if available)
@@ -111,6 +110,7 @@ return {
 			ty = {},
 			rust_analyzer = {},
 			vtsls = {},
+			-- ts_ls = {},
 			emmet_ls = {
 				filetypes = {
 					"css",
