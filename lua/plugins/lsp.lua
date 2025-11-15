@@ -113,8 +113,7 @@ return {
       clangd = {},
       gopls = {},
       rust_analyzer = {},
-	  -- handles by ts-tools.lua
-      -- vtsls = {},
+      vtsls = {},
       -- ts_ls = {},
 	  ty = {},
       emmet_ls = {
