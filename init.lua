@@ -9,7 +9,7 @@ vim.o.winborder = "rounded"
 vim.opt.pumblend = 0
 vim.opt.winblend = 0
 -- [[ Setting options ]]
-
+-- use Neovim nightly branch
 -- See `:help vim.opt`
 
 -- Make line numbers default
