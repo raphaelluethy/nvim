@@ -79,6 +79,9 @@ vim.opt.textwidth = 80
 vim.opt.linebreak = true
 vim.opt.colorcolumn = "80"
 
+vim.opt.termguicolors = true
+
+
 -- Enable automatic text wrapping at textwidth
 -- vim.opt.formatoptions:append 't'
 
