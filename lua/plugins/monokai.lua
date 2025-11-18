@@ -47,7 +47,7 @@ return {
 			})
 		end,
 		init = function()
-			-- vim.cmd("colorscheme monokai-pro")
+			vim.cmd("colorscheme monokai-pro")
 		end,
 	},
 }
