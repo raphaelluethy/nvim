@@ -27,7 +27,15 @@ return { -- Fuzzy Finder (files, lsp, etc)
 		-- See `:help telescope` and `:help telescope.setup()`
 
 		require("telescope").setup({
+			-- find_files = {
+			-- 	hidden = true,
+			-- 	file_ignore_patterns = {
+			-- 		"node_modules",
+			-- 		".git",
+			-- 	},
+			-- },
 			-- You can put your default mappings / updates / etc. in here
+
 			--  All the info you're looking for is in `:help telescope.setup()`
 			--
 			-- defaults = {
@@ -56,12 +64,29 @@ return { -- Fuzzy Finder (files, lsp, etc)
 		vim.keymap.set("n", "<leader>sf", builtin.find_files, {
 			desc = "[S]earch [F]iles",
 		})
-		vim.keymap.set(
-			"n",
-			"<leader>sa",
-			"<cmd>lua require'telescope.builtin'.find_files({ find_command = {'rg', '--files', '--hidden', '-g', '!.git' }})<cr>",
-			{ desc = "[S]earch [A]ll Files" }
-		)
+		local function find_all_files()
+			local find_command = {
+				"rg",
+				"--files",
+				"--hidden",
+				"--no-ignore-vcs",
+			}
+			local extra_ignores = {
+				"!.git/*",
+				"!node_modules/*",
+				"!dist/*",
+				"!dist-ssr/*",
+			}
+			for _, glob in ipairs(extra_ignores) do
+				table.insert(find_command, "--glob")
+				table.insert(find_command, glob)
+			end
+			builtin.find_files({ find_command = find_command })
+		end
+
+		vim.keymap.set("n", "<leader>sa", find_all_files, {
+			desc = "[S]earch [A]ll Files",
+		})
 		vim.keymap.set("n", "<leader>sp", builtin.git_files, {
 			desc = "[S]earch [P]roject",
 		})

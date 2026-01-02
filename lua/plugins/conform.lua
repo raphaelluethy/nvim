@@ -24,6 +24,8 @@ return {
 			python = { "ruff", "ruff_organize_imports", "ruff_format" },
 			javascript = { "biome", "prettierd", "prettier", stop_after_first = true },
 			typescript = { "biome", "prettierd", "prettier", stop_after_first = true },
+			typescriptreact = { "biome", "prettierd", "prettier", stop_after_first = true },
+
 			-- typst = { "prettypst" },
 		},
 		-- formatters = {
