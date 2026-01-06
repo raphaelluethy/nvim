@@ -18,8 +18,5 @@ return {
 				enable = false,
 			},
 		})
-
-		local starter = require("mini.starter")
-		starter.setup()
 	end,
 }

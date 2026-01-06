@@ -114,8 +114,8 @@ return {
       gopls = {},
       rust_analyzer = {},
       vtsls = {},
-      -- ts_ls = {},
-	  ty = {},
+      biome = {},
+      ty = {},
       emmet_ls = {
         filetypes = {
           "css",
@@ -135,7 +135,6 @@ return {
       tinymist = {
         offset_encoding = "utf-8",
       },
-
       lua_ls = {
         settings = {
           Lua = {
@@ -143,7 +142,6 @@ return {
               callSnippet = "Replace",
             },
             diagnostics = {
-              -- Define global variables that LuaLS will recognize
               globals = { "vim", "Snacks" },
               disable = { "missing-fields" },
             },
@@ -152,7 +150,6 @@ return {
       },
     }
 
-    -- List of server names for mason-lspconfig & mason-tool-installer
     local server_names = vim.tbl_keys(servers or {})
 
     -- Setup Mason for LSP and tool installation
@@ -169,19 +166,20 @@ return {
       ensure_installed = ensure_tools,
     })
 
-    -- Setup LSP servers with Mason
+    -- Configure each LSP server via vim.lsp.config (mason-lspconfig 2.0+ API)
+    for server_name, server_settings in pairs(servers) do
+      local config = vim.tbl_deep_extend("force", {}, server_settings)
+      config.capabilities = vim.tbl_deep_extend("force", {}, capabilities, config.capabilities or {})
+      vim.lsp.config(server_name, config)
+    end
+
+    -- Setup mason-lspconfig (automatic_enable is on by default in v2.0+)
     require("mason-lspconfig").setup({
       ensure_installed = server_names,
-      automatic_installation = true,
-      handlers = {
-        function(server_name)
-          local server = servers[server_name] or {}
-          -- Merge capabilities, allowing server-specific overrides
-          server.capabilities = vim.tbl_deep_extend("force", {}, capabilities, server.capabilities or {})
-          require("lspconfig")[server_name].setup(server)
-        end,
-      },
     })
+
+    -- Enable all configured LSP servers
+    vim.lsp.enable(server_names)
   end,
 }
 
