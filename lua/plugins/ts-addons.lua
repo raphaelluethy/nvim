@@ -21,8 +21,8 @@ return {
 		end,
 	},
 	{ "JoosepAlviste/nvim-ts-context-commentstring" },
-	{
-		"nvim-treesitter/nvim-treesitter-textobjects",
-		dependencies = "nvim-treesitter/nvim-treesitter",
-	},
+	-- {
+	-- 	"nvim-treesitter/nvim-treesitter-textobjects",
+	-- 	dependencies = "nvim-treesitter/nvim-treesitter",
+	-- },
 }
