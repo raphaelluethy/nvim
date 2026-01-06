@@ -82,7 +82,7 @@ return {
 			excluded_filetypes = { "harpoon", "alpha", "dashboard", "gitcommit" },
 			mark_branch = false,
 			key = function()
-				return vim.loop.cwd()
+				return vim.uv.cwd()
 			end,
 		}
 	end,

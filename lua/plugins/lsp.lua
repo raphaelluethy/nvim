@@ -1,7 +1,7 @@
 return {
   -- Main LSP Configuration
   "neovim/nvim-lspconfig",
-  event = { "BufReadPost" },
+  event = { "BufReadPre", "BufNewFile" },
   cmd = { "LspInfo", "LspInstall", "LspUninstall", "Mason" },
   dependencies = {
     -- LSP installer plugins
@@ -100,9 +100,11 @@ return {
         -- Inlay hints: toggle keymap if supported
         if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
           map("<leader>th", function()
-            vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({
-              bufnr = event.buf,
-            }))
+            local bufnr = event.buf
+            vim.lsp.inlay_hint.enable(
+              not vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr }),
+              { bufnr = bufnr }
+            )
           end, "[T]oggle Inlay [H]ints")
         end
       end,
@@ -180,6 +182,14 @@ return {
 
     -- Enable all configured LSP servers
     vim.lsp.enable(server_names)
+
+    -- Manually trigger LSP for current buffer (handles lazy load timing)
+    local bufnr = vim.api.nvim_get_current_buf()
+    local ft = vim.bo[bufnr].filetype
+    if ft and ft ~= '' then
+      -- Re-trigger FileType to start LSP for current buffer
+      vim.api.nvim_exec_autocmds('FileType', { buffer = bufnr })
+    end
   end,
 }
 
