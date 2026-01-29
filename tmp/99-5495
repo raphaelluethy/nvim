@@ -1,0 +1,109 @@
+# Neovim Configuration
+
+A modern Neovim setup focused on productivity and development workflow. Built with Lua and managed by lazy.nvim.
+
+## Overview
+
+This configuration transforms Neovim into a powerful IDE-like editor with LSP support, fuzzy finding, git integration, and modern editing features. Includes Zed-inspired keybindings for familiar workflows.
+
+## Features
+
+### Core
+- **Plugin Manager**: lazy.nvim for fast, lazy-loaded plugins
+- **Leader Key**: Space for intuitive command access
+- **Persistent Undo**: Unlimited undo history via undotree
+- **Smart Search**: Case-insensitive with smart case detection
+
+### LSP & Completion
+- **Language Server Protocol**: Full LSP integration with diagnostics
+- **Completions**: blink.cmp and nvim-cmp for intelligent autocompletion
+- **Inline Diagnostics**: Real-time error feedback
+- **Fidget**: LSP progress notifications
+
+### Navigation & Editing
+- **Telescope**: Fuzzy finder for files, buffers, and grep
+- **Harpoon**: Quick file switching for frequently used files
+- **Flash**: Lightning-fast cursor movement
+- **Oil**: File explorer with buffer-like editing
+- **UFO**: Advanced code folding
+
+### Code Intelligence
+- **Treesitter**: Advanced syntax highlighting and parsing
+- **Conform**: Code formatting
+- **Autotag/Autopairs**: Smart bracket and tag handling
+- **Surround**: Easy manipulation of surrounding characters
+- **Inc-rename**: Preview symbol renaming across files
+
+### TypeScript/JavaScript
+- **TS Error Translator**: Human-readable TypeScript errors
+- **Two-slash**: Type annotations support
+- **TS Addons**: Enhanced TypeScript tooling
+
+### Git Integration
+- **Gitsigns**: Git status indicators in the gutter
+- **Lazygit**: Full git UI via terminal integration
+
+### UI & Visual
+- **Colorschemes**: Monokai and Sonokai themes
+- **Which-key**: Command palette and keybinding hints
+- **Indent Blankline**: Visual indent guides
+- **Highlight Colors**: Preview color codes inline
+- **Render Markdown**: Beautiful markdown rendering
+- **Trouble**: Pretty diagnostics and quickfix list
+
+### Utilities
+- **Todo Comments**: Highlight and search TODO/FIXME comments
+- **Mini.nvim**: Collection of small useful utilities
+
+## Structure
+
+```
+~/.config/nvim/
+├── init.lua              # Core settings and keymaps
+├── lua/
+│   ├── config/
+│   │   └── lazy.lua      # Plugin manager bootstrap
+│   └── plugins/          # Individual plugin configs
+└── lazy-lock.json        # Locked plugin versions
+```
+
+## Key Settings
+
+- **Line Numbers**: Relative with absolute current line
+- **Tabs**: 4 spaces, smart indentation
+- **Text Width**: 80 columns with visual indicator
+- **Scrolloff**: 10 lines above/below cursor
+- **Terminal**: True color support, rounded borders
+
+## Notable Keybindings
+
+| Key | Action | Notes |
+|-----|--------|-------|
+| `Space` | Leader key | Primary command prefix |
+| `Space w` | Save buffer | Quick write |
+| `Space g g` | Lazygit | Git interface |
+| `Alt-t` | Toggle terminal | Quick terminal access |
+| `Space s r/l/d/u` | Split window | Directional splits |
+| `Space t n/p` | Next/prev diagnostic | Zed-style navigation |
+| `] d / [ d` | Next/prev diagnostic | Vim-style navigation |
+| `g h` | Show diagnostic | Hover diagnostics |
+| `Ctrl-h/j/k/l` | Navigate splits | Vim window movement |
+
+## Requirements
+
+- Neovim nightly (or >= 0.10)
+- Nerd Font (for icons)
+- lazygit (for git integration)
+- Language servers for LSP features
+- Formatters for conform.nvim
+
+## Notes
+
+- Change operations (`c`, `C`) redirected to black hole register to preserve yanks
+- Clipboard integrated with system clipboard (`unnamedplus`)
+- Persistent undo stored in `.undodir`
+- Keybindings inspired by both Vim traditions and modern editors like Zed
+
+---
+
+*btw i use neovim*

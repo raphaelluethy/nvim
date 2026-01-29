@@ -14,7 +14,18 @@ return {
 				})
 			end,
 			mode = { "n" },
-			desc = "[F]ormat buffer",
+			desc = "Format buffer",
+		},
+		{
+			"<leader>cf",
+			function()
+				require("conform").format({
+					async = true,
+					lsp_fallback = true,
+				})
+			end,
+			mode = { "n", "v" },
+			desc = "Format buffer/selection",
 		},
 	},
 

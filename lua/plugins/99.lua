@@ -1,52 +1,53 @@
 return {
 	"ThePrimeagen/99",
+	event = "VeryLazy",
 	config = function()
 		local _99 = require("99")
 
-		-- For logging that is to a file if you wish to trace through requests
-		-- for reporting bugs, i would not rely on this, but instead the provided
-		-- logging mechanisms within 99.  This is for more debugging purposes
 		local cwd = vim.uv.cwd()
 		local basename = vim.fs.basename(cwd)
+
 		_99.setup({
 			logger = {
 				level = _99.DEBUG,
 				path = "/tmp/" .. basename .. ".99.debug",
 				print_on_error = true,
 			},
-
-			--- WARNING: if you change cwd then this is likely broken
-			--- ill likely fix this in a later change
-			---
-			--- md_files is a list of files to look for and auto add based on the location
-			--- of the originating request.  That means if you are at /foo/bar/baz.lua
-			--- the system will automagically look for:
-			--- /foo/bar/AGENT.md
-			--- /foo/AGENT.md
-			--- assuming that /foo is project root (based on cwd)
+			completion = {
+				source = "cmp",
+			},
 			md_files = {
 				"AGENT.md",
 			},
 		})
 
-		-- Create your own short cuts for the different types of actions
+		-- Fill in function body with AI
 		vim.keymap.set("n", "<leader>9f", function()
-			_99.fill_in_function()
-		end)
-		-- take extra note that i have visual selection only in v mode
-		-- technically whatever your last visual selection is, will be used
-		-- so i have this set to visual mode so i dont screw up and use an
-		-- old visual selection
-		--
-		-- likely ill add a mode check and assert on required visual mode
-		-- so just prepare for it now
-		vim.keymap.set("v", "<leader>9v", function()
-			_99.visual()
-		end)
+			_99.fill_in_function_prompt()
+		end, { desc = "Fill in function" })
 
-		--- if you have a request you dont want to make any changes, just cancel it
-		vim.keymap.set("v", "<leader>9s", function()
+		-- Process visual selection with AI
+		vim.keymap.set("v", "<leader>9v", function()
+			_99.visual_prompt()
+		end, { desc = "Visual AI" })
+
+		-- Stop all pending AI requests
+		vim.keymap.set({ "n", "v" }, "<leader>9s", function()
 			_99.stop_all_requests()
-		end)
+		end, { desc = "Stop all requests" })
+
+		-- View debug logs
+		vim.keymap.set("n", "<leader>9l", function()
+			_99.view_logs()
+		end, { desc = "View logs" })
+
+		-- Navigate request logs
+		vim.keymap.set("n", "<leader>9n", function()
+			_99.next_request_logs()
+		end, { desc = "Next request log" })
+
+		vim.keymap.set("n", "<leader>9p", function()
+			_99.prev_request_logs()
+		end, { desc = "Prev request log" })
 	end,
 }

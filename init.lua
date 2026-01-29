@@ -99,17 +99,32 @@ vim.diagnostic.config({
 })
 
 vim.keymap.set("n", "gh", vim.diagnostic.open_float, {
-	desc = "Show diagnostic [E]rror messages",
+	desc = "Show diagnostic error messages",
 })
 
--- Diagnostic keymaps
+-- Diagnostic keymaps (matching Zed: ] d, [ d, space t n/p)
+vim.keymap.set("n", "]d", vim.diagnostic.goto_next, { desc = "Next diagnostic" })
+vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, { desc = "Prev diagnostic" })
+vim.keymap.set("n", "<leader>tn", vim.diagnostic.goto_next, { desc = "Next diagnostic" })
+vim.keymap.set("n", "<leader>tp", vim.diagnostic.goto_prev, { desc = "Prev diagnostic" })
 vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist, {
-	desc = "Open diagnostic [Q]uickfix list",
+	desc = "Open diagnostic quickfix list",
 })
 
 vim.keymap.set("t", "<Esc><Esc>", "<C-\\><C-n>", {
 	desc = "Exit terminal mode",
 })
+
+-- Terminal toggle (matching Zed: alt-t, space c t)
+vim.keymap.set("n", "<A-t>", "<CMD>terminal<CR>", { desc = "Open terminal" })
+vim.keymap.set("n", "<leader>ct", "<CMD>terminal<CR>", { desc = "Open terminal" })
+vim.keymap.set("t", "<A-t>", "<C-\\><C-n>", { desc = "Exit terminal" })
+
+-- Lazygit (matching Zed: space g g)
+vim.keymap.set("n", "<leader>gg", function()
+	vim.cmd("terminal lazygit")
+	vim.cmd("startinsert")
+end, { desc = "Lazygit" })
 
 vim.keymap.set("n", "<C-h>", "<C-w><C-h>", {
 	desc = "Move focus to the left window",
@@ -128,9 +143,14 @@ vim.keymap.set("n", "<leader>w", "<CMD>w<CR>", {
 	desc = "[W]rite Buffer",
 })
 
-vim.keymap.set("n", "<leader>sv", "<CMD>vsplit<CR>", {
-	desc = "[S]plit [V]ertically",
-})
+-- Split keymaps (matching Zed: space s r/l/d/u)
+vim.keymap.set("n", "<leader>sv", "<CMD>vsplit<CR>", { desc = "Split vertical" })
+vim.keymap.set("n", "<leader>sh", "<CMD>split<CR>", { desc = "Split horizontal" })
+vim.keymap.set("n", "<leader>sr", "<CMD>vsplit<CR>", { desc = "Split right" })
+vim.keymap.set("n", "<leader>sl", "<CMD>aboveleft vsplit<CR>", { desc = "Split left" })
+vim.keymap.set("n", "<leader>sd", "<CMD>split<CR>", { desc = "Split down" })
+vim.keymap.set("n", "<leader>su", "<CMD>aboveleft split<CR>", { desc = "Split up" })
+vim.keymap.set("n", "<leader>sc", "<CMD>close<CR>", { desc = "Close split" })
 
 vim.keymap.set("n", "<leader>cn", "<CMD>cnext<CR>", {
 	desc = "Next Quickfix Entry",
