@@ -8,6 +8,7 @@ return {
 		local basename = vim.fs.basename(cwd)
 
 		_99.setup({
+			model = "opencode/kimi-k2.5",
 			logger = {
 				level = _99.DEBUG,
 				path = "/tmp/" .. basename .. ".99.debug",
@@ -49,5 +50,25 @@ return {
 		vim.keymap.set("n", "<leader>9p", function()
 			_99.prev_request_logs()
 		end, { desc = "Prev request log" })
+
+		-- Model selector
+		vim.keymap.set("n", "<leader>9m", function()
+			local models = {
+				{ name = "Kimi K2.5", model = "opencode/kimi-k2.5" },
+				{ name = "Claude Opus 4.5", model = "opencode/claude-opus-4-5" },
+				{ name = "Claude Haiku 4.5", model = "opencode/claude-haiku-4-5" },
+			}
+			vim.ui.select(models, {
+				prompt = "Select 99 model:",
+				format_item = function(item)
+					return item.name
+				end,
+			}, function(choice)
+				if choice then
+					_99.set_model(choice.model)
+					vim.notify("99 model: " .. choice.name, vim.log.levels.INFO)
+				end
+			end)
+		end, { desc = "Select model" })
 	end,
 }
