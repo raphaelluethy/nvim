@@ -4,21 +4,21 @@ return {
 	config = function()
 		local _99 = require("99")
 
-		local cwd = vim.uv.cwd()
-		local basename = vim.fs.basename(cwd)
+		-- local cwd = vim.uv.cwd()
+		-- local basename = vim.fs.basename(cwd)
 
 		_99.setup({
 			model = "opencode/kimi-k2.5",
-			logger = {
-				level = _99.DEBUG,
-				path = "/tmp/" .. basename .. ".99.debug",
-				print_on_error = true,
-			},
+			-- logger = {
+			-- 	level = _99.DEBUG,
+			-- 	path = "/tmp/" .. basename .. ".99.debug",
+			-- 	print_on_error = true,
+			-- },
 			completion = {
 				source = "cmp",
 			},
 			md_files = {
-				"AGENT.md",
+				"AGENTS.md",
 			},
 		})
 
@@ -57,6 +57,7 @@ return {
 				{ name = "Kimi K2.5", model = "opencode/kimi-k2.5" },
 				{ name = "Claude Opus 4.5", model = "opencode/claude-opus-4-5" },
 				{ name = "Claude Haiku 4.5", model = "opencode/claude-haiku-4-5" },
+				{ name = "GPT 5.2 Codex", model = "opencode/gpt-5.2-codex"}
 			}
 			vim.ui.select(models, {
 				prompt = "Select 99 model:",
