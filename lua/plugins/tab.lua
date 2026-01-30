@@ -1,18 +1,15 @@
 return {
 	{
-		"leonardcser/cursortab.nvim",
+		dir = "/Users/raphael.luethy@fhnw.ch/Documents/projects/private/cursortab.nvim",
+		name = "cursortab.nvim",
 		build = "cd server && go build",
 		config = function()
 			require("cursortab").setup({
-				behavior = {
-					idle_completion_delay = 150,
-					text_change_debounce = 150,
-				},
+				log_level = "trace",
 				provider = {
-					type = "inline",
-					url = "http://localhost:8000",
-					max_tokens = 128,
-					completion_timeout = 3000,
+					type = "sweep",
+					url = "https://autocomplete.sweep.dev",
+					api_key_env = "SWEEP_AI_TOKEN",
 				},
 			})
 		end,
