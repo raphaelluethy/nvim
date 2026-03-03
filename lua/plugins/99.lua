@@ -49,7 +49,7 @@ return {
 				{ name = "Kimi K2.5", model = "opencode/kimi-k2.5" },
 				{ name = "Claude Opus 4.5", model = "opencode/claude-opus-4-5" },
 				{ name = "Claude Haiku 4.5", model = "opencode/claude-haiku-4-5" },
-				{ name = "GPT 5.2 Codex", model = "opencode/gpt-5.2-codex"}
+				{ name = "GPT 5.2 Codex", model = "opencode/gpt-5.2-codex" },
 			}
 			vim.ui.select(models, {
 				prompt = "Select 99 model:",
@@ -63,5 +63,10 @@ return {
 				end
 			end)
 		end, { desc = "Select model" })
+		vim.api.nvim_create_autocmd("VimLeavePre", {
+			callback = function()
+				vim.fn.system("rm -rf " .. vim.uv.cwd() .. "/tmp/99-*")
+			end,
+		})
 	end,
 }
