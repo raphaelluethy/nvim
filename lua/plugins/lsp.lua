@@ -1,201 +1,299 @@
 return {
-  -- Main LSP Configuration
-  "neovim/nvim-lspconfig",
-  event = { "BufReadPre", "BufNewFile" },
-  cmd = { "LspInfo", "LspInstall", "LspUninstall", "Mason" },
-  dependencies = {
-    -- LSP installer plugins
-    "williamboman/mason.nvim",
-    "williamboman/mason-lspconfig.nvim",
-    "WhoIsSethDaniel/mason-tool-installer.nvim",
-    -- Integrate blink / cmp w/ LSP
-    "hrsh7th/cmp-nvim-lsp",
-    -- Progress indicator for LSP
-    { "j-hui/fidget.nvim" },
-  },
-  config = function()
-    -- Get default capabilities (can be extended by nvim-cmp if available)
-    local capabilities = vim.lsp.protocol.make_client_capabilities()
-    local ok_cmp, cmp_lsp = pcall(require, "cmp_nvim_lsp")
-    if ok_cmp then
-      capabilities = cmp_lsp.default_capabilities(capabilities)
-    end
+	-- Main LSP Configuration
+	"neovim/nvim-lspconfig",
+	dependencies = {
+		-- LSP installer plugins
+		"williamboman/mason.nvim",
+		"williamboman/mason-lspconfig.nvim",
+		"WhoIsSethDaniel/mason-tool-installer.nvim",
+	},
+	config = function()
+		local capabilities = vim.lsp.protocol.make_client_capabilities()
+		capabilities.textDocument.completion.completionItem.snippetSupport = true
+		capabilities.textDocument.completion.completionItem.resolveSupport = {
+			properties = {
+				"documentation",
+				"detail",
+				"additionalTextEdits",
+			},
+		}
 
-    -- LspAttach: Runs when an LSP client attaches to a buffer
-    -- Sets up keymaps, document highlighting, and inlay hints
-    vim.api.nvim_create_autocmd("LspAttach", {
-      group = vim.api.nvim_create_augroup("raphaelluethy-lsp-attach", {
-        clear = true,
-      }),
-      callback = function(event)
-        local map = function(keys, func, desc, mode)
-          mode = mode or "n"
-          vim.keymap.set(mode, keys, func, {
-            buffer = event.buf,
-            desc = "LSP: " .. desc,
-          })
-        end
+		-- LspAttach: Runs when an LSP client attaches to a buffer
+		-- Sets up keymaps, document highlighting, and inlay hints
+		vim.api.nvim_create_autocmd("LspAttach", {
+			group = vim.api.nvim_create_augroup("raphaelluethy-lsp-attach", {
+				clear = true,
+			}),
+			callback = function(event)
+				local map = function(keys, func, desc, mode)
+					mode = mode or "n"
+					vim.keymap.set(mode, keys, func, {
+						buffer = event.buf,
+						desc = "LSP: " .. desc,
+					})
+				end
 
-        -- Navigation keymaps (matching Zed: g d, g D, g r, g i, g t)
-        map("gd", require("telescope.builtin").lsp_definitions, "Goto definition")
-        map("gr", require("telescope.builtin").lsp_references, "Goto references")
-        map("gI", require("telescope.builtin").lsp_implementations, "Goto implementation")
-        map("gD", vim.lsp.buf.declaration, "Goto declaration")
-        map("gt", require("telescope.builtin").lsp_type_definitions, "Goto type definition")
-        map("<leader>D", require("telescope.builtin").lsp_type_definitions, "Type definition")
+				-- Navigation keymaps (matching Zed: g d, g D, g r, g i, g t)
+				map("gd", require("telescope.builtin").lsp_definitions, "Goto definition")
+				map("gr", require("telescope.builtin").lsp_references, "Goto references")
+				map("gI", require("telescope.builtin").lsp_implementations, "Goto implementation")
+				map("gD", vim.lsp.buf.declaration, "Goto declaration")
+				map("gt", require("telescope.builtin").lsp_type_definitions, "Goto type definition")
+				map("<leader>D", require("telescope.builtin").lsp_type_definitions, "Type definition")
 
-        -- Symbol search keymaps (matching Zed: space o)
-        map("<leader>o", require("telescope.builtin").lsp_document_symbols, "Document symbols (Outline)")
-        map("<leader>ds", require("telescope.builtin").lsp_document_symbols, "Document symbols")
-        map("<leader>ws", require("telescope.builtin").lsp_dynamic_workspace_symbols, "Workspace symbols")
+				-- Symbol search keymaps (matching Zed: space o)
+				map("<leader>o", require("telescope.builtin").lsp_document_symbols, "Document symbols (Outline)")
+				map("<leader>ds", require("telescope.builtin").lsp_document_symbols, "Document symbols")
+				map("<leader>ws", require("telescope.builtin").lsp_dynamic_workspace_symbols, "Workspace symbols")
 
-        -- Code actions
-        map("<leader>ca", vim.lsp.buf.code_action, "Code action", { "n", "x" })
+				-- Code actions
+				map("<leader>ca", vim.lsp.buf.code_action, "Code action", { "n", "x" })
 
-        -- Signature help (matching Zed: ctrl-s)
-        map("<C-s>", vim.lsp.buf.signature_help, "Signature help")
-        map("<C-s>", vim.lsp.buf.signature_help, "Signature help", "i")
+				-- Signature help (matching Zed: ctrl-s)
+				map("<C-s>", vim.lsp.buf.signature_help, "Signature help")
+				map("<C-s>", vim.lsp.buf.signature_help, "Signature help", "i")
 
-        local client = vim.lsp.get_client_by_id(event.data.client_id)
+				local client = vim.lsp.get_client_by_id(event.data.client_id)
 
-        -- Document highlighting: highlights all references to symbol under cursor
-        if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight) then
-          local highlight_augroup = vim.api.nvim_create_augroup("raphaelluethy-lsp-highlight", {
-            clear = false,
-          })
+				if client and client:supports_method(vim.lsp.protocol.Methods.textDocument_completion) then
+					vim.lsp.completion.enable(true, client.id, event.buf, {
+						autotrigger = true,
+						convert = function(item)
+							return {
+								abbr = item.label:gsub("%b()", ""),
+								menu = item.detail,
+								kind = vim.lsp.protocol.CompletionItemKind[item.kind] or "",
+							}
+						end,
+					})
+				end
 
-          -- Set custom highlight colors for LSP references
-          vim.api.nvim_set_hl(0, "LspReferenceText", { bg = "#3a3a3a" })
-          vim.api.nvim_set_hl(0, "LspReferenceRead", { bg = "#3a3a3a" })
-          vim.api.nvim_set_hl(0, "LspReferenceWrite", { bg = "#3a3a3a" })
+				-- Document highlighting: highlights all references to symbol under cursor
+				if client and client:supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight) then
+					local highlight_augroup = vim.api.nvim_create_augroup("raphaelluethy-lsp-highlight", {
+						clear = false,
+					})
 
-          -- CursorHold/CursorHoldI: Highlight references when cursor stops moving
-          vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
-            buffer = event.buf,
-            group = highlight_augroup,
-            callback = function()
-              -- Only enable for smaller files to avoid performance issues
-              if vim.api.nvim_buf_line_count(event.buf) <= 3000 then
-                vim.lsp.buf.document_highlight()
-              end
-            end,
-          })
+					-- Set custom highlight colors for LSP references
+					vim.api.nvim_set_hl(0, "LspReferenceText", { bg = "#3a3a3a" })
+					vim.api.nvim_set_hl(0, "LspReferenceRead", { bg = "#3a3a3a" })
+					vim.api.nvim_set_hl(0, "LspReferenceWrite", { bg = "#3a3a3a" })
 
-          -- CursorMoved/CursorMovedI: Clear highlights when cursor moves
-          vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
-            buffer = event.buf,
-            group = highlight_augroup,
-            callback = vim.lsp.buf.clear_references,
-          })
+					-- CursorHold/CursorHoldI: Highlight references when cursor stops moving
+					vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
+						buffer = event.buf,
+						group = highlight_augroup,
+						callback = function()
+							-- Only enable for smaller files to avoid performance issues
+							if vim.api.nvim_buf_line_count(event.buf) <= 3000 then
+								vim.lsp.buf.document_highlight()
+							end
+						end,
+					})
 
-          -- LspDetach: Clean up highlights when LSP detaches
-          vim.api.nvim_create_autocmd("LspDetach", {
-            group = vim.api.nvim_create_augroup("raphaelluethy-lsp-detach", {
-              clear = true,
-            }),
-            callback = function(event2)
-              vim.lsp.buf.clear_references()
-              vim.api.nvim_clear_autocmds({
-                group = "raphaelluethy-lsp-highlight",
-                buffer = event2.buf,
-              })
-            end,
-          })
-        end
+					-- CursorMoved/CursorMovedI: Clear highlights when cursor moves
+					vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
+						buffer = event.buf,
+						group = highlight_augroup,
+						callback = vim.lsp.buf.clear_references,
+					})
 
-        -- Inlay hints: toggle keymap if supported
-        if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
-          map("<leader>th", function()
-            local bufnr = event.buf
-            vim.lsp.inlay_hint.enable(
-              not vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr }),
-              { bufnr = bufnr }
-            )
-          end, "[T]oggle Inlay [H]ints")
-        end
-      end,
-    })
+					-- LspDetach: Clean up highlights when LSP detaches
+					vim.api.nvim_create_autocmd("LspDetach", {
+						group = vim.api.nvim_create_augroup("raphaelluethy-lsp-detach", {
+							clear = true,
+						}),
+						callback = function(event2)
+							vim.lsp.buf.clear_references()
+							vim.api.nvim_clear_autocmds({
+								group = "raphaelluethy-lsp-highlight",
+								buffer = event2.buf,
+							})
+						end,
+					})
+				end
 
-    -- LSP servers and their specific settings
-    local servers = {
-      clangd = {},
-      gopls = {},
-      rust_analyzer = {},
-      vtsls = {},
-      biome = {},
-      ty = {},
-      emmet_ls = {
-        filetypes = {
-          "css",
-          "eruby",
-          "html",
-          "javascript",
-          "javascriptreact",
-          "less",
-          "pass",
-          "scss",
-          "svelte",
-          "pug",
-          "typescriptreact",
-          "vue",
-        },
-      },
-      tinymist = {
-        offset_encoding = "utf-8",
-      },
-      lua_ls = {
-        settings = {
-          Lua = {
-            completion = {
-              callSnippet = "Replace",
-            },
-            diagnostics = {
-              globals = { "vim", "Snacks" },
-              disable = { "missing-fields" },
-            },
-          },
-        },
-      },
-    }
+				-- Inlay hints: toggle keymap if supported
+				if client and client:supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
+					map("<leader>th", function()
+						local bufnr = event.buf
+						vim.lsp.inlay_hint.enable(
+							not vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr }),
+							{ bufnr = bufnr }
+						)
+					end, "[T]oggle Inlay [H]ints")
+				end
+			end,
+		})
 
-    local server_names = vim.tbl_keys(servers or {})
+		-- LSP servers and their specific settings
+		local servers = {
+			biome = {},
+			clangd = {},
+			cssls = {},
+			emmet_language_server = {
+				filetypes = {
+					"astro",
+					"css",
+					"eruby",
+					"html",
+					"htmlangular",
+					"htmldjango",
+					"javascript",
+					"javascriptreact",
+					"less",
+					"scss",
+					"sass",
+					"svelte",
+					"typescriptreact",
+					"vue",
+				},
+			},
+			eslint = {
+				settings = {
+					workingDirectory = { mode = "auto" },
+				},
+			},
+			gopls = {
+				settings = {
+					gopls = {
+						gofumpt = true,
+						staticcheck = true,
+						usePlaceholders = true,
+						analyses = {
+							shadow = true,
+							unusedparams = true,
+							unusedwrite = true,
+						},
+						hints = {
+							assignVariableTypes = true,
+							compositeLiteralFields = true,
+							compositeLiteralTypes = true,
+							constantValues = true,
+							functionTypeParameters = true,
+							parameterNames = true,
+							rangeVariableTypes = true,
+						},
+					},
+				},
+			},
+			html = {},
+			jdtls = {},
+			jsonls = {},
+			rust_analyzer = {
+				settings = {
+					["rust-analyzer"] = {
+						cargo = {
+							allFeatures = true,
+						},
+						check = {
+							command = "clippy",
+						},
+						completion = {
+							fullFunctionSignatures = {
+								enable = true,
+							},
+						},
+					},
+				},
+			},
+			tailwindcss = {},
+			vtsls = {
+				settings = {
+					vtsls = {
+						autoUseWorkspaceTsdk = true,
+					},
+					typescript = {
+						inlayHints = {
+							parameterNames = { enabled = "literals" },
+							parameterTypes = { enabled = true },
+							variableTypes = { enabled = false },
+							propertyDeclarationTypes = { enabled = true },
+							functionLikeReturnTypes = { enabled = true },
+							enumMemberValues = { enabled = true },
+						},
+						suggest = {
+							completeFunctionCalls = true,
+						},
+					},
+					javascript = {
+						inlayHints = {
+							parameterNames = { enabled = "literals" },
+							parameterTypes = { enabled = true },
+							variableTypes = { enabled = false },
+							propertyDeclarationTypes = { enabled = true },
+							functionLikeReturnTypes = { enabled = true },
+							enumMemberValues = { enabled = true },
+						},
+						suggest = {
+							completeFunctionCalls = true,
+						},
+					},
+				},
+			},
+			tinymist = { offset_encoding = "utf-8" },
+			ty = {},
+			lua_ls = {
+				settings = {
+					Lua = {
+						completion = {
+							callSnippet = "Replace",
+						},
+						diagnostics = {
+							globals = { "vim", "Snacks" },
+							disable = { "missing-fields" },
+						},
+					},
+				},
+			},
+		}
 
-    -- Setup Mason for LSP and tool installation
-    require("mason").setup()
+		local server_names = vim.tbl_keys(servers or {})
 
-    -- Configure tools to ensure installation (LSP servers + extra tools)
-    local ensure_tools = {}
-    vim.list_extend(ensure_tools, server_names)
-    vim.list_extend(ensure_tools, {
-      "stylua", -- Lua formatter
-    })
+		-- Setup Mason for LSP and tool installation
+		require("mason").setup()
 
-    require("mason-tool-installer").setup({
-      ensure_installed = ensure_tools,
-    })
+		-- Configure tools to ensure installation (LSP servers + extra tools)
+		local ensure_tools = {}
+		vim.list_extend(ensure_tools, server_names)
+		vim.list_extend(ensure_tools, {
+			"biome",
+			"eslint_d",
+			"gofumpt",
+			"goimports",
+			"google-java-format",
+			"prettier",
+			"prettierd",
+			"stylua", -- Lua formatter
+		})
 
-    -- Configure each LSP server via vim.lsp.config (mason-lspconfig 2.0+ API)
-    for server_name, server_settings in pairs(servers) do
-      local config = vim.tbl_deep_extend("force", {}, server_settings)
-      config.capabilities = vim.tbl_deep_extend("force", {}, capabilities, config.capabilities or {})
-      vim.lsp.config(server_name, config)
-    end
+		if #vim.api.nvim_list_uis() > 0 then
+			require("mason-tool-installer").setup({
+				ensure_installed = ensure_tools,
+			})
+		end
 
-    -- Setup mason-lspconfig (automatic_enable is on by default in v2.0+)
-    require("mason-lspconfig").setup({
-      ensure_installed = server_names,
-    })
+		-- Configure each LSP server via vim.lsp.config (mason-lspconfig 2.0+ API)
+		for server_name, server_settings in pairs(servers) do
+			local config = vim.tbl_deep_extend("force", {}, server_settings)
+			config.capabilities = vim.tbl_deep_extend("force", {}, capabilities, config.capabilities or {})
+			vim.lsp.config(server_name, config)
+		end
 
-    -- Enable all configured LSP servers
-    vim.lsp.enable(server_names)
+		-- Setup mason-lspconfig (automatic_enable is on by default in v2.0+)
+		require("mason-lspconfig").setup({
+			ensure_installed = server_names,
+		})
 
-    -- Manually trigger LSP for current buffer (handles lazy load timing)
-    local bufnr = vim.api.nvim_get_current_buf()
-    local ft = vim.bo[bufnr].filetype
-    if ft and ft ~= '' then
-      -- Re-trigger FileType to start LSP for current buffer
-      vim.api.nvim_exec_autocmds('FileType', { buffer = bufnr })
-    end
-  end,
+		-- Enable all configured LSP servers
+		vim.lsp.enable(server_names)
+
+		-- Manually trigger LSP for current buffer after config is registered.
+		local bufnr = vim.api.nvim_get_current_buf()
+		local ft = vim.bo[bufnr].filetype
+		if ft and ft ~= "" then
+			-- Re-trigger FileType to start LSP for current buffer
+			vim.api.nvim_exec_autocmds("FileType", { buffer = bufnr })
+		end
+	end,
 }
-

@@ -1,7 +1,6 @@
 return { -- Fuzzy Finder (files, lsp, etc)
 	"nvim-telescope/telescope.nvim",
 	tag = "v0.1.9",
-	event = "VimEnter",
 	dependencies = {
 		"nvim-lua/plenary.nvim",
 		{ -- If encountering errors, see telescope-fzf-native README for installation instructions
@@ -25,25 +24,66 @@ return { -- Fuzzy Finder (files, lsp, etc)
 	},
 	config = function()
 		-- See `:help telescope` and `:help telescope.setup()`
+		local previewers = require("telescope.previewers")
+		local default_buffer_previewer = previewers.buffer_previewer_maker
+
+		local function buffer_previewer_maker(filepath, bufnr, opts)
+			filepath = vim.fn.expand(filepath)
+			vim.uv.fs_stat(filepath, function(_, stat)
+				if not stat then
+					return
+				end
+
+				if stat.size > 1024 * 1024 then
+					vim.schedule(function()
+						local size = string.format("%.1f", stat.size / 1024 / 1024)
+						vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, {
+							"Preview skipped",
+							"",
+							("File is %s MB. Use <CR> to open it."):format(size),
+						})
+					end)
+					return
+				end
+
+				default_buffer_previewer(filepath, bufnr, opts)
+			end)
+		end
 
 		require("telescope").setup({
-			-- find_files = {
-			-- 	hidden = true,
-			-- 	file_ignore_patterns = {
-			-- 		"node_modules",
-			-- 		".git",
-			-- 	},
-			-- },
-			-- You can put your default mappings / updates / etc. in here
-
-			--  All the info you're looking for is in `:help telescope.setup()`
-			--
-			-- defaults = {
-			--   mappings = {
-			--     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
-			--   },
-			-- },
-			-- pickers = {}
+			defaults = {
+				buffer_previewer_maker = buffer_previewer_maker,
+				file_ignore_patterns = {
+					"%.git/",
+					"node_modules/",
+					"dist/",
+					"dist%-ssr/",
+					"%.next/",
+					"target/",
+				},
+				preview = {
+					filesize_limit = 1,
+					timeout = 250,
+				},
+				vimgrep_arguments = {
+					"rg",
+					"--color=never",
+					"--no-heading",
+					"--with-filename",
+					"--line-number",
+					"--column",
+					"--smart-case",
+					"--hidden",
+					"--max-columns=240",
+					"--max-columns-preview",
+					"--glob=!.git/*",
+					"--glob=!node_modules/*",
+					"--glob=!dist/*",
+					"--glob=!dist-ssr/*",
+					"--glob=!.next/*",
+					"--glob=!target/*",
+				},
+			},
 			extensions = {
 				["ui-select"] = { require("telescope.themes").get_dropdown() },
 			},
@@ -61,8 +101,8 @@ return { -- Fuzzy Finder (files, lsp, etc)
 		vim.keymap.set("n", "<leader>sk", builtin.keymaps, {
 			desc = "[S]earch [K]eymaps",
 		})
-		vim.keymap.set("n", "<leader>sf", builtin.find_files, {
-			desc = "[S]earch [F]iles",
+		vim.keymap.set("n", "<leader>sF", builtin.find_files, {
+			desc = "[S]earch [F]iles (Telescope)",
 		})
 		local function find_all_files()
 			local find_command = {
@@ -93,11 +133,11 @@ return { -- Fuzzy Finder (files, lsp, etc)
 		vim.keymap.set("n", "<leader>ss", builtin.builtin, {
 			desc = "[S]earch [S]elect Telescope",
 		})
-		vim.keymap.set("n", "<leader>sw", builtin.grep_string, {
-			desc = "[S]earch current [W]ord",
+		vim.keymap.set("n", "<leader>sW", builtin.grep_string, {
+			desc = "[S]earch current [W]ord (Telescope)",
 		})
-		vim.keymap.set("n", "<leader>sg", builtin.live_grep, {
-			desc = "[S]earch by [G]rep",
+		vim.keymap.set("n", "<leader>sT", builtin.live_grep, {
+			desc = "[S]earch by grep (Telescope)",
 		})
 		vim.keymap.set("n", "<leader>sd", builtin.diagnostics, {
 			desc = "[S]earch [D]iagnostics",

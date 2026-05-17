@@ -1,7 +1,6 @@
 return {
 	{
 		"brenoprata10/nvim-highlight-colors",
-		event = { "BufReadPre", "BufNewFile" },
 		opts = {
 			---Render style
 			---@usage 'background'|'foreground'|'virtual'

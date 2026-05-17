@@ -1,6 +1,6 @@
 return {
 	{
-		'dmmulroy/ts-error-translator.nvim',
+		"dmmulroy/ts-error-translator.nvim",
 		config = function()
 			require("ts-error-translator").setup({
 				-- Auto-attach to LSP servers for TypeScript diagnostics (default: true)

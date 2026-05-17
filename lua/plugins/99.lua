@@ -1,72 +1,54 @@
 return {
 	"ThePrimeagen/99",
-	event = "VeryLazy",
 	config = function()
 		local _99 = require("99")
+		local pickers = require("99.extensions.telescope")
 
 		_99.setup({
-			model = "opencode/kimi-k2.5",
+			model = "opencode/gpt-5.4-mini",
+			tmp_dir = "./tmp",
 			completion = {
-				source = "cmp",
+				source = "native",
 			},
 			md_files = {
 				"AGENTS.md",
 			},
 		})
 
-		-- Fill in function body with AI
+		vim.keymap.set("n", "<leader>9s", function()
+			_99.search()
+		end, { desc = "99 search" })
+
 		vim.keymap.set("n", "<leader>9f", function()
-			_99.fill_in_function_prompt()
-		end, { desc = "Fill in function" })
+			_99.vibe()
+		end, { desc = "99 vibe" })
 
-		-- Process visual selection with AI
 		vim.keymap.set("v", "<leader>9v", function()
-			_99.visual_prompt()
-		end, { desc = "Visual AI" })
+			_99.visual()
+		end, { desc = "99 visual" })
 
-		-- Stop all pending AI requests
-		vim.keymap.set({ "n", "v" }, "<leader>9s", function()
+		vim.keymap.set({ "n", "v" }, "<leader>9x", function()
 			_99.stop_all_requests()
-		end, { desc = "Stop all requests" })
+		end, { desc = "99 stop requests" })
 
-		-- View debug logs
+		vim.keymap.set("n", "<leader>9o", function()
+			_99.open()
+		end, { desc = "99 open last result" })
+
 		vim.keymap.set("n", "<leader>9l", function()
 			_99.view_logs()
-		end, { desc = "View logs" })
+		end, { desc = "99 logs" })
 
-		-- Navigate request logs
-		vim.keymap.set("n", "<leader>9n", function()
-			_99.next_request_logs()
-		end, { desc = "Next request log" })
+		vim.keymap.set("n", "<leader>9c", function()
+			_99.clear_previous_requests()
+		end, { desc = "99 clear requests" })
+
+		vim.keymap.set("n", "<leader>9m", function()
+			pickers.select_model()
+		end, { desc = "99 select model" })
 
 		vim.keymap.set("n", "<leader>9p", function()
-			_99.prev_request_logs()
-		end, { desc = "Prev request log" })
-
-		-- Model selector
-		vim.keymap.set("n", "<leader>9m", function()
-			local models = {
-				{ name = "Kimi K2.5", model = "opencode/kimi-k2.5" },
-				{ name = "Claude Opus 4.5", model = "opencode/claude-opus-4-5" },
-				{ name = "Claude Haiku 4.5", model = "opencode/claude-haiku-4-5" },
-				{ name = "GPT 5.2 Codex", model = "opencode/gpt-5.2-codex" },
-			}
-			vim.ui.select(models, {
-				prompt = "Select 99 model:",
-				format_item = function(item)
-					return item.name
-				end,
-			}, function(choice)
-				if choice then
-					_99.set_model(choice.model)
-					vim.notify("99 model: " .. choice.name, vim.log.levels.INFO)
-				end
-			end)
-		end, { desc = "Select model" })
-		vim.api.nvim_create_autocmd("VimLeavePre", {
-			callback = function()
-				vim.fn.system("rm -rf " .. vim.uv.cwd() .. "/tmp/99-*")
-			end,
-		})
+			pickers.select_provider()
+		end, { desc = "99 select provider" })
 	end,
 }

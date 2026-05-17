@@ -8,6 +8,22 @@ vim.o.winborder = "rounded"
 
 vim.opt.pumblend = 0
 vim.opt.winblend = 0
+vim.opt.autocomplete = true
+vim.opt.completeopt = { "menuone", "popup", "fuzzy", "noinsert", "noselect" }
+vim.opt.complete:append("o")
+
+-- Picker prompt buffers reuse insert mode; native autocomplete popups can
+-- overlap the results. Keep autocomplete enabled elsewhere, but disable it for
+-- picker prompts.
+vim.api.nvim_create_autocmd("FileType", {
+	group = vim.api.nvim_create_augroup("raphaelluethy-picker-no-autocomplete", {
+		clear = true,
+	}),
+	pattern = { "TelescopePrompt", "fff_input" },
+	callback = function()
+		vim.opt_local.autocomplete = false
+	end,
+})
 -- [[ Setting options ]]
 -- use Neovim nightly branch
 -- See `:help vim.opt`
@@ -31,6 +47,9 @@ vim.opt.breakindent = true
 
 -- Save undo history
 vim.opt.undofile = true
+if vim.fn.has("persistent_undo") == 1 then
+	vim.opt.undodir = vim.fn.expand("~/.config/nvim/.undodir")
+end
 
 -- Case-insensitive searching UNLESS \C or one or more capital letters in the search term
 vim.opt.ignorecase = true
@@ -81,7 +100,6 @@ vim.opt.colorcolumn = "80"
 
 vim.opt.termguicolors = true
 
-
 -- Enable automatic text wrapping at textwidth
 -- vim.opt.formatoptions:append 't'
 
@@ -92,7 +110,6 @@ vim.opt.termguicolors = true
 --  See `:help hlsearch`
 vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>")
 
-vim.diagnostic.enable = true
 vim.diagnostic.config({
 	virtual_lines = false,
 	virtual_text = true,
@@ -110,6 +127,27 @@ vim.keymap.set("n", "<leader>tp", vim.diagnostic.goto_prev, { desc = "Prev diagn
 vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist, {
 	desc = "Open diagnostic quickfix list",
 })
+
+vim.keymap.set("i", "<C-Space>", vim.lsp.completion.get, {
+	desc = "Trigger completion",
+})
+vim.keymap.set("i", "<C-j>", function()
+	return vim.fn.pumvisible() == 1 and "<C-n>" or "<C-j>"
+end, { expr = true, desc = "Next completion item" })
+vim.keymap.set("i", "<C-k>", function()
+	return vim.fn.pumvisible() == 1 and "<C-p>" or "<C-k>"
+end, { expr = true, desc = "Previous completion item" })
+vim.keymap.set("i", "<CR>", function()
+	return vim.fn.pumvisible() == 1 and "<C-y>" or "<CR>"
+end, { expr = true, desc = "Confirm completion" })
+vim.keymap.set("i", "<C-c>", function()
+	return vim.fn.pumvisible() == 1 and "<C-e>" or "<C-c>"
+end, { expr = true, desc = "Cancel completion" })
+
+vim.keymap.set("n", "<leader>u", function()
+	vim.cmd("packadd nvim.undotree")
+	vim.cmd("Undotree")
+end, { desc = "Toggle Undotree" })
 
 vim.keymap.set("t", "<Esc><Esc>", "<C-\\><C-n>", {
 	desc = "Exit terminal mode",
@@ -201,4 +239,4 @@ vim.keymap.del("", "gri")
 -- 	end,
 -- })
 
-require("config.lazy")
+require("config.pack")
