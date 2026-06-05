@@ -19,7 +19,7 @@ vim.api.nvim_create_autocmd("FileType", {
 	group = vim.api.nvim_create_augroup("raphaelluethy-picker-no-autocomplete", {
 		clear = true,
 	}),
-	pattern = { "TelescopePrompt", "fff_input" },
+	pattern = { "TelescopePrompt" },
 	callback = function()
 		vim.opt_local.autocomplete = false
 	end,
@@ -62,7 +62,6 @@ vim.opt.signcolumn = "yes"
 vim.opt.updatetime = 250
 
 -- Decrease mapped sequence wait time
--- Displays which-key popup sooner
 vim.opt.timeoutlen = 300
 
 -- Configure how new splits should be opened
@@ -97,6 +96,8 @@ vim.opt.shiftwidth = 4
 vim.opt.textwidth = 80
 vim.opt.linebreak = true
 vim.opt.colorcolumn = "80"
+
+vim.opt.laststatus = 3
 
 vim.opt.termguicolors = true
 

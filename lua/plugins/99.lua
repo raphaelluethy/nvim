@@ -5,7 +5,7 @@ return {
 		local pickers = require("99.extensions.telescope")
 
 		_99.setup({
-			model = "opencode/gpt-5.4-mini",
+			model = "openai/gpt-5.5-fast",
 			tmp_dir = "./tmp",
 			completion = {
 				source = "native",

@@ -101,8 +101,8 @@ return { -- Fuzzy Finder (files, lsp, etc)
 		vim.keymap.set("n", "<leader>sk", builtin.keymaps, {
 			desc = "[S]earch [K]eymaps",
 		})
-		vim.keymap.set("n", "<leader>sF", builtin.find_files, {
-			desc = "[S]earch [F]iles (Telescope)",
+		vim.keymap.set("n", "<leader>sf", builtin.find_files, {
+			desc = "[S]earch [F]iles",
 		})
 		local function find_all_files()
 			local find_command = {
@@ -133,11 +133,16 @@ return { -- Fuzzy Finder (files, lsp, etc)
 		vim.keymap.set("n", "<leader>ss", builtin.builtin, {
 			desc = "[S]earch [S]elect Telescope",
 		})
-		vim.keymap.set("n", "<leader>sW", builtin.grep_string, {
-			desc = "[S]earch current [W]ord (Telescope)",
+		vim.keymap.set("n", "<leader>sw", builtin.grep_string, {
+			desc = "[S]earch current [W]ord",
 		})
-		vim.keymap.set("n", "<leader>sT", builtin.live_grep, {
-			desc = "[S]earch by grep (Telescope)",
+		vim.keymap.set("n", "<leader>sg", builtin.live_grep, {
+			desc = "[S]earch by [G]rep",
+		})
+		vim.keymap.set("n", "<leader>sG", function()
+			builtin.live_grep({ additional_args = { "--fixed-strings" } })
+		end, {
+			desc = "[S]earch [G]rep (plain)",
 		})
 		vim.keymap.set("n", "<leader>sd", builtin.diagnostics, {
 			desc = "[S]earch [D]iagnostics",
