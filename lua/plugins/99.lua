@@ -10,7 +10,7 @@ return {
 			provider = _99.Providers.CursorSdkProvider,
 			model = "composer-2.5",
 			-- model = "openai/gpt-5.5-fast",
-			tmp_dir = "./tmp",
+			-- tmp_dir = "./tmp",
 			completion = {
 				source = "native",
 			},
@@ -30,6 +30,10 @@ return {
 		vim.keymap.set("v", "<leader>9v", function()
 			_99.visual()
 		end, { desc = "99 visual" })
+
+		vim.keymap.set({ "n", "v" }, "<leader>9t", function()
+			_99.tutorial()
+		end, { desc = "99 tutorial" })
 
 		vim.keymap.set({ "n", "v" }, "<leader>9x", function()
 			_99.stop_all_requests()
@@ -51,7 +55,7 @@ return {
 			pickers.select_model()
 		end, { desc = "99 select model" })
 
-		vim.keymap.set("n", "<leader>9p", function()
+		vim.keymap.set("n", "<leader>9sp", function()
 			pickers.select_provider()
 		end, { desc = "99 select provider" })
 	end,

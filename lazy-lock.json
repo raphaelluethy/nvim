@@ -1,5 +1,6 @@
 {
-  "99": { "branch": "master", "commit": "97ca34a0f933f291a474cc0a5eec93d3b1952674" },
+  "99": { "branch": "master", "commit": "c853f2628cf1aa82af07e7c3ab013c76f45be69e" },
+  "codecompanion.nvim": { "branch": "main", "commit": "2e8865f81a0c8b5900fced953a81fe86c53416b1" },
   "conform.nvim": { "branch": "master", "commit": "619363c30309d29ffa631e67c8183f2a72caa373" },
   "gitsigns.nvim": { "branch": "main", "commit": "eb60cc7b94c46005237fd34170d76f3a089a90aa" },
   "harpoon": { "branch": "harpoon2", "commit": "87b1a3506211538f460786c23f98ec63ad9af4e5" },
