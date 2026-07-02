@@ -1,5 +1,5 @@
 {
-  "99": { "branch": "master", "commit": "c853f2628cf1aa82af07e7c3ab013c76f45be69e" },
+  "99": { "branch": "master", "commit": "fb763b1c283f7acc4e63e317530b27f8023c7297" },
   "codecompanion.nvim": { "branch": "main", "commit": "2e8865f81a0c8b5900fced953a81fe86c53416b1" },
   "conform.nvim": { "branch": "master", "commit": "619363c30309d29ffa631e67c8183f2a72caa373" },
   "gitsigns.nvim": { "branch": "main", "commit": "eb60cc7b94c46005237fd34170d76f3a089a90aa" },
@@ -8,7 +8,7 @@
   "mason-lspconfig.nvim": { "branch": "main", "commit": "47059d71b42d74b0a1e9f61c1d99d301039c3b5b" },
   "mason-tool-installer.nvim": { "branch": "main", "commit": "443f1ef8b5e6bf47045cb2217b6f748a223cf7dc" },
   "mason.nvim": { "branch": "main", "commit": "2a6940af80375532e5e9e7c1f2fc6319a1b7a69d" },
-  "mini.icons": { "branch": "main", "commit": "e56797f90192d81f1fda02e662fc3e8e3d775027" },
+  "mini.icons": { "branch": "main", "commit": "24dbea2195c477e57d581215839a6ab915f34b14" },
   "monokai-pro.nvim": { "branch": "master", "commit": "a68e38b8e55d69a215d0f02598900a79c356da9d" },
   "neogit": { "branch": "master", "commit": "43ea1a0854052e583f647e0b35879f0158a70a78" },
   "nvim-autopairs": { "branch": "master", "commit": "7b9923abad60b903ece7c52940e1321d39eccc79" },

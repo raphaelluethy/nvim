@@ -17,6 +17,7 @@ return {
 			md_files = {
 				"AGENTS.md",
 			},
+			in_flight_options = { agent_trace = { enable = true, max_lines = 8 } },
 		})
 
 		vim.keymap.set("n", "<leader>9s", function()
