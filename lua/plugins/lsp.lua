@@ -8,6 +8,12 @@ return {
 		"WhoIsSethDaniel/mason-tool-installer.nvim",
 	},
 	config = function()
+		if vim.fn.exists(":LspInfo") == 0 then
+			vim.api.nvim_create_user_command("LspInfo", function()
+				vim.cmd("checkhealth vim.lsp")
+			end, { desc = "Alias to :checkhealth vim.lsp" })
+		end
+
 		local capabilities = vim.lsp.protocol.make_client_capabilities()
 		capabilities.textDocument.completion.completionItem.snippetSupport = true
 		capabilities.textDocument.completion.completionItem.resolveSupport = {
@@ -113,8 +119,9 @@ return {
 					})
 				end
 
-				-- Inlay hints: toggle keymap if supported
+				-- Inlay hints: enable by default and add toggle keymap if supported
 				if client and client:supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
+					vim.lsp.inlay_hint.enable(true, { bufnr = event.buf })
 					map("<leader>th", function()
 						local bufnr = event.buf
 						vim.lsp.inlay_hint.enable(
@@ -155,6 +162,12 @@ return {
 				},
 			},
 			gopls = {
+				cmd = { "gopls" },
+				filetypes = { "go", "gomod", "gowork", "gotmpl" },
+				root_dir = function(bufnr, on_dir)
+					local fname = vim.api.nvim_buf_get_name(bufnr)
+					on_dir(vim.fs.root(fname, { "go.work", "go.mod", ".git" }) or vim.fs.dirname(fname))
+				end,
 				settings = {
 					gopls = {
 						gofumpt = true,
@@ -166,13 +179,13 @@ return {
 							unusedwrite = true,
 						},
 						hints = {
-							assignVariableTypes = true,
+							assignVariableTypes = false,
 							compositeLiteralFields = true,
-							compositeLiteralTypes = true,
+							compositeLiteralTypes = false,
 							constantValues = true,
-							functionTypeParameters = true,
+							functionTypeParameters = false,
 							parameterNames = true,
-							rangeVariableTypes = true,
+							rangeVariableTypes = false,
 						},
 					},
 				},
@@ -194,6 +207,27 @@ return {
 								enable = true,
 							},
 						},
+						inlayHints = {
+							bindingModeHints = { enable = true },
+							chainingHints = { enable = true },
+							closingBraceHints = { enable = true, minLines = 25 },
+							closureCaptureHints = { enable = true },
+							closureReturnTypeHints = { enable = "never" },
+							discriminantHints = { enable = "always" },
+							expressionAdjustmentHints = { enable = "always" },
+							implicitDrops = { enable = true },
+							lifetimeElisionHints = { enable = "never", useParameterNames = false },
+							maxLength = 25,
+							parameterHints = { enable = true },
+							rangeExclusiveHints = { enable = true },
+							reborrowHints = { enable = "always" },
+							renderColons = true,
+							typeHints = {
+								enable = false,
+								hideClosureInitialization = false,
+								hideNamedConstructor = false,
+							},
+						},
 					},
 				},
 			},
@@ -206,10 +240,10 @@ return {
 					typescript = {
 						inlayHints = {
 							parameterNames = { enabled = "literals" },
-							parameterTypes = { enabled = true },
+							parameterTypes = { enabled = false },
 							variableTypes = { enabled = false },
-							propertyDeclarationTypes = { enabled = true },
-							functionLikeReturnTypes = { enabled = true },
+							propertyDeclarationTypes = { enabled = false },
+							functionLikeReturnTypes = { enabled = false },
 							enumMemberValues = { enabled = true },
 						},
 						suggest = {
@@ -219,10 +253,10 @@ return {
 					javascript = {
 						inlayHints = {
 							parameterNames = { enabled = "literals" },
-							parameterTypes = { enabled = true },
+							parameterTypes = { enabled = false },
 							variableTypes = { enabled = false },
-							propertyDeclarationTypes = { enabled = true },
-							functionLikeReturnTypes = { enabled = true },
+							propertyDeclarationTypes = { enabled = false },
+							functionLikeReturnTypes = { enabled = false },
 							enumMemberValues = { enabled = true },
 						},
 						suggest = {

@@ -159,12 +159,6 @@ vim.keymap.set("n", "<A-t>", "<CMD>terminal<CR>", { desc = "Open terminal" })
 vim.keymap.set("n", "<leader>ct", "<CMD>terminal<CR>", { desc = "Open terminal" })
 vim.keymap.set("t", "<A-t>", "<C-\\><C-n>", { desc = "Exit terminal" })
 
--- Lazygit (matching Zed: space g g)
-vim.keymap.set("n", "<leader>gg", function()
-	vim.cmd("terminal lazygit")
-	vim.cmd("startinsert")
-end, { desc = "Lazygit" })
-
 vim.keymap.set("n", "<C-h>", "<C-w><C-h>", {
 	desc = "Move focus to the left window",
 })
@@ -240,4 +234,4 @@ vim.keymap.del("", "gri")
 -- 	end,
 -- })
 
-require("config.pack")
+require("config.lazy")

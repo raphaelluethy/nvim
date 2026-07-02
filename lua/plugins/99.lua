@@ -1,11 +1,15 @@
 return {
-	"ThePrimeagen/99",
+	"raphaelluethy/99",
 	config = function()
 		local _99 = require("99")
 		local pickers = require("99.extensions.telescope")
 
 		_99.setup({
-			model = "openai/gpt-5.5-fast",
+			-- provider = _99.Providers.ClaudeCodeProvider, -- default: OpenCodeProvider
+			-- model = "opus",
+			provider = _99.Providers.CursorSdkProvider,
+			model = "composer-2.5",
+			-- model = "openai/gpt-5.5-fast",
 			tmp_dir = "./tmp",
 			completion = {
 				source = "native",
