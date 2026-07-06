@@ -55,6 +55,12 @@ return {
 				-- Code actions
 				map("<leader>ca", vim.lsp.buf.code_action, "Code action", { "n", "x" })
 
+				-- Hover sizes to its longest line by default, so long type
+				-- unions span the whole screen; cap it.
+				map("K", function()
+					vim.lsp.buf.hover({ max_width = 90, max_height = 24 })
+				end, "Hover documentation")
+
 				-- Signature help (matching Zed: ctrl-s)
 				map("<C-s>", vim.lsp.buf.signature_help, "Signature help")
 				map("<C-s>", vim.lsp.buf.signature_help, "Signature help", "i")

@@ -23,6 +23,15 @@ return {
 				},
 			})
 			vim.cmd("colorscheme monokai-pro")
+			-- monokai-pro paints markdown code blocks with a solid black bg,
+			-- which clashes with the cleared float bg (background_clear =
+			-- "float_win") in LSP hover docs. Drop the bg so hover code blocks
+			-- render on the float background.
+			vim.api.nvim_set_hl(0, "@markup.raw.block.markdown", {})
+			vim.api.nvim_set_hl(0, "@markup.raw.delimiter.markdown", { link = "Comment" })
+			-- Float interiors use the near-black suggest-widget bg; match the
+			-- editor bg instead so only the border distinguishes floats.
+			vim.api.nvim_set_hl(0, "NormalFloat", { link = "Normal" })
 		end,
 	},
 }

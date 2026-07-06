@@ -43,6 +43,8 @@ vim.schedule(function()
 end)
 
 -- Enable break indent
+vim.opt.wrap = true
+vim.opt.linebreak = true
 vim.opt.breakindent = true
 
 -- Save undo history
