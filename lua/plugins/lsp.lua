@@ -2,9 +2,8 @@ return {
 	-- Main LSP Configuration
 	"neovim/nvim-lspconfig",
 	dependencies = {
-		-- LSP installer plugins
-		"williamboman/mason.nvim",
-		"williamboman/mason-lspconfig.nvim",
+		{ "mason-org/mason.nvim", opts = {} },
+		"mason-org/mason-lspconfig.nvim",
 		"WhoIsSethDaniel/mason-tool-installer.nvim",
 	},
 	config = function()
@@ -13,16 +12,6 @@ return {
 				vim.cmd("checkhealth vim.lsp")
 			end, { desc = "Alias to :checkhealth vim.lsp" })
 		end
-
-		local capabilities = vim.lsp.protocol.make_client_capabilities()
-		capabilities.textDocument.completion.completionItem.snippetSupport = true
-		capabilities.textDocument.completion.completionItem.resolveSupport = {
-			properties = {
-				"documentation",
-				"detail",
-				"additionalTextEdits",
-			},
-		}
 
 		-- LspAttach: Runs when an LSP client attaches to a buffer
 		-- Sets up keymaps, document highlighting, and inlay hints
@@ -54,6 +43,7 @@ return {
 
 				-- Code actions
 				map("<leader>ca", vim.lsp.buf.code_action, "Code action", { "n", "x" })
+				map("<leader>rn", vim.lsp.buf.rename, "[R]e[n]ame symbol", { "n", "x" })
 
 				-- Hover sizes to its longest line by default, so long type
 				-- unions span the whole screen; cap it.
@@ -67,29 +57,11 @@ return {
 
 				local client = vim.lsp.get_client_by_id(event.data.client_id)
 
-				if client and client:supports_method(vim.lsp.protocol.Methods.textDocument_completion) then
-					vim.lsp.completion.enable(true, client.id, event.buf, {
-						autotrigger = true,
-						convert = function(item)
-							return {
-								abbr = item.label:gsub("%b()", ""),
-								menu = item.detail,
-								kind = vim.lsp.protocol.CompletionItemKind[item.kind] or "",
-							}
-						end,
-					})
-				end
-
 				-- Document highlighting: highlights all references to symbol under cursor
 				if client and client:supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight) then
 					local highlight_augroup = vim.api.nvim_create_augroup("raphaelluethy-lsp-highlight", {
 						clear = false,
 					})
-
-					-- Set custom highlight colors for LSP references
-					vim.api.nvim_set_hl(0, "LspReferenceText", { bg = "#3a3a3a" })
-					vim.api.nvim_set_hl(0, "LspReferenceRead", { bg = "#3a3a3a" })
-					vim.api.nvim_set_hl(0, "LspReferenceWrite", { bg = "#3a3a3a" })
 
 					-- CursorHold/CursorHoldI: Highlight references when cursor stops moving
 					vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
@@ -139,11 +111,39 @@ return {
 			end,
 		})
 
-		-- LSP servers and their specific settings
+		local function disable_formatting(client)
+			client.server_capabilities.documentFormattingProvider = false
+			client.server_capabilities.documentRangeFormattingProvider = false
+		end
+
+		-- Add an LSP by putting its nvim-lspconfig name in `ensure_lsps`.
+		-- Mason installs it; mason-lspconfig enables it. No extra setup needed.
+		-- Only add an entry to `servers` when you want extra settings.
+		local ensure_lsps = {
+			"biome",
+			"clangd",
+			"cssls",
+			"emmet_language_server",
+			"gopls",
+			"html",
+			"jdtls",
+			"jsonls",
+			"lua_ls",
+			"oxlint",
+			"rust_analyzer",
+			"tailwindcss",
+			"tinymist",
+			"tsc",
+			"ty",
+			"vtsls",
+		}
+
+		-- Optional per-server overrides. Empty `{}` is never required.
 		local servers = {
-			biome = {},
-			clangd = {},
-			cssls = {},
+			-- Conform owns formatting (oxfmt → biome). Keep biome for diagnostics.
+			biome = {
+				on_attach = disable_formatting,
+			},
 			emmet_language_server = {
 				filetypes = {
 					"astro",
@@ -162,18 +162,12 @@ return {
 					"vue",
 				},
 			},
-			eslint = {
+			oxlint = {
 				settings = {
-					workingDirectory = { mode = "auto" },
+					fixKind = "all",
 				},
 			},
 			gopls = {
-				cmd = { "gopls" },
-				filetypes = { "go", "gomod", "gowork", "gotmpl" },
-				root_dir = function(bufnr, on_dir)
-					local fname = vim.api.nvim_buf_get_name(bufnr)
-					on_dir(vim.fs.root(fname, { "go.work", "go.mod", ".git" }) or vim.fs.dirname(fname))
-				end,
 				settings = {
 					gopls = {
 						gofumpt = true,
@@ -196,9 +190,6 @@ return {
 					},
 				},
 			},
-			html = {},
-			jdtls = {},
-			jsonls = {},
 			rust_analyzer = {
 				settings = {
 					["rust-analyzer"] = {
@@ -237,8 +228,12 @@ return {
 					},
 				},
 			},
-			tailwindcss = {},
+			-- TypeScript 7 (`tsc --lsp`). Complements vtsls; formatting stays in conform.
+			tsc = {
+				on_attach = disable_formatting,
+			},
 			vtsls = {
+				on_attach = disable_formatting,
 				settings = {
 					vtsls = {
 						autoUseWorkspaceTsdk = true,
@@ -272,7 +267,6 @@ return {
 				},
 			},
 			tinymist = { offset_encoding = "utf-8" },
-			ty = {},
 			lua_ls = {
 				settings = {
 					Lua = {
@@ -288,24 +282,21 @@ return {
 			},
 		}
 
-		local server_names = vim.tbl_keys(servers or {})
+		for server_name, server_settings in pairs(servers) do
+			vim.lsp.config(server_name, server_settings)
+		end
 
-		-- Setup Mason for LSP and tool installation
-		require("mason").setup()
-
-		-- Configure tools to ensure installation (LSP servers + extra tools)
-		local ensure_tools = {}
-		vim.list_extend(ensure_tools, server_names)
-		vim.list_extend(ensure_tools, {
+		-- Formatters / linters (not LSPs). Install extra LSPs via ensure_lsps.
+		local ensure_tools = {
 			"biome",
-			"eslint_d",
 			"gofumpt",
 			"goimports",
 			"google-java-format",
+			"oxfmt",
 			"prettier",
 			"prettierd",
-			"stylua", -- Lua formatter
-		})
+			"stylua",
+		}
 
 		if #vim.api.nvim_list_uis() > 0 then
 			require("mason-tool-installer").setup({
@@ -313,27 +304,13 @@ return {
 			})
 		end
 
-		-- Configure each LSP server via vim.lsp.config (mason-lspconfig 2.0+ API)
-		for server_name, server_settings in pairs(servers) do
-			local config = vim.tbl_deep_extend("force", {}, server_settings)
-			config.capabilities = vim.tbl_deep_extend("force", {}, capabilities, config.capabilities or {})
-			vim.lsp.config(server_name, config)
-		end
-
-		-- Setup mason-lspconfig (automatic_enable is on by default in v2.0+)
+		-- Mason installs these; mason-lspconfig enables them automatically.
+		-- oxfmt has an LSP, but conform runs the CLI so we don't attach both.
 		require("mason-lspconfig").setup({
-			ensure_installed = server_names,
+			ensure_installed = ensure_lsps,
+			automatic_enable = {
+				exclude = { "oxfmt" },
+			},
 		})
-
-		-- Enable all configured LSP servers
-		vim.lsp.enable(server_names)
-
-		-- Manually trigger LSP for current buffer after config is registered.
-		local bufnr = vim.api.nvim_get_current_buf()
-		local ft = vim.bo[bufnr].filetype
-		if ft and ft ~= "" then
-			-- Re-trigger FileType to start LSP for current buffer
-			vim.api.nvim_exec_autocmds("FileType", { buffer = bufnr })
-		end
 	end,
 }

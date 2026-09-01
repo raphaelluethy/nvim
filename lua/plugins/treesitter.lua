@@ -9,6 +9,7 @@ return {
 			"gotmpl",
 			"gowork",
 			"lua",
+			"odin",
 			"vim",
 			"vimdoc",
 		},

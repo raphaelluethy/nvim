@@ -32,4 +32,9 @@ require("lazy").setup({
 	checker = {
 		enabled = false,
 	},
+	install = {
+		colorscheme = { "spectrum" },
+	},
 })
+
+vim.cmd.colorscheme("spectrum")
