@@ -28,6 +28,10 @@ return {
 	add_bg = "#2d382f",
 	delete_bg = "#3c2a2f",
 	change_bg = "#3c3028",
+	-- Word-level diff: VS Code stacks line + text background (~19% over bg).
+	add_word_bg = "#334537",
+	delete_word_bg = "#4b2e36",
+	change_word_bg = "#4c372b",
 	error_bg = "#37242a",
 	warn_bg = "#372a23",
 	info_bg = "#373425",
