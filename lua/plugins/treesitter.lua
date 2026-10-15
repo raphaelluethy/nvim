@@ -1,5 +1,7 @@
 return {
 	"nvim-treesitter/nvim-treesitter",
+	-- The rewrite lives on main; tagged releases are the frozen master branch.
+	branch = "main",
 	build = ":TSUpdate",
 	opts = {
 		ensure_installed = {

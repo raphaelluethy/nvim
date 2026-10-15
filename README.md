@@ -13,6 +13,14 @@ not the LazyVim distribution. Requires Neovim 0.12+ and Git.
 - `:Lazy restore` restores plugin revisions from the lockfile.
 - `:Mason` manages language servers, formatters, and debug adapters.
 
+Plugins with maintained semver releases are pinned to the latest release
+(`version = "*"`): blink.cmp, gitsigns, mason, mason-nvim-dap, mini.icons,
+nvim-lspconfig, nvim-tree, oil, sidekick, and telescope. The rest track their
+default branch because their tags are stale or missing, or because the release
+lacks something this config needs (mason-lspconfig's `tsc` mapping;
+trouble.nvim's Neovim 0.12 decoration-provider fix). nvim-treesitter must stay
+on `main`.
+
 ## Debugging
 
 `lua/plugins/dap.lua` loads nvim-dap on a debugger command or keypress.

@@ -13,7 +13,7 @@ return {
 	},
 	dependencies = {
 		{ "mason-org/mason.nvim", opts = {} },
-		"jay-babu/mason-nvim-dap.nvim",
+		{ "jay-babu/mason-nvim-dap.nvim", version = "*" },
 		"mfussenegger/nvim-dap-python",
 		{ "rcarriga/nvim-dap-ui", dependencies = { "nvim-neotest/nvim-nio" } },
 	},

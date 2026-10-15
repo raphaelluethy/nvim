@@ -1,5 +1,6 @@
 return {
 	"lewis6991/gitsigns.nvim",
+	version = "*",
 	opts = {
 		signcolumn = true,
 		linehl = false, -- Set true to highlight changed lines.

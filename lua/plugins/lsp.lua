@@ -1,8 +1,10 @@
 return {
 	-- Main LSP Configuration
 	"neovim/nvim-lspconfig",
+	version = "*",
 	dependencies = {
-		{ "mason-org/mason.nvim", opts = {} },
+		{ "mason-org/mason.nvim", version = "*", opts = {} },
+		-- Stays on main: the `tsc` server mapping is not in a release yet.
 		"mason-org/mason-lspconfig.nvim",
 		"WhoIsSethDaniel/mason-tool-installer.nvim",
 	},

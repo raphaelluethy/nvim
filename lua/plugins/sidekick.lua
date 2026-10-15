@@ -1,5 +1,6 @@
 return {
 	"folke/sidekick.nvim",
+	version = "*",
 	cmd = "Sidekick",
 	opts = {
 		-- Supermaven remains the only AI completion provider.

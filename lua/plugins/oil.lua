@@ -1,11 +1,12 @@
 return {
 	{
 		"stevearc/oil.nvim",
+		version = "*",
 		---@module 'oil'
 		---@type oil.SetupOpts
 		opts = {},
 		-- Optional dependencies
-		dependencies = { { "echasnovski/mini.icons", opts = {} } },
+		dependencies = { { "echasnovski/mini.icons", version = "*", opts = {} } },
 		-- dependencies = { "nvim-tree/nvim-web-devicons" }, -- use if prefer nvim-web-devicons
 		config = function()
 			require("oil").setup({

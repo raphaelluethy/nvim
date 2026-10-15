@@ -1,6 +1,6 @@
 return { -- Fuzzy Finder (files, lsp, etc)
 	"nvim-telescope/telescope.nvim",
-	tag = "v0.1.9",
+	version = "*",
 	dependencies = {
 		"nvim-lua/plenary.nvim",
 		{ -- If encountering errors, see telescope-fzf-native README for installation instructions
