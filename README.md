@@ -21,6 +21,20 @@ lacks something this config needs (mason-lspconfig's `tsc` mapping;
 trouble.nvim's Neovim 0.12 decoration-provider fix). nvim-treesitter must stay
 on `main`.
 
+## Appearance
+
+The colorscheme is `monokai-pro-zed` from the private
+`raphaelluethy/monokai-pro-zed` repo (the zed-mp themes; they are licensed,
+so they are not part of this config). lazy.nvim clones it over SSH; without
+access, Neovim keeps its default colorscheme. It follows `'background'`:
+Monokai Pro (Filter Spectrum) V3 when dark, Monokai Pro Light (Filter Sun) V3
+when light; change them in `lua/plugins/monokai-pro-zed.lua`. Every variant is
+also its own `:colorscheme`, e.g. `monokai-pro-filter-spectrum-v3-no-italics`
+(V3 draws inlay hints like Zed; No Italics drops every italic).
+`lua/config/appearance.lua` follows the system setting: on macOS it reads the
+system appearance at startup and when Neovim regains focus. Terminals that
+send theme notifications (Ghostty, kitty, WezTerm) switch it live.
+
 ## Debugging
 
 `lua/plugins/dap.lua` loads nvim-dap on a debugger command or keypress.
