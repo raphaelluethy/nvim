@@ -164,7 +164,7 @@ return {
 			function()
 				require("sidekick_ext.review").toggle_mode()
 			end,
-			desc = "Review: toggle review mode (inline diff + hunk list)",
+			desc = "Review: open review panel (codediff)",
 		},
 		{
 			"<leader>ma",

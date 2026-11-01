@@ -470,18 +470,13 @@ local function apply_light_boost()
 	end
 end
 
---- Review panel: diffview.nvim (file tree with staged/unstaged sections and a
---- side-by-side diff). Toggles open/closed.
+--- Review panel: codediff.nvim (staged/unstaged explorer, side-by-side or
+--- unified diff, toggle with `t`, close with `q`).
 function M.toggle_mode()
-	local ok, lib = pcall(require, "diffview.lib")
-	if not ok then
-		return vim.notify("diffview.nvim is not installed (run :Lazy install)", vim.log.levels.ERROR)
+	if vim.fn.exists(":CodeDiff") == 0 then
+		return vim.notify("codediff.nvim is not installed (run :Lazy install)", vim.log.levels.ERROR)
 	end
-	if lib.get_current_view() then
-		vim.cmd("DiffviewClose")
-	else
-		vim.cmd("DiffviewOpen")
-	end
+	vim.cmd("CodeDiff")
 end
 
 function M.setup(opts)
