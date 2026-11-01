@@ -37,8 +37,6 @@ require("lazy").setup({
 		enabled = false,
 	},
 	install = {
-		colorscheme = { "spectrum" },
+		colorscheme = { "monokai-pro-zed", "habamax" },
 	},
 })
-
-vim.cmd.colorscheme("spectrum")
