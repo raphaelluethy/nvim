@@ -14,6 +14,7 @@ return {
 	},
 	config = function(_, opts)
 		require("sidekick").setup(opts)
+		require("sidekick_ext.agents").setup()
 		require("sidekick_ext.tasks").setup()
 		require("sidekick_ext.review").setup()
 
@@ -133,29 +134,29 @@ return {
 				require("sidekick_ext.tasks").prompt()
 			end,
 			mode = { "n", "v" },
-			desc = "Task: new hidden task (last used agent)",
+			desc = "Agent: new session (<C-s> starts hidden)",
 		},
 		{
-			"<leader>jN",
+			"<leader>jo",
 			function()
-				require("sidekick_ext.tasks").prompt({ choose_tool = true })
+				require("sidekick_ext.tasks").prompt({ show = true })
 			end,
 			mode = { "n", "v" },
-			desc = "Task: new hidden task (pick tool)",
+			desc = "Agent: new session (<C-s> starts visible)",
 		},
 		{
 			"<leader>jj",
 			function()
 				require("sidekick_ext.tasks").pick()
 			end,
-			desc = "Task: list tasks",
+			desc = "Agent: sessions (show / hide / send / kill)",
 		},
 		{
 			"<leader>jh",
 			function()
 				require("sidekick_ext.tasks").hide_all()
 			end,
-			desc = "Task: hide all task floats",
+			desc = "Agent: hide all session floats",
 		},
 		-- Review comments (lua/sidekick_ext/review.lua)
 		{

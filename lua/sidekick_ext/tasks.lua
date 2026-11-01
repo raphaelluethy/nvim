@@ -7,47 +7,13 @@ local M = {}
 
 local PREFIX = "sk-task:"
 
+local Agents = require("sidekick_ext.agents")
+
 M.config = {
-	default_tool = "opencode",
 	bounds = { 0.04, 0.04, 0.92, 0.92 }, -- [x, y, w, h] fractions of the Rex window
-	---@type table<string, fun(prompt:string):string[]>
-	tools = {
-		opencode = function(p)
-			return { "env", "OPENCODE_THEME=system", "opencode", "--prompt", p }
-		end,
-		claude = function(p)
-			return { "claude", p }
-		end,
-		droid = function(p)
-			return { "droid", p }
-		end,
-		codex = function(p)
-			return { "codex", p }
-		end,
-	},
 }
 
 local state_file = vim.fn.stdpath("state") .. "/sidekick-tasks.json"
-local last_tool_file = vim.fn.stdpath("state") .. "/sidekick-tasks-last-tool"
-
---- Tool used for the most recent task (persisted), else the default.
-function M.last_tool()
-	local f = io.open(last_tool_file, "r")
-	local tool = f and vim.trim(f:read("*a")) or nil
-	if f then
-		f:close()
-	end
-	return (tool and M.config.tools[tool]) and tool or M.config.default_tool
-end
-
-local function set_last_tool(tool)
-	vim.fn.mkdir(vim.fn.fnamemodify(last_tool_file, ":h"), "p")
-	local f = io.open(last_tool_file, "w")
-	if f then
-		f:write(tool)
-		f:close()
-	end
-end
 
 ---@class sidekick_ext.TaskMeta
 ---@field tool string
@@ -166,6 +132,7 @@ end
 ---@class sidekick_ext.NewTaskOpts
 ---@field prompt string
 ---@field tool? string
+---@field sel? sidekick_ext.Selection model / mode / effort (defaults to the saved one)
 ---@field show? boolean start visible instead of hidden
 ---@field cwd? string
 
@@ -175,12 +142,12 @@ function M.new(opts)
 	if not check() then
 		return
 	end
-	local tool = opts.tool or M.last_tool()
-	local build = M.config.tools[tool]
-	if not build then
+	local tool = opts.tool or Agents.last_tool()
+	if not Agents.specs[tool] then
 		vim.notify("sidekick tasks: unknown tool " .. tool, vim.log.levels.ERROR)
 		return
 	end
+	local sel = opts.sel or Agents.selection(tool)
 	local window_id = Rex.window_id()
 	local cwd = opts.cwd or vim.fn.getcwd()
 	local title = title_of(opts.prompt)
@@ -193,7 +160,7 @@ function M.new(opts)
 			block = {
 				flavor = "com.superlogical.terminal.shell",
 				label = label,
-				options = { command = build(opts.prompt), cwd = cwd, exit = { on_completion = false } },
+				options = { command = Agents.cmd(tool, sel, opts.prompt), cwd = cwd, exit = { on_completion = false } },
 			},
 		},
 	})
@@ -205,7 +172,7 @@ function M.new(opts)
 		Rex.call("session.set_layer_state", { layer_id = res.layer_id, state = "minimized" })
 	end
 	local block_id = res.block_ids[1]
-	set_last_tool(tool)
+	Agents.set_last_tool(tool)
 	local meta = load_meta()
 	meta[block_id] = { tool = tool, prompt = opts.prompt, cwd = cwd, created = os.time() }
 	save_meta(meta)
@@ -249,30 +216,11 @@ function M.send(task, text)
 	end
 end
 
-local function pick_tool(cb)
-	local names = vim.tbl_keys(M.config.tools)
-	local last = M.last_tool()
-	table.sort(names, function(a, b)
-		if a == last then
-			return true
-		elseif b == last then
-			return false
-		end
-		return a < b
-	end)
-	names = vim.tbl_filter(function(n)
-		return vim.fn.executable(n) == 1
-	end, names)
-	vim.ui.select(names, { prompt = "Tool for task" }, function(choice)
-		if choice then
-			cb(choice)
-		end
-	end)
-end
-
---- Open the prompt editor and start a task. In visual mode the selection
---- (with file/line references) is prefilled as context.
----@param opts? { tool?: string, show?: boolean, choose_tool?: boolean }
+--- Open the prompt editor and start an agent session in a Rex float. The
+--- button bar picks agent, model, mode and effort (saved per agent); "Start"
+--- and "Start hidden" choose whether the float is shown. In visual mode the
+--- selection (with file/line references) is prefilled as context.
+---@param opts? { tool?: string, show?: boolean } show = <C-s> starts visible
 function M.prompt(opts)
 	opts = opts or {}
 	if not check() then
@@ -284,19 +232,42 @@ function M.prompt(opts)
 		default = require("sidekick.cli").render({ msg = "{selection}" })
 		vim.api.nvim_feedkeys(vim.keycode("<Esc>"), "nx", false)
 	end
-	local function go(tool)
-		require("sidekick_ext.input").open({
-			title = ("New %stask · %s"):format(opts.show and "" or "hidden ", tool),
-			default = default,
-		}, function(text)
-			M.new({ prompt = text, tool = tool, show = opts.show })
-		end)
+	local tool = opts.tool or Agents.last_tool()
+	local sel = Agents.selection(tool)
+	local function start(show)
+		return function(text)
+			M.new({ prompt = text, tool = tool, sel = sel, show = show })
+		end
 	end
-	if opts.choose_tool then
-		pick_tool(go)
-	else
-		go(opts.tool or M.last_tool())
+	local actions = {
+		{ label = "Start", run = start(true) },
+		{ label = "Start hidden", run = start(false) },
+	}
+	if not opts.show then
+		actions[1], actions[2] = actions[2], actions[1]
 	end
+	local handle
+	handle = require("sidekick_ext.input").open({
+		title = "New agent session",
+		default = default,
+		actions = actions,
+		bar = function(win)
+			return Agents.bar(tool, sel, function(t, new)
+				tool, sel = t, new
+				Agents.set_last_tool(t)
+				Agents.set_selection(t, new)
+				handle.refresh()
+			end, win, function()
+				-- Back to the prompt, ready to type (the picker leaves normal mode).
+				vim.schedule(function()
+					if vim.api.nvim_win_is_valid(handle.win) then
+						vim.api.nvim_set_current_win(handle.win)
+						vim.cmd("startinsert!")
+					end
+				end)
+			end)
+		end,
+	})
 end
 
 --- Telescope picker over all tasks. Preview shows the agent's screen.
@@ -334,7 +305,7 @@ function M.pick()
 		return finders.new_table({
 			results = tasks,
 			entry_maker = function(t)
-				local display = ("%s %-9s %-8s %-4s %s"):format(t.hidden and "◌" or "●", t.status, t.tool, age(t), t.title)
+				local display = ("%s %-9s %-8s %-4s %s"):format(t.hidden and "hidden" or "shown ", t.status, t.tool, age(t), t.title)
 				return { value = t, display = display, ordinal = t.tool .. " " .. t.title .. " " .. t.status }
 			end,
 		})
@@ -346,7 +317,7 @@ function M.pick()
 	end
 
 	picker = pickers.new({}, {
-		prompt_title = "Sidekick tasks  (<CR> show · <C-h> hide · <C-s> send · <C-x> kill)",
+		prompt_title = "Agent sessions  (<CR> show · <C-h> hide · <C-s> send · <C-x> kill)",
 		finder = make_finder(),
 		sorter = conf.generic_sorter({}),
 		previewer = previewers.new_buffer_previewer({

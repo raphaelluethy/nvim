@@ -74,7 +74,7 @@ end
 
 local function rel(buf)
 	local name = vim.api.nvim_buf_get_name(buf)
-	if name == "" then
+	if name == "" or name:match("^%a[%w+.-]*://") or vim.bo[buf].buftype ~= "" then
 		return nil
 	end
 	return vim.fs.relpath(store.root, name) or name
@@ -148,7 +148,7 @@ local function render(buf)
 			-- Display mark: the comment text below the range.
 			local lines = {}
 			for i, l in ipairs(vim.split(c.text, "\n", { plain = true })) do
-				lines[#lines + 1] = { { (i == 1 and "  󰆉 " or "    ") .. l, "DiagnosticVirtualTextInfo" } }
+				lines[#lines + 1] = { { (i == 1 and "  > " or "    ") .. l, "DiagnosticVirtualTextInfo" } }
 			end
 			-- Fixed id offset so it never collides with a comment's range-mark id.
 			vim.api.nvim_buf_set_extmark(buf, ns, e, 0, { id = c.id + 1000000, virt_lines = lines })
@@ -449,6 +449,20 @@ local function apply_light_boost()
 			vim.api.nvim_set_hl(0, "GitSigns" .. kind .. "LnInline", { bg = inline })
 		end
 	end
+	-- Diff mode (review panel): same treatment for the core Diff groups.
+	local diff_accents = {
+		DiffAdd = color("GitSignsAdd", "fg") or color("Added", "fg"),
+		DiffChange = color("GitSignsChange", "fg") or color("Changed", "fg"),
+		DiffDelete = color("GitSignsDelete", "fg") or color("Removed", "fg"),
+	}
+	for group, accent in pairs(diff_accents) do
+		if accent then
+			vim.api.nvim_set_hl(0, group, { bg = blend(accent, bg, b.line), fg = group == "DiffDelete" and accent or nil })
+		end
+	end
+	if diff_accents.DiffChange then
+		vim.api.nvim_set_hl(0, "DiffText", { bg = blend(diff_accents.DiffChange, bg, b.inline) })
+	end
 	local del = color("GitSignsDelete", "fg")
 	if del then
 		vim.api.nvim_set_hl(0, "GitSignsDeleteVirtLn", { fg = del, bg = blend(del, bg, b.line) })
@@ -456,22 +470,17 @@ local function apply_light_boost()
 	end
 end
 
---- Review mode: show the working-tree diff inline in the real files (line
---- highlights, deleted lines, word diff) and put every changed hunk in the
---- quickfix list, so you can step through changes and comment on them.
-M.mode = false
+--- Review panel: diffview.nvim (file tree with staged/unstaged sections and a
+--- side-by-side diff). Toggles open/closed.
 function M.toggle_mode()
-	local gs = require("gitsigns")
-	M.mode = not M.mode
-	gs.toggle_linehl(M.mode)
-	gs.toggle_word_diff(M.mode)
-	pcall(gs.toggle_deleted, M.mode)
-	if M.mode then
-		gs.setqflist("all")
-		vim.notify("Review mode on: ]h/[h next/prev hunk, <leader>cn/cp across files, <leader>ma comment")
+	local ok, lib = pcall(require, "diffview.lib")
+	if not ok then
+		return vim.notify("diffview.nvim is not installed (run :Lazy install)", vim.log.levels.ERROR)
+	end
+	if lib.get_current_view() then
+		vim.cmd("DiffviewClose")
 	else
-		vim.cmd.cclose()
-		vim.notify("Review mode off")
+		vim.cmd("DiffviewOpen")
 	end
 end
 
@@ -480,16 +489,6 @@ function M.setup(opts)
 	local group = vim.api.nvim_create_augroup("sidekick_review", { clear = true })
 	apply_light_boost()
 	vim.api.nvim_create_autocmd("ColorScheme", { group = group, callback = apply_light_boost })
-	-- Keep the hunk list current while reviewing (the diff itself updates live).
-	vim.api.nvim_create_autocmd("BufWritePost", {
-		group = group,
-		callback = function()
-			if M.mode then
-				local qf = vim.fn.getqflist({ winid = 0 }).winid ~= 0
-				require("gitsigns").setqflist("all", { open = qf })
-			end
-		end,
-	})
 	vim.api.nvim_create_autocmd({ "BufReadPost", "BufNewFile" }, {
 		group = group,
 		callback = function(ev)
