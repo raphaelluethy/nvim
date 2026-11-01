@@ -14,6 +14,8 @@ return {
 	},
 	config = function(_, opts)
 		require("sidekick").setup(opts)
+		require("sidekick_ext.tasks").setup()
+		require("sidekick_ext.review").setup()
 
 		-- Copilot ghost text via Neovim's native inline completion.
 		-- <Tab> accepts (see blink.lua); <M-]> / <M-[> cycle alternatives.
@@ -123,6 +125,83 @@ return {
 				require("sidekick.cli").toggle({ name = "opencode", focus = true })
 			end,
 			desc = "Sidekick: OpenCode",
+		},
+		-- Hidden tasks in minimized Rex floats (lua/sidekick_ext/tasks.lua)
+		{
+			"<leader>jn",
+			function()
+				require("sidekick_ext.tasks").prompt()
+			end,
+			mode = { "n", "v" },
+			desc = "Task: new hidden task (last used agent)",
+		},
+		{
+			"<leader>jN",
+			function()
+				require("sidekick_ext.tasks").prompt({ choose_tool = true })
+			end,
+			mode = { "n", "v" },
+			desc = "Task: new hidden task (pick tool)",
+		},
+		{
+			"<leader>jj",
+			function()
+				require("sidekick_ext.tasks").pick()
+			end,
+			desc = "Task: list tasks",
+		},
+		{
+			"<leader>jh",
+			function()
+				require("sidekick_ext.tasks").hide_all()
+			end,
+			desc = "Task: hide all task floats",
+		},
+		-- Review comments (lua/sidekick_ext/review.lua)
+		{
+			"<leader>mr",
+			function()
+				require("sidekick_ext.review").toggle_mode()
+			end,
+			desc = "Review: toggle review mode (inline diff + hunk list)",
+		},
+		{
+			"<leader>ma",
+			function()
+				require("sidekick_ext.review").add()
+			end,
+			mode = { "n", "v" },
+			desc = "Review: add/edit comment",
+		},
+		{
+			"<leader>md",
+			function()
+				require("sidekick_ext.review").delete()
+			end,
+			desc = "Review: delete comment",
+		},
+		{
+			"<leader>ml",
+			function()
+				require("sidekick_ext.review").list()
+			end,
+			desc = "Review: list comments",
+		},
+		{
+			"<leader>ms",
+			function()
+				require("sidekick_ext.review").send()
+			end,
+			desc = "Review: send comments",
+		},
+		{
+			"<leader>mc",
+			function()
+				if vim.fn.confirm("Clear all review comments?", "&Yes\n&No", 2) == 1 then
+					require("sidekick_ext.review").clear()
+				end
+			end,
+			desc = "Review: clear comments",
 		},
 	},
 }
