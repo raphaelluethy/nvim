@@ -46,6 +46,11 @@ return {
 		},
 		sources = {
 			default = { "lsp", "path", "snippets", "buffer" },
+			providers = {
+				-- Blink holds the menu up to 2s for LSP by default; show other
+				-- sources sooner and merge slow LSP results in as they arrive.
+				lsp = { timeout_ms = 150 },
+			},
 		},
 		fuzzy = { implementation = "prefer_rust_with_warning" },
 	},
