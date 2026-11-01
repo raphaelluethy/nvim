@@ -9,7 +9,7 @@ return {
 		cli = {
 			picker = "telescope",
 			tools = {
-				cursor = { cmd = { "agent" } },
+				opencode = { cmd = { "opencode" } },
 				droid = { cmd = { "droid" } },
 			},
 		},
