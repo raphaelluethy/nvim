@@ -124,6 +124,7 @@ return {
 		local ensure_lsps = {
 			"biome",
 			"clangd",
+			"copilot",
 			"cssls",
 			"emmet_language_server",
 			"gopls",
@@ -137,7 +138,6 @@ return {
 			"tinymist",
 			"tsc",
 			"ty",
-			"vtsls",
 		}
 
 		-- Optional per-server overrides. Empty `{}` is never required.
@@ -230,40 +230,19 @@ return {
 					},
 				},
 			},
-			-- TypeScript 7 (`tsc --lsp`). Complements vtsls; formatting stays in conform.
+			-- Use TypeScript 7 (`tsc --lsp`); formatting stays in conform.
 			tsc = {
 				on_attach = disable_formatting,
-			},
-			vtsls = {
-				on_attach = disable_formatting,
 				settings = {
-					vtsls = {
-						autoUseWorkspaceTsdk = true,
-					},
-					typescript = {
+					["js/ts"] = {
+						-- Hide type hints like Zed; keep parameter names and enum values.
 						inlayHints = {
-							parameterNames = { enabled = "literals" },
+							parameterNames = { enabled = "all", suppressWhenArgumentMatchesName = true },
 							parameterTypes = { enabled = false },
 							variableTypes = { enabled = false },
 							propertyDeclarationTypes = { enabled = false },
 							functionLikeReturnTypes = { enabled = false },
 							enumMemberValues = { enabled = true },
-						},
-						suggest = {
-							completeFunctionCalls = true,
-						},
-					},
-					javascript = {
-						inlayHints = {
-							parameterNames = { enabled = "literals" },
-							parameterTypes = { enabled = false },
-							variableTypes = { enabled = false },
-							propertyDeclarationTypes = { enabled = false },
-							functionLikeReturnTypes = { enabled = false },
-							enumMemberValues = { enabled = true },
-						},
-						suggest = {
-							completeFunctionCalls = true,
 						},
 					},
 				},
@@ -307,11 +286,11 @@ return {
 		end
 
 		-- Mason installs these; mason-lspconfig enables them automatically.
-		-- oxfmt has an LSP, but conform runs the CLI so we don't attach both.
+		-- oxfmt runs via conform; tsc replaces vtsls even if it is still installed.
 		require("mason-lspconfig").setup({
 			ensure_installed = ensure_lsps,
 			automatic_enable = {
-				exclude = { "oxfmt" },
+				exclude = { "oxfmt", "vtsls" },
 			},
 		})
 	end,
