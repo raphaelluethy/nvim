@@ -32,8 +32,8 @@ return {
 		default_format_opts = {
 			lsp_format = "fallback",
 		},
-		format_on_save = {
-			timeout_ms = 500,
+		-- Async: project-local oxfmt (vite-plus Node wrapper) takes ~0.7s per run.
+		format_after_save = {
 			lsp_format = "fallback",
 		},
 		formatters_by_ft = {
