@@ -1,11 +1,9 @@
 return {
 	"folke/sidekick.nvim",
 	version = "*",
-	cmd = "Sidekick",
+	-- Loaded at startup: next edit suggestions (NES) attach to the Copilot LSP.
+	lazy = false,
 	opts = {
-		-- Supermaven remains the only AI completion provider.
-		nes = { enabled = false },
-		copilot = { status = { enabled = false } },
 		cli = {
 			picker = "telescope",
 			tools = {
@@ -14,7 +12,38 @@ return {
 			},
 		},
 	},
+	config = function(_, opts)
+		require("sidekick").setup(opts)
+
+		-- Copilot ghost text via Neovim's native inline completion.
+		-- <Tab> accepts (see blink.lua); <M-]> / <M-[> cycle alternatives.
+		vim.lsp.inline_completion.enable(true)
+		vim.keymap.set("i", "<M-]>", function()
+			vim.lsp.inline_completion.select({ count = 1 })
+		end, { desc = "Next Copilot suggestion" })
+		vim.keymap.set("i", "<M-[>", function()
+			vim.lsp.inline_completion.select({ count = -1 })
+		end, { desc = "Previous Copilot suggestion" })
+
+		vim.keymap.set("n", "<leader>ta", function()
+			local enable = not vim.lsp.inline_completion.is_enabled()
+			vim.lsp.inline_completion.enable(enable)
+			require("sidekick.nes").enable(enable)
+			vim.notify("Copilot " .. (enable and "enabled" or "disabled"))
+		end, { desc = "Toggle AI inline completion" })
+	end,
 	keys = {
+		{
+			"<Tab>",
+			function()
+				-- Jump to the next edit suggestion, or apply it when already there.
+				if not require("sidekick").nes_jump_or_apply() then
+					return "<Tab>"
+				end
+			end,
+			expr = true,
+			desc = "Goto/Apply next edit suggestion",
+		},
 		{
 			"<leader>cc",
 			function()

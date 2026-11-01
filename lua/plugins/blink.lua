@@ -4,10 +4,21 @@ return {
 	event = "InsertEnter",
 	dependencies = { "rafamadriz/friendly-snippets" },
 	opts = {
-		-- Enter accepts, Tab stays with SuperMaven ghost text.
-		-- C-j / C-k match the previous native popup bindings.
+		-- Enter accepts the menu item. Tab: snippet jump, then Copilot next edit
+		-- suggestion, then Copilot ghost text. C-j / C-k match the previous
+		-- native popup bindings.
 		keymap = {
 			preset = "enter",
+			["<Tab>"] = {
+				"snippet_forward",
+				function()
+					return require("sidekick").nes_jump_or_apply()
+				end,
+				function()
+					return vim.lsp.inline_completion.get()
+				end,
+				"fallback",
+			},
 			["<C-space>"] = { "show", "show_documentation", "hide_documentation" },
 			["<C-e>"] = { "hide", "fallback" },
 			["<C-c>"] = { "hide", "fallback" },
