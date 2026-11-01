@@ -91,6 +91,9 @@ Cursor uses the local `agent` command; Factory Droid uses `droid`.
 | Key | Action |
 | --- | --- |
 | `<leader>cc` | Toggle CLI; choose an installed tool if none is attached |
+| `<leader>cn` | Choose an agent, then submit a task and open its terminal (`<C-s>`) |
+| `<leader>jn` | Submit a task in the background |
+| `<leader>jj` | List background tasks and open their terminals |
 | `<leader>cl` | Select an installed CLI, including Codex |
 | `<leader>cA` | Select a prompt |
 | `<leader>ci` | Send cursor context |
@@ -103,6 +106,13 @@ Cursor uses the local `agent` command; Factory Droid uses `droid`.
 | `<leader>c4` | Toggle OpenCode |
 
 Context is inserted into the CLI input for review, not automatically submitted.
+The task form offers model and effort selectors after choosing the agent.
+Set `backend = "buffer"` (default) or `backend = "rex"` in the
+`sidekick_ext.tasks.setup` call in `lua/plugins/sidekick.lua` to choose where tasks run.
+`<leader>cn` opens the task terminal; `<leader>jn` starts it hidden.
+Use `<leader>jj` to open tasks in the selected destination later.
+Buffer tasks run until Neovim closes. Rex tasks survive Neovim closing while the
+Rex session stays alive.
 Save buffers before asking a CLI to read files. In the CLI terminal, `<C-q>`
 leaves terminal mode and `q` in normal mode hides the window without stopping
 the session. Existing `<leader>cf` formatting and `<leader>a` Harpoon mappings

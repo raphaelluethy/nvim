@@ -10,6 +10,7 @@ local PREFIX = "sk-task:"
 local Agents = require("sidekick_ext.agents")
 
 M.config = {
+	backend = "buffer", -- "buffer" (Neovim terminal) or "rex" (Rex window)
 	bounds = { 0.04, 0.04, 0.92, 0.92 }, -- [x, y, w, h] fractions of the Rex window
 }
 
@@ -194,6 +195,9 @@ function M.hide(task)
 end
 
 function M.hide_all()
+	if M.config.backend == "buffer" then
+		return require("sidekick_ext.sessions").hide_all()
+	end
 	for _, t in ipairs(M.list()) do
 		if not t.hidden then
 			M.hide(t)
@@ -216,62 +220,35 @@ function M.send(task, text)
 	end
 end
 
---- Open the prompt editor and start an agent session in a Rex float. The
---- button bar picks agent, model, mode and effort (saved per agent); "Start"
---- and "Start hidden" choose whether the float is shown. In visual mode the
---- selection (with file/line references) is prefilled as context.
+--- Submit using the backend selected in the Lua configuration.
+function M.submit(opts)
+	if M.config.backend == "rex" then
+		return M.new(opts)
+	end
+	return require("sidekick_ext.sessions").new(opts)
+end
+
+--- Pick an agent and submit a task. Tasks start in the background by default;
+--- the task picker can show their terminal later.
 ---@param opts? { tool?: string, show?: boolean } show = <C-s> starts visible
 function M.prompt(opts)
 	opts = opts or {}
-	if not check() then
-		return
-	end
-	local default
-	local mode = vim.fn.mode()
-	if mode == "v" or mode == "V" or mode == "\22" then
-		default = require("sidekick.cli").render({ msg = "{selection}" })
-		vim.api.nvim_feedkeys(vim.keycode("<Esc>"), "nx", false)
-	end
-	local tool = opts.tool or Agents.last_tool()
-	local sel = Agents.selection(tool)
-	local function start(show)
-		return function(text)
-			M.new({ prompt = text, tool = tool, sel = sel, show = show })
-		end
-	end
 	local actions = {
-		{ label = "Start", run = start(true) },
-		{ label = "Start hidden", run = start(false) },
+		{
+			label = "Submit",
+			run = function(text, tool, sel)
+				M.submit({ prompt = text, tool = tool, sel = sel, show = opts.show == true })
+			end,
+		},
 	}
-	if not opts.show then
-		actions[1], actions[2] = actions[2], actions[1]
-	end
-	local handle
-	handle = require("sidekick_ext.input").open({
-		title = "New agent session",
-		default = default,
-		actions = actions,
-		bar = function(win)
-			return Agents.bar(tool, sel, function(t, new)
-				tool, sel = t, new
-				Agents.set_last_tool(t)
-				Agents.set_selection(t, new)
-				handle.refresh()
-			end, win, function()
-				-- Back to the prompt, ready to type (the picker leaves normal mode).
-				vim.schedule(function()
-					if vim.api.nvim_win_is_valid(handle.win) then
-						vim.api.nvim_set_current_win(handle.win)
-						vim.cmd("startinsert!")
-					end
-				end)
-			end)
-		end,
-	})
+	return Agents.form({ title = "Submit task", tool = opts.tool, actions = actions })
 end
 
 --- Telescope picker over all tasks. Preview shows the agent's screen.
 function M.pick()
+	if M.config.backend == "buffer" then
+		return require("sidekick_ext.sessions").pick()
+	end
 	if not check() then
 		return
 	end
@@ -382,9 +359,10 @@ end
 
 function M.setup(opts)
 	M.config = vim.tbl_deep_extend("force", M.config, opts or {})
+	assert(M.config.backend == "buffer" or M.config.backend == "rex", "task backend must be 'buffer' or 'rex'")
 	vim.api.nvim_create_user_command("SkTask", function(a)
 		if a.args ~= "" then
-			M.new({ prompt = a.args, show = a.bang })
+			M.submit({ prompt = a.args, show = a.bang })
 		else
 			M.prompt({ show = a.bang })
 		end

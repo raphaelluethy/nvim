@@ -321,23 +321,29 @@ function M.set_selection(tool, sel)
 	save(data)
 end
 
---- Full command for a tool + selection, optionally with a prompt.
-function M.cmd(tool, sel, prompt)
+--- Command and environment for a tool + selection, optionally with a prompt.
+---@return { cmd: string[], env: table<string, string> }
+function M.command(tool, sel, prompt)
 	local spec = M.specs[tool]
+	local cmd = vim.deepcopy(spec.base)
+	vim.list_extend(cmd, spec.args(sel or {}))
+	if prompt then
+		vim.list_extend(cmd, spec.prompt(prompt))
+	end
+	return { cmd = cmd, env = spec.env and spec.env(sel or {}) or {} }
+end
+
+--- Full command for a tool + selection as a single argv (env via `env K=V`).
+function M.cmd(tool, sel, prompt)
+	local c = M.command(tool, sel, prompt)
 	local ret = {}
-	local env = spec.env and spec.env(sel or {}) or {}
-	if next(env) then
+	if next(c.env) then
 		ret[1] = "env"
-		for k, v in pairs(env) do
+		for k, v in pairs(c.env) do
 			ret[#ret + 1] = k .. "=" .. v
 		end
 	end
-	vim.list_extend(ret, spec.base)
-	vim.list_extend(ret, spec.args(sel or {}))
-	if prompt then
-		vim.list_extend(ret, spec.prompt(prompt))
-	end
-	return ret
+	return vim.list_extend(ret, c.cmd)
 end
 
 ---------------------------------------------------------------------------
@@ -413,17 +419,17 @@ function M.bar(tool, sel, on_change, slot, on_close)
 		n = n + 1
 		return M.button(slot, n, ...)
 	end
-	local parts = {
-		button(spec.label .. " ▾", function()
-			M.pick_tool(tool, function(t)
-				on_change(t, M.selection(t))
-			end, on_close)
-		end, "SidekickExtButtonPrimary"),
-	}
-	for _, key in ipairs({ "model", "mode", "effort" }) do
+	local parts = {}
+	for _, key in ipairs({ "model", "effort" }) do
 		local opt = spec.options[key]
 		if opt then
 			local value = sel[key] or "default"
+			if key == "model" then
+				local limit = math.max(4, vim.api.nvim_win_get_width(slot) - 50)
+				if vim.fn.strdisplaywidth(value) > limit then
+					value = vim.fn.strcharpart(value, 0, limit - 1) .. "…"
+				end
+			end
 			if tool == "opencode" and key == "effort" and sel.effort and not sel.model then
 				value = value .. " (needs model)"
 			end
@@ -431,12 +437,87 @@ function M.bar(tool, sel, on_change, slot, on_close)
 				M.pick(tool, key, sel, function(v)
 					local new = vim.deepcopy(sel)
 					new[key] = v
+					if key == "model" and new.effort then
+						local levels = spec.options.effort.list(new)
+						if not vim.tbl_contains(levels, new.effort) then
+							new.effort = nil
+						end
+					end
 					on_change(tool, new)
 				end, on_close)
 			end)
 		end
 	end
 	return table.concat(parts, " "), n
+end
+
+---------------------------------------------------------------------------
+-- Prompt form
+---------------------------------------------------------------------------
+
+---@class sidekick_ext.FormAction
+---@field label string
+---@field run fun(text: string, tool: string, sel: sidekick_ext.Selection)
+
+--- Pick an agent, then open the prompt editor with model / effort selectors.
+--- Picks are saved per agent. In visual mode the selection (with file/line
+--- references) is prefilled as context. The first action is bound to <C-s>.
+---@param opts { title?: string, tool?: string, default?: string, actions: sidekick_ext.FormAction[] }
+function M.form(opts)
+	local default
+	local mode = vim.fn.mode()
+	if mode == "v" or mode == "V" or mode == "\22" then
+		default = require("sidekick.cli").render({ msg = "{selection}" })
+		vim.api.nvim_feedkeys(vim.keycode("<Esc>"), "nx", false)
+	end
+	if not opts.tool then
+		return M.pick_tool(M.last_tool(), function(tool)
+			M.form(vim.tbl_extend("force", opts, { tool = tool, default = default }))
+		end)
+	end
+	default = default or opts.default
+	local tool = opts.tool or M.last_tool()
+	local sel = M.selection(tool)
+	-- The simplified form uses the CLI's own mode default.
+	sel.mode = nil
+	local actions = {}
+	for i, a in ipairs(opts.actions) do
+		actions[i] = {
+			label = a.label,
+			run = function(text)
+				a.run(text, tool, sel)
+			end,
+		}
+	end
+	local handle
+	handle = require("sidekick_ext.input").open({
+		title = (opts.title or "New agent session") .. " · " .. M.specs[tool].label,
+		default = default,
+		actions = actions,
+		bar = function(win)
+			return M.bar(
+				tool,
+				sel,
+				function(t, new)
+					tool, sel = t, new
+					M.set_last_tool(t)
+					M.set_selection(t, new)
+					handle.refresh()
+				end,
+				win,
+				function()
+					-- Back to the prompt, ready to type (the picker leaves normal mode).
+					vim.schedule(function()
+						if vim.api.nvim_win_is_valid(handle.win) then
+							vim.api.nvim_set_current_win(handle.win)
+							vim.cmd("startinsert!")
+						end
+					end)
+				end
+			)
+		end,
+	})
+	return handle
 end
 
 local function set_hl()

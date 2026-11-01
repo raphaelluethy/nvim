@@ -6,6 +6,7 @@ return {
 	opts = {
 		cli = {
 			picker = "telescope",
+			win = { layout = "right" },
 			tools = {
 				opencode = { cmd = { "opencode" } },
 				droid = { cmd = { "droid" } },
@@ -15,7 +16,10 @@ return {
 	config = function(_, opts)
 		require("sidekick").setup(opts)
 		require("sidekick_ext.agents").setup()
-		require("sidekick_ext.tasks").setup()
+		require("sidekick_ext.sessions").setup()
+		require("sidekick_ext.tasks").setup({
+			backend = "buffer", -- "buffer" or "rex"; applies to visible and hidden tasks
+		})
 		require("sidekick_ext.review").setup()
 
 		-- Copilot ghost text via Neovim's native inline completion.
@@ -50,9 +54,34 @@ return {
 		{
 			"<leader>cc",
 			function()
-				require("sidekick.cli").toggle({ filter = { installed = true } })
+				local State = require("sidekick.cli.state")
+				local attached = State.get({ attached = true, external = false })
+				if #attached > 0 then
+					return require("sidekick.cli").toggle({ filter = { attached = true, external = false } })
+				end
+				require("sidekick.cli").select({
+					filter = { installed = true },
+					cb = function(state)
+						if not state then
+							return
+						end
+						if state.external then
+							local terminal = require("sidekick.cli.terminal").new({ tool = state.tool })
+							state = State.get_state(terminal)
+						end
+						State.attach(state, { show = true, focus = true })
+					end,
+				})
 			end,
 			desc = "Sidekick: Toggle CLI",
+		},
+		{
+			"<leader>cn",
+			function()
+				require("sidekick_ext.tasks").prompt({ show = true })
+			end,
+			mode = { "n", "v" },
+			desc = "Agent: submit task and open terminal",
 		},
 		{
 			"<leader>cl",

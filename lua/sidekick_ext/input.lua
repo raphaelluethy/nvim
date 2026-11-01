@@ -28,7 +28,13 @@ function M.open(opts, on_submit)
 	vim.bo[buf].filetype = opts.ft or "markdown"
 	vim.b[buf].completion = false -- keep blink.cmp's menu out of the prompt editor
 	if opts.default and opts.default ~= "" then
-		vim.api.nvim_buf_set_lines(buf, 0, -1, false, vim.list_extend({ "", "" }, vim.split(opts.default, "\n", { plain = true })))
+		vim.api.nvim_buf_set_lines(
+			buf,
+			0,
+			-1,
+			false,
+			vim.list_extend({ "", "" }, vim.split(opts.default, "\n", { plain = true }))
+		)
 	end
 
 	local function title()
@@ -36,7 +42,7 @@ function M.open(opts, on_submit)
 		return " " .. t .. " "
 	end
 
-	local width = math.min(110, math.floor(vim.o.columns * 0.75))
+	local width = math.min(110, math.max(1, vim.o.columns - 4))
 	local height = math.min(20, math.floor(vim.o.lines * 0.5))
 	local win = vim.api.nvim_open_win(buf, true, {
 		relative = "editor",
