@@ -33,6 +33,7 @@ return {
 			gowork = { "gofmt" },
 			rust = { "rustfmt", lsp_format = "fallback" },
 			java = { "google-java-format", lsp_format = "fallback" },
+			kotlin = { "ktfmt", lsp_format = "fallback" },
 		},
 	},
 }

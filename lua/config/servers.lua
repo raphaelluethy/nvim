@@ -25,6 +25,7 @@ M.tools = {
 	"gofumpt",
 	"goimports",
 	"google-java-format",
+	"ktfmt",
 	"ruff",
 	"stylua",
 }

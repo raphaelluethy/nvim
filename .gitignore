@@ -1,3 +1,4 @@
 .undodir/
 .DS_Store
 tmp/
+nvim.log

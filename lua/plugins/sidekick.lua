@@ -4,6 +4,9 @@ return {
 	-- Loaded at startup: next edit suggestions (NES) attach to the Copilot LSP.
 	lazy = false,
 	opts = {
+		-- Keep the gutter for git signs and breakpoints; the diff highlight
+		-- already marks where a next edit suggestion is.
+		nes = { signs = false },
 		cli = {
 			picker = "telescope",
 			win = { layout = "right" },

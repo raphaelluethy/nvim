@@ -1,3 +1,32 @@
+-- Neovim keeps showing an inline completion item after you type past the
+-- position it was requested at, until the next (debounced) response arrives.
+-- Its range still ends at the old cursor, so accepting it leaves the newly
+-- typed characters behind (e.g. "foob" + "foobar" -> "foobarb"). Stretch the
+-- range to the cursor when the typed text is still a prefix of the
+-- suggestion, and clamp it to the line so a backspace can't push it out of
+-- bounds.
+local function fix_stale_range(item)
+	if not item.range or type(item.insert_text) ~= "string" then
+		return item
+	end
+	local buf = vim.api.nvim_get_current_buf()
+	local sr, sc, er, ec = item.range:to_extmark()
+	local cursor = vim.api.nvim_win_get_cursor(0)
+	local row, col = cursor[1] - 1, cursor[2]
+
+	if row == er and col > ec then
+		local typed = table.concat(vim.api.nvim_buf_get_text(buf, sr, sc, row, col, {}), "\n")
+		if vim.startswith(item.insert_text, typed) then
+			ec = col
+		end
+	end
+	local line = vim.api.nvim_buf_get_lines(buf, er, er + 1, false)[1] or ""
+	ec = math.min(ec, #line)
+
+	item.range = vim.range.extmark(buf, sr, sc, er, ec)
+	return item
+end
+
 return {
 	"saghen/blink.cmp",
 	version = "1.*",
@@ -15,7 +44,7 @@ return {
 					return require("sidekick").nes_jump_or_apply()
 				end,
 				function()
-					return vim.lsp.inline_completion.get()
+					return vim.lsp.inline_completion.get({ on_accept = fix_stale_range })
 				end,
 				"fallback",
 			},

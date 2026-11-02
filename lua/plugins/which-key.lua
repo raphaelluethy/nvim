@@ -21,6 +21,7 @@ return {
 			{ "<leader>m", group = "Review comments", mode = "v" },
 			{ "<leader>M", group = "Merge conflict (codediff)" },
 			{ "<leader>r", group = "Refactor" },
+			{ "<leader>r", group = "Refactor", mode = "v" },
 			{ "<leader>s", group = "Search" },
 			{ "<leader>t", group = "Toggle / diagnostics" },
 			{ "<leader>v", group = "Split" },
