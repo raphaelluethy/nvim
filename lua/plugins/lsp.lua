@@ -2,12 +2,6 @@ return {
 	-- Main LSP Configuration
 	"neovim/nvim-lspconfig",
 	version = "*",
-	dependencies = {
-		{ "mason-org/mason.nvim", version = "*", opts = {} },
-		-- Stays on main: the `tsc` server mapping is not in a release yet.
-		"mason-org/mason-lspconfig.nvim",
-		"WhoIsSethDaniel/mason-tool-installer.nvim",
-	},
 	config = function()
 		if vim.fn.exists(":LspInfo") == 0 then
 			vim.api.nvim_create_user_command("LspInfo", function()
@@ -117,26 +111,9 @@ return {
 			client.server_capabilities.documentRangeFormattingProvider = false
 		end
 
-		-- Add an LSP by putting its nvim-lspconfig name in `ensure_lsps`.
-		-- Mason installs it; mason-lspconfig enables it. No extra setup needed.
+		-- Add an LSP by putting its nvim-lspconfig name in lua/config/servers.lua.
+		-- Mason installs it and it is enabled below. No extra setup needed.
 		-- Only add an entry to `servers` when you want extra settings.
-		local ensure_lsps = {
-			"clangd",
-			"copilot",
-			"cssls",
-			"emmet_language_server",
-			"gopls",
-			"html",
-			"jsonls",
-			"lua_ls",
-			"oxfmt",
-			"oxlint",
-			"rust_analyzer",
-			"tailwindcss",
-			"tinymist",
-			"tsc@7.1.0-beta",
-			"ty",
-		}
 
 		-- Optional per-server overrides. Empty `{}` is never required.
 		local servers = {
@@ -261,39 +238,10 @@ return {
 			vim.lsp.config(server_name, server_settings)
 		end
 
-		-- Formatters / linters (not LSPs). Install extra LSPs via ensure_lsps.
-		local ensure_tools = {
-			"gofumpt",
-			"goimports",
-			"google-java-format",
-			"ruff",
-			"stylua",
-		}
-
-		if #vim.api.nvim_list_uis() > 0 then
-			require("mason-tool-installer").setup({
-				ensure_installed = ensure_tools,
-			})
-		end
-
-		-- Mason installs these; mason-lspconfig enables them automatically.
-		-- Keep legacy JS/TS servers disabled if installed manually. Java and
-		-- Kotlin go through idea-nvim (lua/plugins/idea.lua), not jdtls or
-		-- kotlin_language_server.
-		require("mason-lspconfig").setup({
-			ensure_installed = ensure_lsps,
-			automatic_enable = {
-				exclude = {
-					"biome",
-					"eslint",
-					"ts_ls",
-					"tsgo",
-					"vtsls",
-					"jdtls",
-					"kotlin_language_server",
-					"kotlin_lsp",
-				},
-			},
-		})
+		-- Mason installs these (lua/plugins/mason.lua); enable them here so the
+		-- LSP starts even before Mason has loaded. Servers not in this list
+		-- (eslint, ts_ls, vtsls, jdtls, ...) stay off even if installed. Java
+		-- and Kotlin go through idea-nvim (lua/plugins/idea.lua).
+		vim.lsp.enable(require("config.servers").lsp_names())
 	end,
 }

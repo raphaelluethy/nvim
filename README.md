@@ -29,6 +29,19 @@ Exact installed revisions are pinned in `lazy-lock.json`.
 On macOS, update Neovim with `brew update` followed by `brew upgrade neovim`.
 Restart Neovim after updating it or its plugins.
 
+## Language servers
+
+`lua/config/servers.lua` lists the language servers and tools. Mason
+(`lua/plugins/mason.lua`, loaded after startup) installs them;
+`lua/plugins/lsp.lua` enables exactly that list with `vim.lsp.enable()`, so
+servers Mason happens to have installed but that are not listed stay off.
+Per-server settings live in `lua/plugins/lsp.lua`; per-project overrides go
+in a `.nvim.lua` next to the project (`'exrc'`, confirmed once with `:trust`),
+e.g. `vim.lsp.config("gopls", { settings = { ... } })`.
+
+Folds come from tree-sitter (`foldexpr`), open by default (`foldlevel=99`).
+Diagnostics show inline text on the cursor line only; `gh` opens the float.
+
 ## Appearance
 
 The colorscheme is `monokai-pro-zed` from the private
@@ -40,7 +53,7 @@ when light; change them in `lua/plugins/monokai-pro-zed.lua`. Every variant is
 also its own `:colorscheme`, e.g. `monokai-pro-filter-spectrum-v3-no-italics`
 (V3 draws inlay hints like Zed; No Italics drops every italic).
 `lua/config/appearance.lua` follows the system setting: on macOS it reads the
-system appearance at startup and when Neovim regains focus. Terminals that
+system appearance once the UI is up and when Neovim regains focus. Terminals that
 send theme notifications (Ghostty, kitty, WezTerm) switch it live.
 
 ## Debugging

@@ -6,6 +6,13 @@ vim.g.have_nerd_font = true
 -- dir, and fails with: Tried to link bin "gopls" to non-existent target "gopls".
 vim.env.GOBIN = nil
 
+-- Mason loads lazily (lua/plugins/mason.lua), so put its bin dir on PATH here
+-- for language servers that start before it is loaded.
+local mason_bin = vim.fn.stdpath("data") .. "/mason/bin"
+if not vim.env.PATH:find(mason_bin, 1, true) then
+	vim.env.PATH = mason_bin .. ":" .. vim.env.PATH
+end
+
 vim.o.winborder = "rounded"
 
 vim.opt.pumblend = 0
@@ -93,7 +100,28 @@ require("vim._core.ui2").enable({ msg = { targets = "msg" } })
 
 vim.opt.termguicolors = true
 
+local severity = vim.diagnostic.severity
 vim.diagnostic.config({
+	severity_sort = true,
 	virtual_lines = false,
-	virtual_text = true,
+	-- Only the cursor line gets inline text; the rest stay as signs.
+	virtual_text = { current_line = true },
+	signs = {
+		text = {
+			[severity.ERROR] = "●",
+			[severity.WARN] = "●",
+			[severity.INFO] = "●",
+			[severity.HINT] = "●",
+		},
+	},
 })
+
+-- Folds from tree-sitter; open everything by default, `zc`/`zM` to fold.
+vim.o.foldmethod = "expr"
+vim.o.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+vim.o.foldtext = ""
+vim.o.foldlevel = 99
+
+-- Per-project overrides in `.nvim.lua` (searched up to $HOME, gated by
+-- `:trust`). Use it e.g. for `vim.lsp.config("gopls", { settings = ... })`.
+vim.o.exrc = true
