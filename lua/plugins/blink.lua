@@ -1,57 +1,50 @@
--- Neovim keeps showing an inline completion item after you type past the
--- position it was requested at, until the next (debounced) response arrives.
--- Its range still ends at the old cursor, so accepting it leaves the newly
--- typed characters behind (e.g. "foob" + "foobar" -> "foobarb"). Stretch the
--- range to the cursor when the typed text is still a prefix of the
--- suggestion, and clamp it to the line so a backspace can't push it out of
--- bounds.
-local function fix_stale_range(item)
-	if not item.range or type(item.insert_text) ~= "string" then
-		return item
+-- Icon and highlight group for a menu item, from mini.icons.
+local function mini_icon(ctx)
+	local MiniIcons = require("mini.icons")
+	if ctx.source_name == "Path" then
+		local is_dir = ctx.item.data and ctx.item.data.type == "directory"
+		return MiniIcons.get(is_dir and "directory" or "file", ctx.label)
 	end
-	local buf = vim.api.nvim_get_current_buf()
-	local sr, sc, er, ec = item.range:to_extmark()
-	local cursor = vim.api.nvim_win_get_cursor(0)
-	local row, col = cursor[1] - 1, cursor[2]
-
-	if row == er and col > ec then
-		local typed = table.concat(vim.api.nvim_buf_get_text(buf, sr, sc, row, col, {}), "\n")
-		if vim.startswith(item.insert_text, typed) then
-			ec = col
-		end
-	end
-	local line = vim.api.nvim_buf_get_lines(buf, er, er + 1, false)[1] or ""
-	ec = math.min(ec, #line)
-
-	item.range = vim.range.extmark(buf, sr, sc, er, ec)
-	return item
+	return MiniIcons.get("lsp", ctx.kind)
 end
 
 return {
 	"saghen/blink.cmp",
 	version = "1.*",
-	event = "InsertEnter",
+	-- Loading on InsertEnter runs blink's setup inside that very event, so
+	-- the insert session that loads it never gets a completion request.
+	-- Blink defers its own setup; let it load at startup.
+	lazy = false,
 	dependencies = { "rafamadriz/friendly-snippets" },
 	opts = {
-		-- Enter accepts the menu item. Tab: snippet jump, then Copilot next edit
-		-- suggestion, then Copilot ghost text. C-j / C-k match the previous
-		-- native popup bindings.
+		-- Enter accepts the menu item. Tab: snippet jump, then NinetyFive ghost
+		-- text. C-j accepts the next suggested word when one is showing, and
+		-- otherwise moves the menu. C-k matches the previous popup binding.
 		keymap = {
 			preset = "enter",
 			["<Tab>"] = {
 				"snippet_forward",
 				function()
-					return require("sidekick").nes_jump_or_apply()
+					local ok, completion = pcall(require, "ninetyfive.completion")
+					if ok and completion.has_active_completion() then
+						return vim.keycode("<Cmd>NinetyFiveAccept<CR>")
+					end
 				end,
+				"fallback",
+			},
+			["<C-j>"] = {
 				function()
-					return vim.lsp.inline_completion.get({ on_accept = fix_stale_range })
+					local ok, completion = pcall(require, "ninetyfive.completion")
+					if ok and completion.has_active_completion() then
+						return vim.keycode("<Cmd>NinetyFiveAcceptWord<CR>")
+					end
 				end,
+				"select_next",
 				"fallback",
 			},
 			["<C-space>"] = { "show", "show_documentation", "hide_documentation" },
 			["<C-e>"] = { "hide", "fallback" },
 			["<C-c>"] = { "hide", "fallback" },
-			["<C-j>"] = { "select_next", "fallback" },
 			["<C-k>"] = { "select_prev", "fallback" },
 			["<C-n>"] = { "select_next", "fallback" },
 			["<C-p>"] = { "select_prev", "fallback" },
@@ -70,6 +63,23 @@ return {
 					columns = {
 						{ "kind_icon", "label", "label_description", gap = 1 },
 						{ "kind" },
+					},
+					-- Icons and colors from mini.icons, matching oil/nvim-tree/telescope.
+					-- Path completions get file/directory icons instead of the kind.
+					components = {
+						kind_icon = {
+							text = function(ctx)
+								return mini_icon(ctx) .. ctx.icon_gap
+							end,
+							highlight = function(ctx)
+								return select(2, mini_icon(ctx))
+							end,
+						},
+						kind = {
+							highlight = function(ctx)
+								return select(2, mini_icon(ctx))
+							end,
+						},
 					},
 				},
 			},

@@ -5,7 +5,6 @@ local M = {}
 
 M.lsps = {
 	"clangd",
-	"copilot",
 	"cssls",
 	"emmet_language_server",
 	"gopls",
