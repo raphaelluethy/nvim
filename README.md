@@ -42,6 +42,15 @@ e.g. `vim.lsp.config("gopls", { settings = { ... } })`.
 Folds come from tree-sitter (`foldexpr`), open by default (`foldlevel=99`).
 Diagnostics show inline text on the cursor line only; `gh` opens the float.
 
+## Markdown
+
+`lua/plugins/markvim.lua` loads the local markvim plugin
+(`~/Documents/projects/private/markvim`) for markdown files and LSP hover
+floats. Files open in live mode (only the cursor line is raw); `<leader>tm`
+toggles rendering and `<leader>tM` cycles live, preview and split mode.
+Diagrams need a backend: `:Markvim install node` for mermaid/pele,
+`:checkhealth markvim` lists what is available.
+
 ## Appearance
 
 The colorscheme is `monokai-pro-zed` from the private
