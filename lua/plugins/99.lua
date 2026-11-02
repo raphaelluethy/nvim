@@ -1,5 +1,7 @@
 return {
 	"raphaelluethy/99",
+	-- Disabled until further notice (agent sessions are handled by sidekick_ext).
+	enabled = false,
 	config = function()
 		local _99 = require("99")
 		local pickers = require("99.extensions.telescope")

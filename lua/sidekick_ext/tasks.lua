@@ -117,7 +117,8 @@ end
 function M.status(task)
 	local proc = Rex.block_call(task.block_id, "process")
 	if proc and not proc.child then
-		return proc.last_exit and ("exited " .. tostring(proc.last_exit.code or proc.last_exit.status or "")) or "exited"
+		return proc.last_exit and ("exited " .. tostring(proc.last_exit.code or proc.last_exit.status or ""))
+			or "exited"
 	end
 	local ps = Rex.block_call(task.block_id, "program_status")
 	local rec = ps and ps.records and ps.records[#ps.records]
@@ -178,7 +179,14 @@ function M.new(opts)
 	meta[block_id] = { tool = tool, prompt = opts.prompt, cwd = cwd, created = os.time() }
 	save_meta(meta)
 	vim.notify(("%s task started%s: %s"):format(tool, opts.show and "" or " (hidden)", title))
-	return { layer_id = res.layer_id, block_id = block_id, label = label, tool = tool, title = title, hidden = not opts.show }
+	return {
+		layer_id = res.layer_id,
+		block_id = block_id,
+		label = label,
+		tool = tool,
+		title = title,
+		hidden = not opts.show,
+	}
 end
 
 ---@param task sidekick_ext.Task
@@ -274,7 +282,9 @@ function M.pick()
 			return ""
 		end
 		local s = os.time() - t.meta.created
-		return s < 3600 and ("%dm"):format(s / 60) or s < 86400 and ("%dh"):format(s / 3600) or ("%dd"):format(s / 86400)
+		return s < 3600 and ("%dm"):format(s / 60)
+			or s < 86400 and ("%dh"):format(s / 3600)
+			or ("%dd"):format(s / 86400)
 	end
 
 	local picker
@@ -282,7 +292,13 @@ function M.pick()
 		return finders.new_table({
 			results = tasks,
 			entry_maker = function(t)
-				local display = ("%s %-9s %-8s %-4s %s"):format(t.hidden and "hidden" or "shown ", t.status, t.tool, age(t), t.title)
+				local display = ("%s %-9s %-8s %-4s %s"):format(
+					t.hidden and "hidden" or "shown ",
+					t.status,
+					t.tool,
+					age(t),
+					t.title
+				)
 				return { value = t, display = display, ordinal = t.tool .. " " .. t.title .. " " .. t.status }
 			end,
 		})

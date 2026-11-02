@@ -106,6 +106,21 @@ Cursor uses the local `agent` command; Factory Droid uses `droid`.
 | `<leader>c4` | Toggle OpenCode |
 
 Context is inserted into the CLI input for review, not automatically submitted.
+
+### Review panel
+
+`<leader>mr` opens the [codediff](https://github.com/esmuellert/codediff.nvim)
+review panel. From a file buffer it preselects that file and keeps your line.
+`<leader>mg` swaps the file explorer for **semantic change groups**: a cheap
+model (Haiku 5.5 or GPT-6.1 Terra fast through `opencode run`, `m` to switch)
+groups all local hunks into changelists with a title, kind and explanation.
+`<CR>` shows a group's file or hunk in the diff, `o` also focuses it, `K`
+explains the group, `s` sends it to the attached CLI as context, `r` regroups,
+`q`/`t` returns to the file explorer. Each hunk in the diff carries a
+"▌ Group · note" line. Groupings are cached per diff; after a save only the new
+hunks are sent to the model. Lockfiles, generated and credential-like files are
+sent as headers only, and key/token/password values are redacted.
+
 The task form offers model and effort selectors after choosing the agent.
 Set `backend = "buffer"` (default) or `backend = "rex"` in the
 `sidekick_ext.tasks.setup` call in `lua/plugins/sidekick.lua` to choose where tasks run.

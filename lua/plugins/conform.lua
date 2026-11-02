@@ -5,17 +5,6 @@ return {
 	cmd = { "ConformInfo" },
 	keys = {
 		{
-			"<leader>f",
-			function()
-				require("conform").format({
-					async = true,
-					lsp_format = "fallback",
-				})
-			end,
-			mode = { "n" },
-			desc = "Format buffer",
-		},
-		{
 			"<leader>cf",
 			function()
 				require("conform").format({
@@ -32,7 +21,7 @@ return {
 		default_format_opts = {
 			lsp_format = "fallback",
 		},
-		-- Async: project-local oxfmt (vite-plus Node wrapper) takes ~0.7s per run.
+		-- Oxfmt formats web files through the LSP fallback.
 		format_after_save = {
 			lsp_format = "fallback",
 		},
@@ -44,19 +33,6 @@ return {
 			gowork = { "gofmt" },
 			rust = { "rustfmt", lsp_format = "fallback" },
 			java = { "google-java-format", lsp_format = "fallback" },
-			javascript = { "oxfmt", "biome", stop_after_first = true },
-			javascriptreact = { "oxfmt", "biome", stop_after_first = true },
-			typescript = { "oxfmt", "biome", stop_after_first = true },
-			typescriptreact = { "oxfmt", "biome", stop_after_first = true },
-			json = { "oxfmt", "biome", stop_after_first = true },
-			jsonc = { "oxfmt", "biome", stop_after_first = true },
-			css = { "oxfmt", "biome", stop_after_first = true },
-			scss = { "oxfmt", "biome", "prettierd", "prettier", stop_after_first = true },
-			html = { "oxfmt", "biome", "prettierd", "prettier", stop_after_first = true },
-			markdown = { "oxfmt", "biome", "prettierd", "prettier", stop_after_first = true },
-			yaml = { "oxfmt", "biome", stop_after_first = true },
-			graphql = { "oxfmt", "biome", stop_after_first = true },
-			vue = { "oxfmt", "biome", stop_after_first = true },
 
 			-- typst = { "prettypst" },
 		},

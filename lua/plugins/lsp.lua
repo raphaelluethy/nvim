@@ -40,7 +40,6 @@ return {
 
 				-- Symbol search keymaps (matching Zed: space o)
 				map("<leader>o", require("telescope.builtin").lsp_document_symbols, "Document symbols (Outline)")
-				map("<leader>ds", require("telescope.builtin").lsp_document_symbols, "Document symbols")
 				map("<leader>ws", require("telescope.builtin").lsp_dynamic_workspace_symbols, "Workspace symbols")
 
 				-- Code actions
@@ -122,7 +121,6 @@ return {
 		-- Mason installs it; mason-lspconfig enables it. No extra setup needed.
 		-- Only add an entry to `servers` when you want extra settings.
 		local ensure_lsps = {
-			"biome",
 			"clangd",
 			"copilot",
 			"cssls",
@@ -131,20 +129,17 @@ return {
 			"html",
 			"jsonls",
 			"lua_ls",
+			"oxfmt",
 			"oxlint",
 			"rust_analyzer",
 			"tailwindcss",
 			"tinymist",
-			"tsc",
+			"tsc@7.1.0-beta",
 			"ty",
 		}
 
 		-- Optional per-server overrides. Empty `{}` is never required.
 		local servers = {
-			-- Conform owns formatting (oxfmt → biome). Keep biome for diagnostics.
-			biome = {
-				on_attach = disable_formatting,
-			},
 			emmet_language_server = {
 				filetypes = {
 					"astro",
@@ -229,7 +224,7 @@ return {
 					},
 				},
 			},
-			-- Use TypeScript 7 (`tsc --lsp`); formatting stays in conform.
+			-- TypeScript handles language features; Oxfmt owns formatting.
 			tsc = {
 				on_attach = disable_formatting,
 				settings = {
@@ -268,13 +263,9 @@ return {
 
 		-- Formatters / linters (not LSPs). Install extra LSPs via ensure_lsps.
 		local ensure_tools = {
-			"biome",
 			"gofumpt",
 			"goimports",
 			"google-java-format",
-			"oxfmt",
-			"prettier",
-			"prettierd",
 			"stylua",
 		}
 

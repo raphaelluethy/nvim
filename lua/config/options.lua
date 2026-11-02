@@ -73,6 +73,10 @@ vim.opt.listchars = {
 -- Preview substitutions live, as you type!
 vim.opt.inccommand = "split"
 
+-- Block cursor in insert mode too: Rex can't thicken the bar cursor yet
+-- (https://discord.com/channels/1546797889009881158/1547761400208687206)
+vim.opt.guicursor = "n-v-c-sm-i-ci-ve:block,r-cr-o:hor20,t:block-blinkon500-blinkoff500-TermCursor"
+
 -- Show which line your cursor is on
 vim.opt.cursorline = true
 
@@ -87,6 +91,12 @@ vim.opt.linebreak = true
 vim.opt.colorcolumn = "120"
 
 vim.opt.laststatus = 3
+
+-- No empty cmdline row below the statusline: the cmdline only appears while
+-- typing. ui2 (experimental in 0.12) shows messages in a floating window
+-- instead of the hidden cmdline, without hit-enter prompts; g< opens them.
+vim.opt.cmdheight = 0
+require("vim._core.ui2").enable({ msg = { targets = "msg" } })
 
 vim.opt.termguicolors = true
 

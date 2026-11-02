@@ -14,8 +14,8 @@ vim.keymap.set("n", "]d", vim.diagnostic.goto_next, { desc = "Next diagnostic" }
 vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, { desc = "Prev diagnostic" })
 vim.keymap.set("n", "<leader>tn", vim.diagnostic.goto_next, { desc = "Next diagnostic" })
 vim.keymap.set("n", "<leader>tp", vim.diagnostic.goto_prev, { desc = "Prev diagnostic" })
-vim.keymap.set("n", "<leader>q", vim.diagnostic.setloclist, {
-	desc = "Open diagnostic quickfix list",
+vim.keymap.set("n", "<leader>xd", vim.diagnostic.setloclist, {
+	desc = "Diagnostics to location list",
 })
 
 vim.keymap.set("n", "<leader>u", function()
@@ -49,24 +49,27 @@ vim.keymap.set("n", "<leader>w", "<CMD>w<CR>", {
 	desc = "[W]rite Buffer",
 })
 
--- Split keymaps (matching Zed: space s r/l/d/u)
-vim.keymap.set("n", "<leader>sv", "<CMD>vsplit<CR>", { desc = "Split vertical" })
-vim.keymap.set("n", "<leader>sh", "<CMD>split<CR>", { desc = "Split horizontal" })
-vim.keymap.set("n", "<leader>sr", "<CMD>vsplit<CR>", { desc = "Split right" })
-vim.keymap.set("n", "<leader>sl", "<CMD>aboveleft vsplit<CR>", { desc = "Split left" })
-vim.keymap.set("n", "<leader>sd", "<CMD>split<CR>", { desc = "Split down" })
-vim.keymap.set("n", "<leader>su", "<CMD>aboveleft split<CR>", { desc = "Split up" })
-vim.keymap.set("n", "<leader>sc", "<CMD>close<CR>", { desc = "Close split" })
+-- Splits: <leader>v (<leader>s is Telescope search, <leader>w is write)
+vim.keymap.set("n", "<leader>vv", "<CMD>vsplit<CR>", { desc = "Split right" })
+vim.keymap.set("n", "<leader>vr", "<CMD>vsplit<CR>", { desc = "Split right" })
+vim.keymap.set("n", "<leader>vl", "<CMD>aboveleft vsplit<CR>", { desc = "Split left" })
+vim.keymap.set("n", "<leader>vs", "<CMD>split<CR>", { desc = "Split down" })
+vim.keymap.set("n", "<leader>vd", "<CMD>split<CR>", { desc = "Split down" })
+vim.keymap.set("n", "<leader>vu", "<CMD>aboveleft split<CR>", { desc = "Split up" })
+vim.keymap.set("n", "<leader>vc", "<CMD>close<CR>", { desc = "Close split" })
+vim.keymap.set("n", "<leader>vo", "<CMD>only<CR>", { desc = "Close other splits" })
 
-vim.keymap.set("n", "<leader>cn", "<CMD>cnext<CR>", {
-	desc = "Next Quickfix Entry",
-})
-vim.keymap.set("n", "<leader>cp", "<CMD>cprev<CR>", {
-	desc = "Previous Quickfix Entry",
-})
-vim.keymap.set("n", "<leader>co", "<CMD>copen<CR>", {
-	desc = "Toggle Quickfix List",
-})
+-- Quickfix / location list: <leader>x (<leader>c is code & agents)
+vim.keymap.set("n", "]q", "<CMD>cnext<CR>", { desc = "Next quickfix entry" })
+vim.keymap.set("n", "[q", "<CMD>cprev<CR>", { desc = "Previous quickfix entry" })
+vim.keymap.set("n", "<leader>xq", function()
+	local open = vim.fn.getqflist({ winid = 0 }).winid ~= 0
+	vim.cmd(open and "cclose" or "copen")
+end, { desc = "Toggle quickfix list" })
+vim.keymap.set("n", "<leader>xl", function()
+	local open = vim.fn.getloclist(0, { winid = 0 }).winid ~= 0
+	vim.cmd(open and "lclose" or "lopen")
+end, { desc = "Toggle location list" })
 
 -- move lines
 vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv", {

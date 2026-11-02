@@ -21,6 +21,10 @@ return {
 			backend = "buffer", -- "buffer" or "rex"; applies to visible and hidden tasks
 		})
 		require("sidekick_ext.review").setup()
+		-- Semantic change groups (<leader>mg): model ids are opencode provider/model.
+		require("sidekick_ext.semantic").setup({
+			llm = { model = "openai/gpt-6.1-terra-fast" },
+		})
 
 		-- Copilot ghost text via Neovim's native inline completion.
 		-- <Tab> accepts (see blink.lua); <M-]> / <M-[> cycle alternatives.
@@ -51,6 +55,9 @@ return {
 			expr = true,
 			desc = "Goto/Apply next edit suggestion",
 		},
+		-- Agent sessions inside Neovim (lua/sidekick_ext/sessions.lua).
+		-- Several agents can run at once; the "active" one is the session you
+		-- last entered. Pane sessions share the right split, floats stack.
 		{
 			"<leader>cc",
 			function()
@@ -84,77 +91,110 @@ return {
 			desc = "Agent: submit task and open terminal",
 		},
 		{
+			"<leader>cN",
+			function()
+				require("sidekick_ext.sessions").prompt({ layout = "float" })
+			end,
+			mode = { "n", "v" },
+			desc = "Agent: new session (<C-s> starts as float)",
+		},
+		{
+			"<leader>cj",
+			function()
+				require("sidekick_ext.sessions").pick()
+			end,
+			desc = "Agent: sessions (show / float / hide / send / rename / kill)",
+		},
+		{
+			"<leader>c]",
+			function()
+				require("sidekick_ext.sessions").cycle(1)
+			end,
+			desc = "Agent: next session",
+		},
+		{
+			"<leader>c[",
+			function()
+				require("sidekick_ext.sessions").cycle(-1)
+			end,
+			desc = "Agent: previous session",
+		},
+		{
+			"<leader>cw",
+			function()
+				local S = require("sidekick_ext.sessions")
+				local s = S.get_active()
+				if s then
+					S.toggle_float(s)
+				end
+			end,
+			desc = "Agent: active session pane <-> float",
+		},
+		{
+			"<leader>ch",
+			function()
+				require("sidekick_ext.sessions").hide_all()
+			end,
+			desc = "Agent: hide all sessions",
+		},
+		{
+			"<leader>cx",
+			function()
+				local S = require("sidekick_ext.sessions")
+				local s = S.get_active()
+				if s and vim.fn.confirm("Kill session '" .. s.title .. "'?", "&Yes\n&No", 2) == 1 then
+					S.kill(s)
+				end
+			end,
+			desc = "Agent: kill active session",
+		},
+		{
 			"<leader>cl",
 			function()
 				require("sidekick.cli").select({ filter = { installed = true } })
 			end,
-			desc = "Sidekick: Select CLI",
+			desc = "Sidekick: Select CLI (external / mux sessions)",
 		},
+		-- Context goes to the active session.
 		{
 			"<leader>cA",
 			function()
-				require("sidekick.cli").prompt()
+				require("sidekick.cli").prompt({
+					cb = function(_, text)
+						if text then
+							require("sidekick.cli").send({
+								text = text,
+								filter = require("sidekick_ext.sessions").filter(),
+							})
+						end
+					end,
+				})
 			end,
 			mode = { "n", "v" },
-			desc = "Sidekick: Select prompt",
+			desc = "Agent: send prompt template",
 		},
 		{
 			"<leader>ci",
 			function()
-				require("sidekick.cli").send({ msg = "{this}" })
+				require("sidekick.cli").send({ msg = "{this}", filter = require("sidekick_ext.sessions").filter() })
 			end,
 			mode = { "n", "v" },
-			desc = "Sidekick: Send cursor context",
+			desc = "Agent: send cursor context",
 		},
 		{
 			"<leader>cs",
 			function()
-				require("sidekick.cli").send({ msg = "{selection}" })
+				require("sidekick.cli").send({ msg = "{selection}", filter = require("sidekick_ext.sessions").filter() })
 			end,
 			mode = "v",
-			desc = "Sidekick: Send selection",
+			desc = "Agent: send selection",
 		},
 		{
 			"<leader>cF",
 			function()
-				require("sidekick.cli").send({ msg = "{file}" })
+				require("sidekick.cli").send({ msg = "{file}", filter = require("sidekick_ext.sessions").filter() })
 			end,
-			desc = "Sidekick: Send file",
-		},
-		{
-			"<leader>cd",
-			function()
-				require("sidekick.cli").close()
-			end,
-			desc = "Sidekick: Detach CLI",
-		},
-		{
-			"<leader>c1",
-			function()
-				require("sidekick.cli").toggle({ name = "claude", focus = true })
-			end,
-			desc = "Sidekick: Claude Code",
-		},
-		{
-			"<leader>c2",
-			function()
-				require("sidekick.cli").toggle({ name = "cursor", focus = true })
-			end,
-			desc = "Sidekick: Cursor Agent",
-		},
-		{
-			"<leader>c3",
-			function()
-				require("sidekick.cli").toggle({ name = "droid", focus = true })
-			end,
-			desc = "Sidekick: Factory Droid",
-		},
-		{
-			"<leader>c4",
-			function()
-				require("sidekick.cli").toggle({ name = "opencode", focus = true })
-			end,
-			desc = "Sidekick: OpenCode",
+			desc = "Agent: send file",
 		},
 		-- Hidden tasks in minimized Rex floats (lua/sidekick_ext/tasks.lua)
 		{
@@ -194,6 +234,26 @@ return {
 				require("sidekick_ext.review").toggle_mode()
 			end,
 			desc = "Review: open review panel (codediff)",
+		},
+		{
+			"<leader>mg",
+			function()
+				require("sidekick_ext.semantic").toggle()
+			end,
+			desc = "Review: semantic change groups (LLM)",
+		},
+		{
+			"<leader>mG",
+			function()
+				local Sem = require("sidekick_ext.semantic")
+				local state = Sem.state()
+				if state then
+					Sem.regroup(state)
+				else
+					Sem.toggle()
+				end
+			end,
+			desc = "Review: regroup semantic groups",
 		},
 		{
 			"<leader>ma",

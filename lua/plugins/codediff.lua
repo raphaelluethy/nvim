@@ -16,5 +16,26 @@ return {
 			width = 40,
 			view_mode = "tree",
 		},
+		-- codediff installs buffer-local maps in the diff panes (the right pane
+		-- is your real file buffer). Keep them off prefixes used globally:
+		-- <leader>e is Harpoon, <leader>c* is code/agents, <leader>ct the terminal.
+		-- `g?` in a diff pane lists what is active.
+		keymaps = {
+			view = {
+				toggle_explorer = false, -- semantic panel: t / q; explorer: <leader>mr again
+				focus_explorer = false, -- use <C-w>h
+				-- <leader>hs / <leader>hu / <leader>hr stay: same meaning as gitsigns' hunk keys.
+			},
+			conflict = {
+				accept_incoming = "<leader>Mt",
+				accept_current = "<leader>Mo",
+				accept_both = "<leader>Mb",
+				discard = "<leader>Mx",
+				accept_all_incoming = "<leader>MT",
+				accept_all_current = "<leader>MO",
+				accept_all_both = "<leader>MB",
+				discard_all = "<leader>MX",
+			},
+		},
 	},
 }

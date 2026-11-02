@@ -26,6 +26,7 @@ M.config = {
 ---@field end_lnum integer 1-based
 ---@field end_col integer 0-based byte column, exclusive (char) / cursor column (point)
 ---@field text string
+---@field old? { range: string, lines: string[] } the old code when the comment was made on a revision pane
 
 ---@type { key: string?, root: string?, comments: sidekick_ext.Comment[], next_id: integer }
 local store = { comments = {}, next_id = 1 }
@@ -82,6 +83,51 @@ end
 
 local function abs(file)
 	return vim.fs.joinpath(store.root, file)
+end
+
+--- In a codediff tab the left pane (and the right pane of a staged view) is a
+--- virtual revision buffer. Resolve it to the working file and a line mapper
+--- (old line → current line through codediff's diff result; lines that only
+--- exist in the old version map to where they were removed).
+---@return string? file, { map: fun(l: integer): integer, is_original: boolean, lines: fun(a: integer, b: integer): string[] }?
+local function resolve_virtual(buf)
+	local ok, lifecycle = pcall(require, "codediff.ui.lifecycle")
+	if not ok then
+		return nil
+	end
+	local tab = vim.api.nvim_get_current_tabpage()
+	local s = lifecycle.get_session(tab)
+	if not s or (s.original_bufnr ~= buf and s.modified_bufnr ~= buf) then
+		return nil
+	end
+	local is_original = s.original_bufnr == buf and s.modified_bufnr ~= buf
+	local path = (s.modified and s.modified.relative ~= "" and s.modified.relative) or (s.original and s.original.relative) or ""
+	if path == "" then
+		return nil
+	end
+	local changes = (s.stored_diff_result and s.stored_diff_result.changes) or {}
+	local function map(l)
+		if not is_original then
+			return l
+		end
+		local shift = 0
+		for _, c in ipairs(changes) do
+			if l < c.original.start_line then
+				break
+			elseif l < c.original.end_line or (c.original.start_line == c.original.end_line and l == c.original.start_line) then
+				return math.max(1, c.modified.start_line)
+			end
+			shift = (c.modified.end_line - c.original.end_line)
+		end
+		return math.max(1, l + shift)
+	end
+	return path, {
+		is_original = is_original,
+		map = map,
+		lines = function(a, b)
+			return vim.api.nvim_buf_get_lines(buf, a - 1, b, false)
+		end,
+	}
 end
 
 --- Pull current extmark positions back into the store (code may have moved).
@@ -179,7 +225,10 @@ end
 --- Add a comment on the current line, or the visual range.
 function M.add()
 	load()
-	local file = rel(0)
+	local file, virtual = rel(0), nil
+	if not file then
+		file, virtual = resolve_virtual(vim.api.nvim_get_current_buf())
+	end
 	if not file then
 		return vim.notify("Buffer has no file", vim.log.levels.WARN)
 	end
@@ -202,17 +251,31 @@ function M.add()
 			c = { kind = "char", lnum = a[2], col = a[3] - 1, end_lnum = b[2], end_col = math.min(#line, b[3] - 1 + #last_char) }
 		end
 		vim.api.nvim_feedkeys(vim.keycode("<Esc>"), "nx", false)
-	elseif at_cursor() then
+	elseif not virtual and at_cursor() then
 		return M.edit()
 	end
 	local buf = vim.api.nvim_get_current_buf()
-	local range = c.lnum == c.end_lnum and ("L" .. c.lnum) or ("L%d-%d"):format(c.lnum, c.end_lnum)
-	require("sidekick_ext.input").open({ title = "Comment · " .. file .. ":" .. range }, function(text)
+	local title_range = c.lnum == c.end_lnum and ("L" .. c.lnum) or ("L%d-%d"):format(c.lnum, c.end_lnum)
+	if virtual then
+		-- Comment made on a revision pane: keep the old code for the prompt and
+		-- attach the comment to the working file at the mapped line(s).
+		if virtual.is_original then
+			c.old = { range = title_range, lines = virtual.lines(c.lnum, c.end_lnum) }
+			title_range = title_range .. " (old)"
+		end
+		local a, b = virtual.map(c.lnum), virtual.map(c.end_lnum)
+		c.kind, c.col, c.end_col = (a == b and "point" or "line"), 0, 0
+		c.lnum, c.end_lnum = math.min(a, b), math.max(a, b)
+		buf = vim.fn.bufnr(abs(file))
+	end
+	require("sidekick_ext.input").open({ title = "Comment · " .. file .. ":" .. title_range }, function(text)
 		c.id, c.file, c.text = store.next_id, file, text
 		table.insert(store.comments, c)
 		store.next_id = store.next_id + 1
 		save()
-		render(buf)
+		if buf ~= -1 then
+			render(buf)
+		end
 	end)
 end
 
@@ -320,9 +383,18 @@ function M.build()
 		local loc = Loc.get(ctx, { kind = c.kind == "line" and "line" or "position" })[1]
 		table.insert(loc, 1, { ("%d. "):format(i) })
 		ret[#ret + 1] = loc
+		local ft = vim.filetype.match({ filename = c.file }) or ""
+		if c.old and #c.old.lines > 0 then
+			ret[#ret + 1] = { { ("Comment refers to the previous version (%s), which was:"):format(c.old.range) } }
+			ret[#ret + 1] = { { "```" .. ft } }
+			for _, l in ipairs(c.old.lines) do
+				ret[#ret + 1] = { { l } }
+			end
+			ret[#ret + 1] = { { "```" } }
+			ret[#ret + 1] = { { "Current code at the mapped position:" } }
+		end
 		local code = current_text(c)
 		if #code > 0 then
-			local ft = vim.filetype.match({ filename = c.file }) or ""
 			ret[#ret + 1] = { { "```" .. ft } }
 			for _, l in ipairs(code) do
 				ret[#ret + 1] = { { l } }
@@ -470,11 +542,77 @@ local function apply_light_boost()
 	end
 end
 
+--- After `:CodeDiff` opens from a file buffer, put the cursor in the modified
+--- pane on the line we came from. codediff already preselects the current
+--- buffer's file (its `focus_file`); this waits for that diff to finish
+--- rendering, then moves the cursor. Uses codediff internals, so fail soft.
+---@param buf integer source buffer
+---@param lnum integer
+local function follow_into_review(buf, lnum)
+	local name = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(buf), ":t")
+	local group = vim.api.nvim_create_augroup("sidekick_review_open", { clear = true })
+	local deadline = vim.uv.now() + 10000 -- ignore a CodeDiffOpen from a later, unrelated open
+	vim.api.nvim_create_autocmd("User", {
+		group = group,
+		pattern = "CodeDiffOpen",
+		once = true,
+		callback = function(ev)
+			local tab = ev.data and ev.data.tabpage
+			if vim.uv.now() > deadline or not tab or (ev.data.mode and ev.data.mode ~= "explorer") then
+				return
+			end
+			local ok, lifecycle = pcall(require, "codediff.ui.lifecycle")
+			if not ok then
+				return
+			end
+			local tries = 0
+			local function poll()
+				tries = tries + 1
+				local session = lifecycle.get_session(tab)
+				local data = session and session.panel and session.panel.data
+				if not data or tries > 100 then
+					return
+				end
+				-- Initial selection is scheduled after CodeDiffOpen; `refresh.loading`
+				-- clears (scheduled) once the selected diff has rendered.
+				local sel = data.current_selection
+				if not sel or (session.refresh and session.refresh.loading) or not session.stored_diff_result then
+					return vim.defer_fn(function() pcall(poll) end, 30)
+				end
+				if not data.focus_file or sel.path ~= data.focus_file then
+					return vim.notify(("Review: %s has no changes, showing all files"):format(name), vim.log.levels.INFO)
+				end
+				local _, win = lifecycle.get_windows(tab)
+				-- Only when the modified pane is the working file itself (not :0/HEAD).
+				if win and vim.api.nvim_win_is_valid(win) and vim.api.nvim_win_get_buf(win) == buf then
+					vim.api.nvim_set_current_win(win)
+					pcall(vim.api.nvim_win_set_cursor, win, { math.min(lnum, vim.api.nvim_buf_line_count(buf)), 0 })
+					vim.cmd("normal! zz")
+				end
+			end
+			pcall(poll)
+		end,
+	})
+end
+
 --- Review panel: codediff.nvim (staged/unstaged explorer, side-by-side or
---- unified diff, toggle with `t`, close with `q`).
+--- unified diff, toggle with `t`, close with `q`). Opened from a file buffer,
+--- that file is preselected and the cursor lands on the same line.
 function M.toggle_mode()
 	if vim.fn.exists(":CodeDiff") == 0 then
 		return vim.notify("codediff.nvim is not installed (run :Lazy install)", vim.log.levels.ERROR)
+	end
+	local buf = vim.api.nvim_get_current_buf()
+	local ok, lifecycle = pcall(require, "codediff.ui.lifecycle")
+	local in_review = ok and lifecycle.get_session(vim.api.nvim_get_current_tabpage()) ~= nil
+	if not in_review then
+		local stat = vim.bo[buf].buftype == "" and vim.uv.fs_stat(vim.api.nvim_buf_get_name(buf))
+		if stat and stat.type == "file" then
+			follow_into_review(buf, vim.api.nvim_win_get_cursor(0)[1])
+		else
+			pcall(vim.api.nvim_del_augroup_by_name, "sidekick_review_open")
+			vim.notify("Review: current buffer is not a file, showing all changes", vim.log.levels.INFO)
+		end
 	end
 	vim.cmd("CodeDiff")
 end
