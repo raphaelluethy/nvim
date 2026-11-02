@@ -129,7 +129,6 @@ return {
 			"emmet_language_server",
 			"gopls",
 			"html",
-			"jdtls",
 			"jsonls",
 			"lua_ls",
 			"oxlint",
@@ -286,11 +285,13 @@ return {
 		end
 
 		-- Mason installs these; mason-lspconfig enables them automatically.
-		-- oxfmt runs via conform; tsc replaces vtsls even if it is still installed.
+		-- Keep legacy JS/TS servers disabled if installed manually. Java and
+		-- Kotlin go through idea-nvim (lua/plugins/idea.lua), not jdtls or
+		-- kotlin_language_server.
 		require("mason-lspconfig").setup({
 			ensure_installed = ensure_lsps,
 			automatic_enable = {
-				exclude = { "oxfmt", "vtsls" },
+				exclude = { "biome", "eslint", "ts_ls", "tsgo", "vtsls", "jdtls", "kotlin_language_server", "kotlin_lsp" },
 			},
 		})
 	end,

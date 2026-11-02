@@ -10,6 +10,8 @@ return {
 			"gosum",
 			"gotmpl",
 			"gowork",
+			"java",
+			"kotlin",
 			"lua",
 			"odin",
 			"vim",
