@@ -27,20 +27,12 @@ return {
 		},
 		formatters_by_ft = {
 			lua = { "stylua" },
-			python = { "ruff", "ruff_organize_imports", "ruff_format" },
+			python = { "ruff_fix", "ruff_organize_imports", "ruff_format" },
 			go = { "goimports", "gofumpt" },
 			gomod = { "gofmt" },
 			gowork = { "gofmt" },
 			rust = { "rustfmt", lsp_format = "fallback" },
 			java = { "google-java-format", lsp_format = "fallback" },
-
-			-- typst = { "prettypst" },
 		},
-		-- formatters = {
-		--   prettypst = {
-		--     args = { "--use-std-in", "--use-std-out" },
-		--     stdin = true,
-		--   },
-		-- },
 	},
 }

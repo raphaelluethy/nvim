@@ -266,6 +266,7 @@ return {
 			"gofumpt",
 			"goimports",
 			"google-java-format",
+			"ruff",
 			"stylua",
 		}
 
@@ -282,7 +283,16 @@ return {
 		require("mason-lspconfig").setup({
 			ensure_installed = ensure_lsps,
 			automatic_enable = {
-				exclude = { "biome", "eslint", "ts_ls", "tsgo", "vtsls", "jdtls", "kotlin_language_server", "kotlin_lsp" },
+				exclude = {
+					"biome",
+					"eslint",
+					"ts_ls",
+					"tsgo",
+					"vtsls",
+					"jdtls",
+					"kotlin_language_server",
+					"kotlin_lsp",
+				},
 			},
 		})
 	end,

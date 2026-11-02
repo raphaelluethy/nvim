@@ -10,10 +10,24 @@ vim.keymap.set("n", "gh", vim.diagnostic.open_float, {
 })
 
 -- Diagnostic keymaps (matching Zed: ] d, [ d, space t n/p)
-vim.keymap.set("n", "]d", vim.diagnostic.goto_next, { desc = "Next diagnostic" })
-vim.keymap.set("n", "[d", vim.diagnostic.goto_prev, { desc = "Prev diagnostic" })
-vim.keymap.set("n", "<leader>tn", vim.diagnostic.goto_next, { desc = "Next diagnostic" })
-vim.keymap.set("n", "<leader>tp", vim.diagnostic.goto_prev, { desc = "Prev diagnostic" })
+local function diagnostic_float(diagnostic, bufnr)
+	if diagnostic then
+		vim.diagnostic.open_float(bufnr, { scope = "cursor", focus = false })
+	end
+end
+
+local function next_diagnostic()
+	vim.diagnostic.jump({ count = 1, on_jump = diagnostic_float })
+end
+
+local function prev_diagnostic()
+	vim.diagnostic.jump({ count = -1, on_jump = diagnostic_float })
+end
+
+vim.keymap.set("n", "]d", next_diagnostic, { desc = "Next diagnostic" })
+vim.keymap.set("n", "[d", prev_diagnostic, { desc = "Prev diagnostic" })
+vim.keymap.set("n", "<leader>tn", next_diagnostic, { desc = "Next diagnostic" })
+vim.keymap.set("n", "<leader>tp", prev_diagnostic, { desc = "Prev diagnostic" })
 vim.keymap.set("n", "<leader>xd", vim.diagnostic.setloclist, {
 	desc = "Diagnostics to location list",
 })
@@ -94,18 +108,8 @@ vim.keymap.set("v", "C", '"_C')
 vim.keymap.set("n", "c", '"_c')
 vim.keymap.set("n", "C", '"_C')
 
--- -- remove defaults
+-- Remove defaults in favor of the LSP mappings in lua/plugins/lsp.lua.
 vim.keymap.del("", "grr")
 vim.keymap.del("", "gra")
 vim.keymap.del("", "grn")
 vim.keymap.del("", "gri")
-
--- vim.api.nvim_create_autocmd("TextYankPost", {
--- 	desc = "Highlight when yanking (copying) text",
--- 	group = vim.api.nvim_create_augroup("raphaelluethy-highlight-yank", {
--- 		clear = true,
--- 	}),
--- 	callback = function()
--- 		vim.highlight.on_yank()
--- 	end,
--- })

@@ -10,16 +10,24 @@ not the LazyVim distribution. Requires Neovim 0.12+ and Git.
 
 - `:Lazy` opens the plugin manager.
 - `:Lazy install` installs missing plugins without updating existing ones.
+- `:Lazy check` checks for plugin updates; `:Lazy update` applies them and updates
+  `lazy-lock.json`.
 - `:Lazy restore` restores plugin revisions from the lockfile.
+- `:TSUpdate` updates installed Treesitter parsers. Requires the `tree-sitter`
+  CLI >= 0.26.1 (`brew install tree-sitter-cli` on macOS).
 - `:Mason` manages language servers, formatters, and debug adapters.
 
-Plugins with maintained semver releases are pinned to the latest release
-(`version = "*"`): blink.cmp, gitsigns, mason, mason-nvim-dap, mini.icons,
+Plugins with maintained semver releases follow the latest release
+(`version = "*"`): gitsigns, mason, mason-nvim-dap, mini.icons,
 nvim-lspconfig, nvim-tree, oil, sidekick, and telescope. The rest track their
 default branch because their tags are stale or missing, or because the release
 lacks something this config needs (mason-lspconfig's `tsc` mapping;
 trouble.nvim's Neovim 0.12 decoration-provider fix). nvim-treesitter must stay
-on `main`.
+on `main`. blink.cmp stays on the latest 1.x release (`version = "1.*"`).
+Exact installed revisions are pinned in `lazy-lock.json`.
+
+On macOS, update Neovim with `brew update` followed by `brew upgrade neovim`.
+Restart Neovim after updating it or its plugins.
 
 ## Appearance
 
@@ -70,8 +78,8 @@ configurations.
 
 ## AI
 
-- **99** remains configured with the Cursor SDK provider and its existing
-  `<leader>9…` mappings.
+- **99** is disabled; its Cursor SDK configuration and `<leader>9…` mappings
+  are retained in `lua/plugins/99.lua` for re-enabling later.
 - **GitHub Copilot** provides AI completion through `copilot-language-server`
   (installed by Mason). Sign in once with `:LspCopilotSignIn`.
   - Ghost text uses Neovim's native `vim.lsp.inline_completion`: `<Tab>`
@@ -99,11 +107,12 @@ Cursor uses the local `agent` command; Factory Droid uses `droid`.
 | `<leader>ci` | Send cursor context |
 | `<leader>cs` (visual) | Send selection |
 | `<leader>cF` | Send current file reference |
-| `<leader>cd` | Detach / close CLI |
-| `<leader>c1` | Toggle Claude Code |
-| `<leader>c2` | Toggle Cursor Agent |
-| `<leader>c3` | Toggle Factory Droid |
-| `<leader>c4` | Toggle OpenCode |
+| `<leader>cN` | Start an agent session in a floating window |
+| `<leader>cj` | Manage interactive agent sessions |
+| `<leader>c]` / `<leader>c[` | Next / previous session |
+| `<leader>cw` | Switch the active session between split and float |
+| `<leader>ch` | Hide interactive agent sessions |
+| `<leader>cx` | Kill the active interactive session (with confirmation) |
 
 Context is inserted into the CLI input for review, not automatically submitted.
 
@@ -132,4 +141,3 @@ Save buffers before asking a CLI to read files. In the CLI terminal, `<C-q>`
 leaves terminal mode and `q` in normal mode hides the window without stopping
 the session. Existing `<leader>cf` formatting and `<leader>a` Harpoon mappings
 are unchanged.
-

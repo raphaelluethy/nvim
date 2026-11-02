@@ -36,6 +36,9 @@ return { -- Fuzzy Finder (files, lsp, etc)
 
 				if stat.size > 1024 * 1024 then
 					vim.schedule(function()
+						if not vim.api.nvim_buf_is_valid(bufnr) then
+							return
+						end
 						local size = string.format("%.1f", stat.size / 1024 / 1024)
 						vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, {
 							"Preview skipped",

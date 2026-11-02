@@ -12,7 +12,6 @@ vim.opt.pumblend = 0
 vim.opt.winblend = 0
 
 -- [[ Setting options ]]
--- use Neovim nightly branch
 -- See `:help vim.opt`
 
 -- Make line numbers default
@@ -29,16 +28,11 @@ vim.schedule(function()
 	vim.opt.clipboard = "unnamedplus"
 end)
 
--- Enable break indent
--- vim.opt.wrap = true
--- vim.opt.linebreak = true
--- vim.opt.breakindent = true
---
 -- Save undo history
 vim.opt.undofile = true
-if vim.fn.has("persistent_undo") == 1 then
-	vim.opt.undodir = vim.fn.expand("~/.config/nvim/.undodir")
-end
+local undodir = vim.fn.stdpath("config") .. "/.undodir"
+vim.fn.mkdir(undodir, "p")
+vim.opt.undodir = undodir
 
 -- Case-insensitive searching UNLESS \C or one or more capital letters in the search term
 vim.opt.ignorecase = true
@@ -61,7 +55,6 @@ vim.opt.splitbelow = true
 --  See `:help 'list'`
 --  and `:help 'listchars'`
 vim.opt.list = true
--- :set listchars=tab:▸\ ,space:·,trail:•,extends:>,precedes:<
 vim.opt.listchars = {
 	tab = "▸ ",
 	trail = "•",
@@ -99,9 +92,6 @@ vim.opt.cmdheight = 0
 require("vim._core.ui2").enable({ msg = { targets = "msg" } })
 
 vim.opt.termguicolors = true
-
--- Enable automatic text wrapping at textwidth
--- vim.opt.formatoptions:append 't'
 
 vim.diagnostic.config({
 	virtual_lines = false,
