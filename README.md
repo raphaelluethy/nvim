@@ -142,15 +142,28 @@ Context is inserted into the CLI input for review, not automatically submitted.
 
 `<leader>mr` opens the [codediff](https://github.com/esmuellert/codediff.nvim)
 review panel. From a file buffer it preselects that file and keeps your line.
-`<leader>mg` swaps the file explorer for **semantic change groups**: a cheap
-model (Haiku 5.5 or GPT-6.1 Terra fast through `opencode run`, `m` to switch)
-groups all local hunks into changelists with a title, kind and explanation.
-`<CR>` shows a group's file or hunk in the diff, `o` also focuses it, `K`
-explains the group, `s` sends it to the attached CLI as context, `r` regroups,
-`q`/`t` returns to the file explorer. Each hunk in the diff carries a
-"▌ Group · note" line. Groupings are cached per diff; after a save only the new
-hunks are sent to the model. Lockfiles, generated and credential-like files are
-sent as headers only, and key/token/password values are redacted.
+`<leader>mg` opens [magirev-nvim](https://github.com/raphaelluethy/magirev-nvim),
+a standalone full-width review tab, independent of codediff and Sidekick.
+`Tab` expands inline diffs, `]g`/`[g` move between groups, and `]h`/`[h` between
+hunks. `s` stages the selected group or hunk; `u` unstages it. `c` opens a commit
+message editor showing **all staged changes**, with `Ctrl-c Ctrl-c` to confirm
+the commit and `Ctrl-c Ctrl-k` to cancel. To commit groups separately, stage
+one group, commit, then repeat.
+
+Inline diffs highlight changed words. `v` opens a unified file diff; `V` opens
+a side-by-side split. Inside a diff, `v` switches layouts and `q` returns.
+`gd` or `o` opens the real source file at the selected line, where your normal
+LSP navigation applies.
+
+`d` discards the selected **unstaged** group or entire hunk after confirmation.
+The index is preserved; unstage with `u` first if needed. Selected untracked
+files are deleted, and there is no Magirev undo.
+
+`m` moves a selection into a named group; `e` renames it. `G` or `<leader>mG`
+requests AI grouping through opencode, with confirmation before sending code.
+Manual grouping works offline. `r` refreshes, `?` shows help, and `q` closes.
+The local development checkout is `~/Documents/projects/private/magirev-nvim`; configure its provider
+in `lua/plugins/magirev.lua`. Existing codediff review-comment mappings remain.
 
 The task form offers model and effort selectors after choosing the agent.
 Set `backend = "buffer"` (default) or `backend = "rex"` in the
