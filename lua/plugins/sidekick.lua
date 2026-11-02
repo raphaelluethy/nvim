@@ -1,15 +1,52 @@
 return {
 	"folke/sidekick.nvim",
 	version = "*",
-	-- Loaded at startup: next edit suggestions (NES) attach to the Copilot LSP.
 	lazy = false,
+	-- Agent windows, Rex sessions and tasks are panels.nvim panels.
+	dependencies = { "panels.nvim" },
 	opts = {
-		-- Keep the gutter for git signs and breakpoints; the diff highlight
-		-- already marks where a next edit suggestion is.
-		nes = { signs = false },
+		nes = { enabled = false },
 		cli = {
 			picker = "telescope",
-			win = { layout = "right" },
+			win = {
+				layout = "right",
+				-- Ctrl-h/j/k/l leave agent terminals like any window, floats
+				-- included, and continue into Rex panes (panels.nvim).
+				keys = {
+					nav_left = {
+						"<c-h>",
+						function()
+							require("panels").navigate("h")
+						end,
+						mode = "t",
+						expr = false,
+					},
+					nav_down = {
+						"<c-j>",
+						function()
+							require("panels").navigate("j")
+						end,
+						mode = "t",
+						expr = false,
+					},
+					nav_up = {
+						"<c-k>",
+						function()
+							require("panels").navigate("k")
+						end,
+						mode = "t",
+						expr = false,
+					},
+					nav_right = {
+						"<c-l>",
+						function()
+							require("panels").navigate("l")
+						end,
+						mode = "t",
+						expr = false,
+					},
+				},
+			},
 			tools = {
 				opencode = { cmd = { "opencode" } },
 				droid = { cmd = { "droid" } },
@@ -18,72 +55,28 @@ return {
 	},
 	config = function(_, opts)
 		require("sidekick").setup(opts)
+		-- Agent windows are panels; Rex sessions are a sidekick backend.
+		require("sidekick_ext.panels").setup()
 		require("sidekick_ext.agents").setup()
+		-- Agents get the current file / cursor / selection with every prompt
+		-- (hooks call bin/agent-editor-context).
+		require("sidekick_ext.context").setup()
 		require("sidekick_ext.sessions").setup()
-		require("sidekick_ext.tasks").setup({
-			backend = "buffer", -- "buffer" or "rex"; applies to visible and hidden tasks
-		})
+		-- Tasks run in Rex or as Neovim sessions per the "tasks" switch in
+		-- lua/plugins/panels.lua.
+		require("sidekick_ext.tasks").setup()
 		require("sidekick_ext.review").setup()
-		-- Semantic change groups (<leader>mg): model ids are opencode provider/model.
-		require("sidekick_ext.semantic").setup({
-			llm = { model = "openai/gpt-6.1-terra-fast" },
-		})
-
-		-- Copilot ghost text via Neovim's native inline completion.
-		-- <Tab> accepts (see blink.lua); <M-]> / <M-[> cycle alternatives.
-		vim.lsp.inline_completion.enable(true)
-		vim.keymap.set("i", "<M-]>", function()
-			vim.lsp.inline_completion.select({ count = 1 })
-		end, { desc = "Next Copilot suggestion" })
-		vim.keymap.set("i", "<M-[>", function()
-			vim.lsp.inline_completion.select({ count = -1 })
-		end, { desc = "Previous Copilot suggestion" })
-
-		vim.keymap.set("n", "<leader>ta", function()
-			local enable = not vim.lsp.inline_completion.is_enabled()
-			vim.lsp.inline_completion.enable(enable)
-			require("sidekick.nes").enable(enable)
-			vim.notify("Copilot " .. (enable and "enabled" or "disabled"))
-		end, { desc = "Toggle AI inline completion" })
 	end,
 	keys = {
-		{
-			"<Tab>",
-			function()
-				-- Jump to the next edit suggestion, or apply it when already there.
-				if not require("sidekick").nes_jump_or_apply() then
-					return "<Tab>"
-				end
-			end,
-			expr = true,
-			desc = "Goto/Apply next edit suggestion",
-		},
 		-- Agent sessions inside Neovim (lua/sidekick_ext/sessions.lua).
 		-- Several agents can run at once; the "active" one is the session you
 		-- last entered. Pane sessions share the right split, floats stack.
 		{
 			"<leader>cc",
 			function()
-				local State = require("sidekick.cli.state")
-				local attached = State.get({ attached = true, external = false })
-				if #attached > 0 then
-					return require("sidekick.cli").toggle({ filter = { attached = true, external = false } })
-				end
-				require("sidekick.cli").select({
-					filter = { installed = true },
-					cb = function(state)
-						if not state then
-							return
-						end
-						if state.external then
-							local terminal = require("sidekick.cli.terminal").new({ tool = state.tool })
-							state = State.get_state(terminal)
-						end
-						State.attach(state, { show = true, focus = true })
-					end,
-				})
+				require("sidekick_ext.sessions").toggle_or_start()
 			end,
-			desc = "Sidekick: Toggle CLI",
+			desc = "Agent: toggle active session (none: pick agent and start)",
 		},
 		{
 			"<leader>cn",
@@ -154,9 +147,37 @@ return {
 		{
 			"<leader>cl",
 			function()
-				require("sidekick.cli").select({ filter = { installed = true } })
+				-- Running sessions (also tmux / zellij) attach; a new agent starts
+				-- through sidekick_ext.sessions, so it follows the "agents" switch.
+				require("sidekick.cli").select({
+					filter = { installed = true },
+					cb = function(state)
+						if not state then
+							return
+						end
+						local panel = state.session and state.session.panel
+						if panel then -- a Rex session (panels backend)
+							local Sessions = require("sidekick_ext.sessions")
+							for _, s in ipairs(Sessions.list()) do
+								if s.panel == panel then
+									return Sessions.show(s)
+								end
+							end
+							return panel:show({ focus = true })
+						end
+						if state.session or state.started then
+							local State = require("sidekick.cli.state")
+							if state.external then
+								local terminal = require("sidekick.cli.terminal").new({ tool = state.tool })
+								state = State.get_state(terminal)
+							end
+							return State.attach(state, { show = true, focus = true })
+						end
+						require("sidekick_ext.sessions").new({ tool = state.tool.name, layout = "right" })
+					end,
+				})
 			end,
-			desc = "Sidekick: Select CLI (external / mux sessions)",
+			desc = "Agent: select CLI (running / mux sessions, or start one)",
 		},
 		-- Context goes to the active session.
 		{
@@ -237,26 +258,6 @@ return {
 				require("sidekick_ext.review").toggle_mode()
 			end,
 			desc = "Review: open review panel (codediff)",
-		},
-		{
-			"<leader>mg",
-			function()
-				require("sidekick_ext.semantic").toggle()
-			end,
-			desc = "Review: semantic change groups (LLM)",
-		},
-		{
-			"<leader>mG",
-			function()
-				local Sem = require("sidekick_ext.semantic")
-				local state = Sem.state()
-				if state then
-					Sem.regroup(state)
-				else
-					Sem.toggle()
-				end
-			end,
-			desc = "Review: regroup semantic groups",
 		},
 		{
 			"<leader>ma",

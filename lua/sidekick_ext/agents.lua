@@ -339,7 +339,11 @@ function M.command(tool, sel, prompt)
 	if prompt then
 		vim.list_extend(cmd, spec.prompt(prompt))
 	end
-	return { cmd = cmd, env = spec.env and spec.env(sel or {}) or {} }
+	local env = spec.env and spec.env(sel or {}) or {}
+	-- Lets the agent's editor-context hook reach this Neovim, also from Rex
+	-- panes outside Neovim (see lua/sidekick_ext/context.lua).
+	env.SIDEKICK_NVIM = vim.v.servername
+	return { cmd = cmd, env = env }
 end
 
 --- Full command for a tool + selection as a single argv (env via `env K=V`).

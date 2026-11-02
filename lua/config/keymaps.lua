@@ -41,23 +41,31 @@ vim.keymap.set("t", "<Esc><Esc>", "<C-\\><C-n>", {
 	desc = "Exit terminal mode",
 })
 
--- Terminal toggle (matching Zed: alt-t, space c t)
-vim.keymap.set("n", "<A-t>", "<CMD>terminal<CR>", { desc = "Open terminal" })
-vim.keymap.set("n", "<leader>ct", "<CMD>terminal<CR>", { desc = "Open terminal" })
+-- Terminals (panels.nvim): Rex panes / tabs or Neovim splits / tabs per the
+-- "terminal" switch in lua/plugins/panels.lua. Also :Panels term [where] [cmd].
+local function term(opts)
+	return function()
+		require("panels").term(opts)
+	end
+end
+-- One toggled terminal at the bottom (matching Zed: alt-t, space c t).
+vim.keymap.set("n", "<A-t>", term({ id = "term:main", where = "split" }), { desc = "Toggle terminal" })
+vim.keymap.set("n", "<leader>ct", term({ id = "term:main", where = "split" }), { desc = "Toggle terminal" })
 vim.keymap.set("t", "<A-t>", "<C-\\><C-n>", { desc = "Exit terminal" })
+-- New terminals, like :vsplit | terminal etc.
+vim.keymap.set("n", "<leader>tv", term({ where = "vsplit" }), { desc = "Terminal: vertical split" })
+vim.keymap.set("n", "<leader>ts", term({ where = "split" }), { desc = "Terminal: horizontal split" })
+vim.keymap.set("n", "<leader>tT", term({ where = "tab" }), { desc = "Terminal: tab" })
+vim.keymap.set("n", "<leader>tf", term({ where = "float" }), { desc = "Terminal: float" })
 
-vim.keymap.set("n", "<C-h>", "<C-w><C-h>", {
-	desc = "Move focus to the left window",
-})
-vim.keymap.set("n", "<C-l>", "<C-w><C-l>", {
-	desc = "Move focus to the right window",
-})
-vim.keymap.set("n", "<C-j>", "<C-w><C-j>", {
-	desc = "Move focus to the lower window",
-})
-vim.keymap.set("n", "<C-k>", "<C-w><C-k>", {
-	desc = "Move focus to the upper window",
-})
+-- Window navigation: also into/out of floating panels, and at Neovim's edge
+-- on into the neighbouring Rex pane (panels.nvim). Terminal mode too, so
+-- agent terminals are left the same way.
+for key, name in pairs({ h = "left", j = "lower", k = "upper", l = "right" }) do
+	vim.keymap.set({ "n", "t" }, "<C-" .. key .. ">", function()
+		require("panels").navigate(key)
+	end, { desc = "Move focus to the " .. name .. " window" })
+end
 
 vim.keymap.set("n", "<leader>w", "<CMD>w<CR>", {
 	desc = "[W]rite Buffer",

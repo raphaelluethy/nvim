@@ -1,0 +1,7 @@
+#!/bin/sh
+# Prints the Neovim editor state (current file, cursor, selection) for agent
+# CLIs launched from Neovim. Exits silently outside Neovim.
+#   agent-editor-context json   UserPromptSubmit hook output (Claude Code, Codex, Droid)
+#   agent-editor-context text   plain text (opencode, pi)
+[ -n "${SIDEKICK_NVIM:-$NVIM}" ] || exit 0
+exec nvim -l "$(dirname "$0")/agent-editor-context.lua" "${1:-text}" </dev/null

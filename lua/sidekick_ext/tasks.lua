@@ -1,7 +1,9 @@
 -- Hidden sidekick tasks: run an AI CLI in a minimized Rex floating layer and
--- bring it back later from a picker. Rex is the source of truth (layers whose
--- block label starts with "sk-task:"), so tasks survive Neovim restarts.
-local Rex = require("sidekick_ext.rex")
+-- bring it back later from a picker. The layers are panels.nvim panels
+-- labelled "sk-task:<tool>"; Rex is the source of truth, so tasks survive
+-- Neovim restarts (panels.discover() finds them again).
+local Panels = require("panels")
+local Rex = require("panels.rex")
 
 local M = {}
 
@@ -10,8 +12,7 @@ local PREFIX = "sk-task:"
 local Agents = require("sidekick_ext.agents")
 
 M.config = {
-	backend = "buffer", -- "buffer" (Neovim terminal) or "rex" (Rex window)
-	bounds = { 0.04, 0.04, 0.92, 0.92 }, -- [x, y, w, h] fractions of the Rex window
+	size = { width = 0.92, height = 0.92 }, -- fractions of the Rex window
 }
 
 local state_file = vim.fn.stdpath("state") .. "/sidekick-tasks.json"
@@ -42,6 +43,12 @@ local function save_meta(meta)
 	end
 end
 
+--- Do tasks run in Rex? The "tasks" switch (panels group "sk-task",
+--- lua/plugins/panels.lua); outside Rex they are Neovim agent sessions.
+function M.rex()
+	return Panels.resolve({ label = PREFIX .. "task" }).backend == "rex"
+end
+
 local function check()
 	if not Rex.available() then
 		vim.notify("sidekick tasks need Neovim to run inside Rex", vim.log.levels.ERROR)
@@ -57,13 +64,26 @@ local function title_of(prompt)
 end
 
 ---@class sidekick_ext.Task
----@field layer_id string
----@field block_id string
----@field label string
+---@field panel panels.Panel
+---@field block_id string key of the task's metadata
 ---@field tool string
 ---@field title string
 ---@field hidden boolean
 ---@field meta? sidekick_ext.TaskMeta
+
+---@param p panels.Panel
+---@param meta table<string, sidekick_ext.TaskMeta>
+---@return sidekick_ext.Task
+local function task_of(p, meta)
+	return {
+		panel = p,
+		block_id = p.block_id,
+		tool = p.label:sub(#PREFIX + 1),
+		title = p.title or "",
+		hidden = not p:is_open(),
+		meta = meta[p.block_id],
+	}
+end
 
 --- All live tasks in this Rex session, oldest first.
 ---@return sidekick_ext.Task[]
@@ -71,30 +91,11 @@ function M.list()
 	if not check() then
 		return {}
 	end
-	local view, err = Rex.call("session.view")
-	if not view then
-		vim.notify("rex: " .. tostring(err), vim.log.levels.ERROR)
-		return {}
-	end
 	local meta = load_meta()
 	local live, ret = {}, {}
-	for _, win in ipairs(view.windows or {}) do
-		for _, layer in ipairs(win.layers or {}) do
-			local block = layer.kind == "floating" and layer.blocks and layer.blocks[1]
-			if block and block.label and vim.startswith(block.label, PREFIX) then
-				local tool, title = block.label:sub(#PREFIX + 1):match("^([^:]+):(.*)$")
-				live[block.block_id] = true
-				ret[#ret + 1] = {
-					layer_id = layer.layer_id,
-					block_id = block.block_id,
-					label = block.label,
-					tool = tool or "?",
-					title = title or block.label,
-					hidden = layer.state == "minimized",
-					meta = meta[block.block_id],
-				}
-			end
-		end
+	for _, p in ipairs(Panels.discover({ label_prefix = PREFIX })) do
+		live[p.block_id] = true
+		ret[#ret + 1] = task_of(p, meta)
 	end
 	-- Drop metadata for tasks that no longer exist.
 	local pruned = false
@@ -112,14 +113,16 @@ function M.list()
 	return ret
 end
 
---- Short status: exited / blocked / working / running.
+--- Short status: exited / closed / blocked / working / running.
 ---@param task sidekick_ext.Task
 function M.status(task)
-	local proc = Rex.block_call(task.block_id, "process")
-	if proc and not proc.child then
-		return proc.last_exit and ("exited " .. tostring(proc.last_exit.code or proc.last_exit.status or ""))
-			or "exited"
+	local state, code = task.panel:status()
+	if state == "exited" then
+		return "exited " .. tostring(code)
+	elseif state ~= "running" then
+		return state
 	end
+	-- What the agent itself reports (Rex program status), e.g. working / blocked.
 	local ps = Rex.block_call(task.block_id, "program_status")
 	local rec = ps and ps.records and ps.records[#ps.records]
 	if type(rec) == "table" then
@@ -150,60 +153,41 @@ function M.new(opts)
 		return
 	end
 	local sel = opts.sel or Agents.selection(tool)
-	local window_id = Rex.window_id()
 	local cwd = opts.cwd or vim.fn.getcwd()
 	local title = title_of(opts.prompt)
-	local label = PREFIX .. tool .. ":" .. title
-	local res, err = Rex.call("session.new_layer", {
-		window_id = window_id,
-		bounds = M.config.bounds,
+	local panel = Panels.open({
+		backend = "rex",
+		cmd = Agents.cmd(tool, sel, opts.prompt),
+		cwd = cwd,
+		title = title,
+		label = PREFIX .. tool,
+		size = M.config.size,
+		hidden = not opts.show,
 		focus = opts.show == true,
-		layout = {
-			block = {
-				flavor = "com.superlogical.terminal.shell",
-				label = label,
-				options = { command = Agents.cmd(tool, sel, opts.prompt), cwd = cwd, exit = { on_completion = false } },
-			},
-		},
 	})
-	if not res then
-		vim.notify("rex: " .. tostring(err), vim.log.levels.ERROR)
-		return
+	if not panel then
+		return -- panels.nvim already reported the error
 	end
-	if not opts.show then
-		Rex.call("session.set_layer_state", { layer_id = res.layer_id, state = "minimized" })
-	end
-	local block_id = res.block_ids[1]
 	Agents.set_last_tool(tool)
 	local meta = load_meta()
-	meta[block_id] = { tool = tool, prompt = opts.prompt, cwd = cwd, created = os.time() }
+	meta[panel.block_id] = { tool = tool, prompt = opts.prompt, cwd = cwd, created = os.time() }
 	save_meta(meta)
 	vim.notify(("%s task started%s: %s"):format(tool, opts.show and "" or " (hidden)", title))
-	return {
-		layer_id = res.layer_id,
-		block_id = block_id,
-		label = label,
-		tool = tool,
-		title = title,
-		hidden = not opts.show,
-	}
+	return task_of(panel, meta)
 end
 
 ---@param task sidekick_ext.Task
 function M.show(task)
-	local _, err = Rex.call("session.set_layer_state", { layer_id = task.layer_id, state = "normal", focus = true })
-	if err then
-		vim.notify("rex: " .. err, vim.log.levels.ERROR)
-	end
+	task.panel:show({ focus = true })
 end
 
 ---@param task sidekick_ext.Task
 function M.hide(task)
-	Rex.call("session.set_layer_state", { layer_id = task.layer_id, state = "minimized" })
+	task.panel:hide()
 end
 
 function M.hide_all()
-	if M.config.backend == "buffer" then
+	if not M.rex() then
 		return require("sidekick_ext.sessions").hide_all()
 	end
 	for _, t in ipairs(M.list()) do
@@ -215,22 +199,22 @@ end
 
 ---@param task sidekick_ext.Task
 function M.kill(task)
-	Rex.call("session.close_layer", { layer_id = task.layer_id })
+	task.panel:close()
 end
 
 --- Send a follow-up message to a running task without showing it.
 ---@param task sidekick_ext.Task
 ---@param text string
 function M.send(task, text)
-	local ok, err = Rex.paste(task.block_id, text, true)
+	local ok, err = task.panel:send(text, true)
 	if not ok then
-		vim.notify("rex: " .. tostring(err), vim.log.levels.ERROR)
+		vim.notify("sidekick task: " .. tostring(err), vim.log.levels.ERROR)
 	end
 end
 
 --- Submit using the backend selected in the Lua configuration.
 function M.submit(opts)
-	if M.config.backend == "rex" then
+	if M.rex() then
 		return M.new(opts)
 	end
 	return require("sidekick_ext.sessions").new(opts)
@@ -254,7 +238,7 @@ end
 
 --- Telescope picker over all tasks. Preview shows the agent's screen.
 function M.pick()
-	if M.config.backend == "buffer" then
+	if not M.rex() then
 		return require("sidekick_ext.sessions").pick()
 	end
 	if not check() then
@@ -322,7 +306,7 @@ function M.pick()
 					lines = vim.split("Prompt: " .. t.meta.prompt, "\n", { plain = true })
 					lines[#lines + 1] = ("─"):rep(60)
 				end
-				vim.list_extend(lines, Rex.capture(t.block_id))
+				vim.list_extend(lines, t.panel:capture())
 				vim.api.nvim_buf_set_lines(self.state.bufnr, 0, -1, false, lines)
 				vim.schedule(function()
 					local win = self.state.winid
@@ -375,7 +359,6 @@ end
 
 function M.setup(opts)
 	M.config = vim.tbl_deep_extend("force", M.config, opts or {})
-	assert(M.config.backend == "buffer" or M.config.backend == "rex", "task backend must be 'buffer' or 'rex'")
 	vim.api.nvim_create_user_command("SkTask", function(a)
 		if a.args ~= "" then
 			M.submit({ prompt = a.args, show = a.bang })

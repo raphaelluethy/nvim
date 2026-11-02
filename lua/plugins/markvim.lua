@@ -15,6 +15,7 @@ return {
 	name = "markvim",
 	ft = "markdown",
 	cmd = "Markvim",
+	dependencies = { "panels.nvim" },
 	keys = {
 		{
 			"<leader>tm",

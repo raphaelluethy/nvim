@@ -7,7 +7,13 @@
 -- Pane sessions share the right split, so showing one replaces the previous
 -- one. Float sessions open in a floating window and can stay open beside a
 -- pane session. Sessions die with Neovim (terminal jobs are stopped on exit).
+--
+-- Windows are panels.nvim panels (lua/sidekick_ext/panels.lua). When the
+-- panels group "sidekick" resolves to Rex, new sessions run in Rex instead:
+-- a floating layer, a pane beside Neovim, or a tab. Those survive Neovim
+-- restarts and are picked up again.
 local Agents = require("sidekick_ext.agents")
+local SkPanels = require("sidekick_ext.panels")
 
 local M = {}
 
@@ -25,6 +31,8 @@ M.config = {
 ---@field cwd string
 ---@field created integer
 ---@field last_output integer
+---@field panel? panels.Panel Rex sessions
+---@field layout? "float"|"right"|"tab" Rex sessions
 
 M.sessions = {} ---@type table<string, sidekick_ext.Session>
 M.active = nil ---@type string?
@@ -38,8 +46,82 @@ end
 
 ---@param s sidekick_ext.Session
 ---@return sidekick.cli.Terminal?
+local PanelTerm = {}
+PanelTerm.__index = PanelTerm
+
+--- The Terminal methods sessions use, for a session running in a panel (Rex).
+---@param s sidekick_ext.Session
+function PanelTerm.new(s)
+	return setmetatable({ panel = s.panel, opts = { layout = s.layout }, started = true }, PanelTerm)
+end
+function PanelTerm:is_running()
+	return self.panel:is_valid() and self.panel.exit_code == nil
+end
+function PanelTerm:is_open()
+	return self.panel:is_open()
+end
+function PanelTerm:show()
+	self.panel:show({ focus = false })
+end
+function PanelTerm:focus()
+	self.panel:focus()
+end
+function PanelTerm:hide()
+	self.panel:hide()
+end
+function PanelTerm:is_focused()
+	return false -- Neovim has focus whenever one of our keys runs
+end
+function PanelTerm:close()
+	self.panel:close()
+end
+function PanelTerm:send(text)
+	self.panel:send(text, false)
+end
+function PanelTerm:submit()
+	self.panel:send("", true)
+end
+function PanelTerm:lines()
+	return self.panel:capture()
+end
+
 local function term(s)
+	if s.panel then
+		return s.panel:is_valid() and PanelTerm.new(s) or nil
+	end
 	return require("sidekick.cli.terminal").get(s.id)
+end
+
+local discovered = false
+
+--- Rex sessions from before a restart (or another Neovim): track them again.
+local function discover()
+	if discovered then
+		return
+	end
+	discovered = true
+	if not require("panels.rex").available() then
+		return
+	end
+	for _, p in ipairs(require("panels").discover({ label_prefix = SkPanels.LABEL })) do
+		local tool = p.label:sub(#SkPanels.LABEL + 1)
+		local id = SkPanels.session_id(p)
+		if Agents.specs[tool] and not M.sessions[id] then
+			counter = counter + 1
+			M.sessions[id] = {
+				id = id,
+				n = counter,
+				tool = tool,
+				title = p.title ~= "" and p.title or (Agents.specs[tool].label .. " #" .. counter),
+				sel = {},
+				cwd = vim.fn.getcwd(),
+				created = os.time(),
+				last_output = 0,
+				panel = p,
+				layout = p.layout == "split" and "right" or p.layout,
+			}
+		end
+	end
 end
 
 --- Drop sessions whose terminal is gone; keep `active` valid.
@@ -61,6 +143,7 @@ end
 --- All live sessions, oldest first.
 ---@return sidekick_ext.Session[]
 function M.list()
+	discover()
 	local ret = {}
 	for _, s in pairs(M.sessions) do
 		if term(s) then
@@ -93,12 +176,18 @@ function M.status(s)
 	if not (t and t:is_running()) then
 		return "exited"
 	end
+	if s.panel then
+		return "running"
+	end
 	return (os.time() - s.last_output) <= M.config.working_secs and "working" or "idle"
 end
 
 ---@param s sidekick_ext.Session
----@return "float"|"right"
+---@return "float"|"right"|"tab"
 function M.layout(s)
+	if s.panel then
+		return s.layout
+	end
 	local t = term(s)
 	return t and t.opts.layout == "float" and "float" or "right"
 end
@@ -107,10 +196,54 @@ end
 ---@field prompt? string
 ---@field tool? string
 ---@field sel? sidekick_ext.Selection
----@field layout? "float"|"right"
+---@field layout? "float"|"right"|"tab"
 ---@field cwd? string
 ---@field focus? boolean
 ---@field show? boolean start hidden when false
+
+--- Start a session in Rex (a panels panel).
+---@param opts sidekick_ext.NewSessionOpts
+---@param tool string
+---@param sel sidekick_ext.Selection
+local function new_in_rex(opts, tool, sel)
+	local c = Agents.command(tool, sel, opts.prompt)
+	local layout = opts.layout or "right"
+	local panel_layout, position = SkPanels.layout(layout)
+	counter = counter + 1
+	local title = opts.prompt and title_of(opts.prompt) or (Agents.specs[tool].label .. " #" .. counter)
+	local panel = require("panels").open({
+		label = SkPanels.LABEL .. tool,
+		title = title,
+		cmd = c.cmd,
+		env = c.env,
+		cwd = opts.cwd or vim.fn.getcwd(),
+		layout = panel_layout,
+		position = position,
+		hidden = opts.show == false,
+		focus = opts.focus ~= false,
+	})
+	if not panel then
+		return -- panels.nvim reported the error
+	end
+	---@type sidekick_ext.Session
+	local s = {
+		id = SkPanels.session_id(panel),
+		n = counter,
+		tool = tool,
+		title = title,
+		prompt = opts.prompt,
+		sel = sel,
+		cwd = opts.cwd or vim.fn.getcwd(),
+		created = os.time(),
+		last_output = os.time(),
+		panel = panel,
+		layout = layout,
+	}
+	M.sessions[s.id] = s
+	M.active = s.id
+	Agents.set_last_tool(tool)
+	return s
+end
 
 ---@param opts? sidekick_ext.NewSessionOpts
 ---@return sidekick_ext.Session?
@@ -122,6 +255,9 @@ function M.new(opts)
 		return
 	end
 	local sel = opts.sel or Agents.selection(tool)
+	if opts.layout == "tab" or SkPanels.rex(opts.layout) then
+		return new_in_rex(opts, tool, sel)
+	end
 	local Session = require("sidekick.cli.session")
 	local Terminal = require("sidekick.cli.terminal")
 	local Config = require("sidekick.config")
@@ -183,15 +319,20 @@ function M.show(s, opts)
 	if t.started and not t:is_running() then
 		return vim.notify("Session has exited: " .. s.title, vim.log.levels.WARN)
 	end
-	if t.opts.layout ~= "float" then
+	if M.layout(s) == "right" then
+		-- Pane sessions share the pane.
 		for _, other in ipairs(M.list()) do
-			local ot = term(other)
-			if ot and ot ~= t and ot.opts.layout ~= "float" and ot:is_open() then
-				ot:hide()
+			if other ~= s and M.layout(other) == "right" then
+				local ot = term(other)
+				if ot and ot:is_open() then
+					ot:hide()
+				end
 			end
 		end
 	end
-	require("sidekick.cli.session").attach(t)
+	if not s.panel then
+		require("sidekick.cli.session").attach(t)
+	end
 	t:show()
 	if opts.focus ~= false then
 		t:focus()
@@ -219,6 +360,9 @@ function M.toggle_float(s)
 	local t = term(s)
 	if not t then
 		return
+	end
+	if s.panel then
+		return vim.notify("Rex sessions keep their layout", vim.log.levels.INFO)
 	end
 	local open = t:is_open()
 	t:hide()
@@ -258,7 +402,14 @@ function M.toggle()
 		return M.prompt()
 	end
 	local t = term(s)
-	if t and t:is_open() then
+	if s.panel then
+		-- Rex: keys only reach Neovim while it has focus, so open means hide.
+		if s.panel:is_open() then
+			s.panel:hide()
+		else
+			M.show(s)
+		end
+	elseif t and t:is_open() then
 		if t:is_focused() then
 			t:hide()
 		else
@@ -267,6 +418,17 @@ function M.toggle()
 	else
 		M.show(s)
 	end
+end
+
+--- Toggle the active session; with none, pick an agent and start it in the
+--- pane (no prompt). Rex or Neovim per the "agents" switch (lua/plugins/panels.lua).
+function M.toggle_or_start()
+	if M.get_active() then
+		return M.toggle()
+	end
+	Agents.pick_tool(Agents.last_tool(), function(tool)
+		M.new({ tool = tool, layout = "right" })
+	end)
 end
 
 --- Make the next (dir = 1) or previous (dir = -1) session active and show it.
@@ -305,7 +467,10 @@ function M.prompt(opts)
 	if opts.layout == "float" then
 		actions[1], actions[2] = actions[2], actions[1]
 	end
-	if require("sidekick_ext.rex").available() then
+	if SkPanels.rex("tab") then
+		actions[#actions + 1] = { label = "Start in tab", run = start("tab") }
+	end
+	if require("panels.rex").available() then
 		actions[#actions + 1] = {
 			label = "Rex hidden",
 			run = function(text, tool, sel)
@@ -321,6 +486,9 @@ function M.rename(s, cb)
 	vim.ui.input({ prompt = "Session title: ", default = s.title }, function(v)
 		if v and vim.trim(v) ~= "" then
 			s.title = vim.trim(v)
+			if s.panel then
+				s.panel:set_title(s.title)
+			end
 		end
 		if cb then
 			cb()
@@ -358,7 +526,8 @@ function M.pick()
 			results = list,
 			entry_maker = function(s)
 				local t = term(s)
-				local where = t and t:is_open() and (M.layout(s) == "float" and "float" or "pane") or "hidden"
+				local where = t and t:is_open() and ({ float = "float", right = "pane", tab = "tab" })[M.layout(s)]
+					or "hidden"
 				local display = ("%s %-6s %-8s %-9s %-4s %s"):format(
 					s.id == M.active and "●" or " ",
 					where,
@@ -395,8 +564,9 @@ function M.pick()
 					lines = vim.split("Prompt: " .. s.prompt, "\n", { plain = true })
 					lines[#lines + 1] = ("─"):rep(60)
 				end
-				if t and t:buf_valid() then
-					local out = vim.api.nvim_buf_get_lines(t.buf, 0, -1, false)
+				local out = t
+					and (t.lines and t:lines() or (t:buf_valid() and vim.api.nvim_buf_get_lines(t.buf, 0, -1, false)))
+				if out then
 					while #out > 0 and vim.trim(out[#out]) == "" do
 						out[#out] = nil
 					end
