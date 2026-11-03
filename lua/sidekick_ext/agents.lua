@@ -343,6 +343,12 @@ function M.command(tool, sel, prompt)
 	-- Lets the agent's editor-context hook reach this Neovim, also from Rex
 	-- panes outside Neovim (see lua/sidekick_ext/context.lua).
 	env.SIDEKICK_NVIM = vim.v.servername
+	-- opencode shows the current file / selection by its prompt and sends it
+	-- with the next message (see lua/sidekick_ext/ide.lua).
+	if tool == "opencode" then
+		local port = require("sidekick_ext.ide").port()
+		env.OPENCODE_EDITOR_SSE_PORT = port and tostring(port) or nil
+	end
 	return { cmd = cmd, env = env }
 end
 

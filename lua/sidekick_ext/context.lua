@@ -127,6 +127,34 @@ function M.text(cwd)
 	return table.concat(out, "\n")
 end
 
+--- The file the user is working in, as an editor selection (Claude Code IDE
+--- protocol, 0-based positions): the visual selection by whole lines, else an
+--- empty selection at the cursor. Nil when no file is open.
+---@return { filePath: string, text: string, selection: { start: { line: integer, character: integer }, ["end"]: { line: integer, character: integer } } }?
+function M.selection()
+	local win = file_win()
+	if not win then
+		return
+	end
+	local buf = vim.api.nvim_win_get_buf(win)
+	local ret = { filePath = vim.fs.normalize(vim.api.nvim_buf_get_name(buf)) }
+	local from, to = selection(win)
+	if from then
+		local lines = vim.api.nvim_buf_get_lines(buf, from - 1, to, false)
+		ret.text = table.concat(lines, "\n")
+		ret.selection = {
+			start = { line = from - 1, character = 0 },
+			["end"] = { line = to - 1, character = #(lines[#lines] or "") },
+		}
+	else
+		local cursor = vim.api.nvim_win_get_cursor(win)
+		local pos = { line = cursor[1] - 1, character = cursor[2] }
+		ret.text = ""
+		ret.selection = { start = pos, ["end"] = pos }
+	end
+	return ret
+end
+
 function M.setup()
 	local group = vim.api.nvim_create_augroup("sidekick_ext.context", { clear = true })
 	vim.api.nvim_create_autocmd({ "WinEnter", "BufWinEnter" }, {
