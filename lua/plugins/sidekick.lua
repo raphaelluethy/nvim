@@ -186,10 +186,7 @@ return {
 				require("sidekick.cli").prompt({
 					cb = function(_, text)
 						if text then
-							require("sidekick.cli").send({
-								text = text,
-								filter = require("sidekick_ext.sessions").filter(),
-							})
+							require("sidekick_ext.sessions").send_context({ text = text })
 						end
 					end,
 				})
@@ -200,7 +197,7 @@ return {
 		{
 			"<leader>ci",
 			function()
-				require("sidekick.cli").send({ msg = "{this}", filter = require("sidekick_ext.sessions").filter() })
+				require("sidekick_ext.sessions").send_context({ msg = "{this}" })
 			end,
 			mode = { "n", "v" },
 			desc = "Agent: send cursor context",
@@ -208,10 +205,7 @@ return {
 		{
 			"<leader>cs",
 			function()
-				require("sidekick.cli").send({
-					msg = "{position}\n```\n{selection}\n```",
-					filter = require("sidekick_ext.sessions").filter(),
-				})
+				require("sidekick_ext.sessions").send_context({ msg = "{position}\n```\n{selection}\n```" })
 			end,
 			mode = "v",
 			desc = "Agent: send selection with file and position",
@@ -219,7 +213,7 @@ return {
 		{
 			"<leader>cF",
 			function()
-				require("sidekick.cli").send({ msg = "{file}", filter = require("sidekick_ext.sessions").filter() })
+				require("sidekick_ext.sessions").send_context({ msg = "{file}" })
 			end,
 			desc = "Agent: send file",
 		},

@@ -431,6 +431,88 @@ function M.toggle_or_start()
 	end)
 end
 
+--- Terminal screen of a session, for telling when its agent has started.
+---@param s sidekick_ext.Session
+local function screen(s)
+	local t = term(s)
+	if not t then
+		return nil
+	end
+	if s.panel then
+		return table.concat(s.panel:capture(), "\n")
+	end
+	return t.buf
+			and vim.api.nvim_buf_is_valid(t.buf)
+			and table.concat(vim.api.nvim_buf_get_lines(t.buf, 0, -1, false), "\n")
+		or nil
+end
+
+--- Call `cb` once the agent in `s` is up: its screen is non-empty and has not
+--- changed for a moment (or after a timeout).
+---@param s sidekick_ext.Session
+---@param cb fun(s: sidekick_ext.Session)
+local function when_ready(s, cb)
+	local interval, settle, timeout = 250, 3, 15000
+	local last, same, elapsed = nil, 0, 0
+	local timer = assert(vim.uv.new_timer())
+	timer:start(
+		interval,
+		interval,
+		vim.schedule_wrap(function()
+			if timer:is_closing() then
+				return
+			end
+			elapsed = elapsed + interval
+			local t = term(s)
+			if not (t and t:is_running()) then
+				timer:close()
+				return vim.notify("Agent session exited before context could be sent", vim.log.levels.WARN)
+			end
+			local cur = screen(s)
+			if cur and vim.trim(cur) ~= "" and cur == last then
+				same = same + 1
+			else
+				same = 0
+			end
+			last = cur
+			if same >= settle or elapsed >= timeout then
+				timer:close()
+				cb(s)
+			end
+		end)
+	)
+end
+
+--- sidekick's send, to the active session. With none, start one the way
+--- <leader>cc does (pick an agent, pane, Rex or Neovim per the "agents"
+--- switch) and send once it is up. Context is rendered right away, so the
+--- selection and cursor are the ones from when the key was pressed.
+---@param opts sidekick.cli.Send
+function M.send_context(opts)
+	local Cli = require("sidekick.cli")
+	local s = M.get_active()
+	if s then
+		return Cli.send(vim.tbl_extend("force", opts, { filter = { session = s.id } }))
+	end
+	if not opts.text then
+		local msg, text = Cli.render(opts)
+		if msg == "" or not text then
+			return vim.notify("Nothing to send.", vim.log.levels.WARN)
+		end
+		opts = vim.tbl_extend("force", opts, { text = text })
+		opts.msg, opts.prompt = nil, nil
+	end
+	require("sidekick.util").exit_visual_mode()
+	Agents.pick_tool(Agents.last_tool(), function(tool)
+		local new = M.new({ tool = tool, layout = "right" })
+		if new then
+			when_ready(new, function(ready)
+				Cli.send(vim.tbl_extend("force", opts, { filter = { session = ready.id } }))
+			end)
+		end
+	end)
+end
+
 --- Make the next (dir = 1) or previous (dir = -1) session active and show it.
 ---@param dir 1|-1
 function M.cycle(dir)
