@@ -208,10 +208,13 @@ return {
 		{
 			"<leader>cs",
 			function()
-				require("sidekick.cli").send({ msg = "{selection}", filter = require("sidekick_ext.sessions").filter() })
+				require("sidekick.cli").send({
+					msg = "{position}\n```\n{selection}\n```",
+					filter = require("sidekick_ext.sessions").filter(),
+				})
 			end,
 			mode = "v",
-			desc = "Agent: send selection",
+			desc = "Agent: send selection with file and position",
 		},
 		{
 			"<leader>cF",

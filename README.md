@@ -127,7 +127,7 @@ Cursor uses the local `agent` command; Factory Droid uses `droid`.
 | `<leader>cl` | Select an installed CLI, including Codex |
 | `<leader>cA` | Select a prompt |
 | `<leader>ci` | Send cursor context |
-| `<leader>cs` (visual) | Send selection |
+| `<leader>cs` (visual) | Send file, selection position, and fenced selection |
 | `<leader>cF` | Send current file reference |
 | `<leader>cN` | Start an agent session in a floating window |
 | `<leader>cj` | Manage interactive agent sessions |
