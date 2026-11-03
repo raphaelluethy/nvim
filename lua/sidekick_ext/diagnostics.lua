@@ -18,6 +18,7 @@ M.config = {
 	max_items = 50,
 	max_code_lines = 6, -- source lines shown per diagnostic (0 = none)
 	submit = false, -- leave the prompt in the agent's input to add instructions
+	focus = true, -- focus the agent session after sending
 }
 
 ---@class sidekick_ext.Diag
@@ -240,7 +241,7 @@ function M.build(diags, cwd)
 	return ret
 end
 
----@param opts? { all?: boolean, submit?: boolean }
+---@param opts? { all?: boolean, submit?: boolean, focus?: boolean }
 function M.send(opts)
 	opts = opts or {}
 	local diags, what = M.collect(opts)
@@ -254,7 +255,11 @@ function M.send(opts)
 	if submit == nil then
 		submit = M.config.submit
 	end
-	Sessions.send_context({ text = text, submit = submit })
+	local focus = opts.focus
+	if focus == nil then
+		focus = M.config.focus
+	end
+	Sessions.send_context({ text = text, submit = submit, focus = focus })
 end
 
 function M.setup(opts)

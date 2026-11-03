@@ -207,7 +207,10 @@ return {
 		{
 			"<leader>cs",
 			function()
-				require("sidekick_ext.sessions").send_context({ msg = "{position}\n```\n{selection}\n```" })
+				require("sidekick_ext.sessions").send_context({
+					msg = "{position}\n```\n{selection}\n```",
+					focus = true,
+				})
 			end,
 			mode = "v",
 			desc = "Agent: send selection with file and position",

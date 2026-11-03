@@ -127,9 +127,9 @@ Cursor uses the local `agent` command; Factory Droid uses `droid`.
 | `<leader>cl` | Select an installed CLI, including Codex |
 | `<leader>cA` | Select a prompt |
 | `<leader>ci` | Send cursor context |
-| `<leader>cs` (visual) | Send file, selection position, and fenced selection |
+| `<leader>cs` (visual) | Send file, selection position, and fenced selection, then focus the agent |
 | `<leader>cF` | Send current file reference |
-| `<leader>cd` | Send diagnostics: in Trouble the item / group under the cursor or the selection, elsewhere the open Trouble view, else all diagnostics (`:SkDiagnostics[!] [all]`) |
+| `<leader>cd` | Send diagnostics: in Trouble the item / group under the cursor or the selection, elsewhere the open Trouble view, else all diagnostics, then focus the agent (`:SkDiagnostics[!] [all]`) |
 | `<leader>cD` | Send every diagnostic in the open Trouble view |
 | `<leader>cN` | Start an agent session in a floating window |
 | `<leader>cj` | Manage interactive agent sessions |

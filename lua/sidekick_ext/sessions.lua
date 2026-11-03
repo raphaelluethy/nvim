@@ -487,12 +487,28 @@ end
 --- <leader>cc does (pick an agent, pane, Rex or Neovim per the "agents"
 --- switch) and send once it is up. Context is rendered right away, so the
 --- selection and cursor are the ones from when the key was pressed.
+--- With `focus`, the session (Neovim window or Rex block) gets focus after
+--- the send instead of staying in the editor.
 ---@param opts sidekick.cli.Send
 function M.send_context(opts)
 	local Cli = require("sidekick.cli")
+	local focus = opts.focus == true
+	local function deliver(target)
+		Cli.send(vim.tbl_extend("force", opts, { filter = { session = target.id }, focus = false }))
+		if focus then
+			-- Context is rendered; leave visual mode before switching windows.
+			require("sidekick.util").exit_visual_mode()
+			-- After sidekick's scheduled attach, so it can't take focus back.
+			vim.schedule(function()
+				if M.sessions[target.id] then
+					M.show(target, { focus = true })
+				end
+			end)
+		end
+	end
 	local s = M.get_active()
 	if s then
-		return Cli.send(vim.tbl_extend("force", opts, { filter = { session = s.id } }))
+		return deliver(s)
 	end
 	if not opts.text then
 		local msg, text = Cli.render(opts)
@@ -506,9 +522,7 @@ function M.send_context(opts)
 	Agents.pick_tool(Agents.last_tool(), function(tool)
 		local new = M.new({ tool = tool, layout = "right" })
 		if new then
-			when_ready(new, function(ready)
-				Cli.send(vim.tbl_extend("force", opts, { filter = { session = ready.id } }))
-			end)
+			when_ready(new, deliver)
 		end
 	end)
 end
