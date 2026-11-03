@@ -2,6 +2,14 @@ return {
 	"numerataz/ninetyfive.nvim",
 	version = "*",
 	config = function()
+		-- Accepting a suggestion calls vim.lsp.util.character_offset, deprecated
+		-- on Nvim 0.13 (removed in 0.14), which flashes a warning on Tab. Swap in
+		-- the same logic without the deprecation call. Drop once upstream fixes it.
+		vim.lsp.util.character_offset = function(buf, row, col, encoding)
+			local line = vim.api.nvim_buf_get_lines(buf, row, row + 1, false)[1] or ""
+			return vim.str_utfindex(line, encoding, col, false)
+		end
+
 		-- Headless Neovim (agent sessions) has no UI and should not open a socket.
 		-- setup() still has to run: the plugin auto-enables if setup was skipped.
 		local has_ui = #vim.api.nvim_list_uis() > 0
