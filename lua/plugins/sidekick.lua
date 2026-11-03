@@ -67,6 +67,7 @@ return {
 		-- lua/plugins/panels.lua.
 		require("sidekick_ext.tasks").setup()
 		require("sidekick_ext.review").setup()
+		require("sidekick_ext.diagnostics").setup()
 	end,
 	keys = {
 		-- Agent sessions inside Neovim (lua/sidekick_ext/sessions.lua).
@@ -217,6 +218,24 @@ return {
 				require("sidekick_ext.sessions").send_context({ msg = "{file}" })
 			end,
 			desc = "Agent: send file",
+		},
+		-- Diagnostics as Trouble shows them (lua/sidekick_ext/diagnostics.lua):
+		-- in Trouble the item / group under the cursor or the selection,
+		-- elsewhere the open Trouble view, else all diagnostics.
+		{
+			"<leader>cd",
+			function()
+				require("sidekick_ext.diagnostics").send()
+			end,
+			mode = { "n", "v" },
+			desc = "Agent: send diagnostics (Trouble item / selection / view)",
+		},
+		{
+			"<leader>cD",
+			function()
+				require("sidekick_ext.diagnostics").send({ all = true })
+			end,
+			desc = "Agent: send all diagnostics in the Trouble view",
 		},
 		-- Hidden tasks in minimized Rex floats (lua/sidekick_ext/tasks.lua)
 		{

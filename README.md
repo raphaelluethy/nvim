@@ -129,6 +129,8 @@ Cursor uses the local `agent` command; Factory Droid uses `droid`.
 | `<leader>ci` | Send cursor context |
 | `<leader>cs` (visual) | Send file, selection position, and fenced selection |
 | `<leader>cF` | Send current file reference |
+| `<leader>cd` | Send diagnostics: in Trouble the item / group under the cursor or the selection, elsewhere the open Trouble view, else all diagnostics (`:SkDiagnostics[!] [all]`) |
+| `<leader>cD` | Send every diagnostic in the open Trouble view |
 | `<leader>cN` | Start an agent session in a floating window |
 | `<leader>cj` | Manage interactive agent sessions |
 | `<leader>c]` / `<leader>c[` | Next / previous session |
