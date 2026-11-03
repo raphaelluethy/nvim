@@ -10,8 +10,8 @@ return {
 		-- `monokai-pro-zed` follows 'background' (see lua/config/appearance.lua).
 		-- Any variant works, e.g. "monokai-pro-filter-spectrum-v3-no-italics".
 		require("monokai-pro-zed").setup({
-			dark = "monokai-pro-filter-spectrum-v3",
-			light = "monokai-pro-light-filter-sun-v3",
+			dark = "monokai-pro-filter-spectrum-v3-no-italics",
+			light = "monokai-pro-light-filter-sun-v3-no-italics",
 		})
 		vim.cmd.colorscheme("monokai-pro-zed")
 	end,
