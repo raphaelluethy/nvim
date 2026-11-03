@@ -348,6 +348,9 @@ function M.command(tool, sel, prompt)
 	if tool == "opencode" then
 		local port = require("sidekick_ext.ide").port()
 		env.OPENCODE_EDITOR_SSE_PORT = port and tostring(port) or nil
+	elseif tool == "droid" then
+		local port = require("sidekick_ext.droid_ide").port()
+		env.FACTORY_VSCODE_MCP_PORT = port and tostring(port) or nil
 	end
 	return { cmd = cmd, env = env }
 end

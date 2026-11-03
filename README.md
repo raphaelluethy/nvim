@@ -138,6 +138,38 @@ Cursor uses the local `agent` command; Factory Droid uses `droid`.
 
 Context is inserted into the CLI input for review, not automatically submitted.
 
+### Droid IDE connection (no hook required)
+
+Droid sessions launched through the agent mappings connect directly to Neovim.
+The local `sidekick_ext.droid_ide` bridge shares the last active file, cursor,
+visual selection, loaded files, unsaved-change flags, and diagnostics through
+Droid's IDE MCP protocol. Focus can stay in the agent terminal without losing
+the source-file context. File contents are not automatically saved.
+
+- Start a **new** Droid session after restarting Neovim. Use `/ide` in Droid
+  to inspect or disconnect the connection.
+- For a manually opened Neovim terminal, run `:DroidIDE start` **before**
+  launching `droid`. `:DroidIDE stop` closes the bridge.
+- No `UserPromptSubmit` hook is needed for Droid. If you previously configured
+  `bin/agent-editor-context` as a Droid hook, remove that specific hook through
+  Droid's `/hooks` manager to avoid duplicate context. Other agents can keep it.
+
+The bridge uses a loopback-only HTTP server, rejects browser origins, requires
+a random session ID after initialization, and removes its discovery lock on
+exit. It starts on demand, not at editor startup. It needs no extra runtime.
+
+This is an unofficial adapter for an undocumented Droid protocol. Droid may
+label an automatically connected session **VS Code**, even though Neovim is the
+server. Its disconnected `/ide` install/reconnect flow still checks for the
+official VS Code extension; start a new Droid session instead. External
+terminals may discover Neovim with Droid's `ideAutoConnect` setting, but this
+is not enabled by this configuration. Native diff approvals and waiting for
+an edited file to be saved are not implemented; normal terminal behavior remains.
+The bridge advertises only a file-opening tool, which opens a separate tab.
+
+Run the bridge tests with `nvim --headless -u NONE -l tests/droid_ide.lua`
+(requires Python 3).
+
 ### Review panel
 
 `<leader>mr` opens the [codediff](https://github.com/esmuellert/codediff.nvim)

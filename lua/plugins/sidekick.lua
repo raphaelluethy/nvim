@@ -58,9 +58,10 @@ return {
 		-- Agent windows are panels; Rex sessions are a sidekick backend.
 		require("sidekick_ext.panels").setup()
 		require("sidekick_ext.agents").setup()
-		-- Agents get the current file / cursor / selection with every prompt
-		-- (hooks call bin/agent-editor-context).
+		-- Shared context tracking. Droid uses its IDE protocol, other agents
+		-- can still use hooks calling bin/agent-editor-context.
 		require("sidekick_ext.context").setup()
+		require("sidekick_ext.droid_ide").setup()
 		require("sidekick_ext.sessions").setup()
 		-- Tasks run in Rex or as Neovim sessions per the "tasks" switch in
 		-- lua/plugins/panels.lua.
