@@ -67,9 +67,10 @@ for key, name in pairs({ h = "left", j = "lower", k = "upper", l = "right" }) do
 	end, { desc = "Move focus to the " .. name .. " window" })
 end
 
-vim.keymap.set("n", "<leader>w", "<CMD>w<CR>", {
-	desc = "[W]rite Buffer",
-})
+-- Save from normal, insert, visual and select mode; format is <A-f> (conform.lua).
+-- Not in terminal mode, where agent CLIs use <C-s> themselves.
+vim.keymap.set({ "n", "i", "x", "s" }, "<C-s>", "<Cmd>write<CR>", { desc = "Save buffer" })
+vim.keymap.set("n", "<leader>w", "<Cmd>write<CR>", { desc = "Save buffer" })
 
 -- Splits: <leader>v (<leader>s is Telescope search, <leader>w is write)
 vim.keymap.set("n", "<leader>vv", "<CMD>vsplit<CR>", { desc = "Split right" })

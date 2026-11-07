@@ -3,16 +3,22 @@ return {
 	"stevearc/conform.nvim",
 	event = { "BufWritePre" },
 	cmd = { "ConformInfo" },
+	-- <A-f> works in insert mode too; a visual selection formats only that range.
 	keys = {
+		{
+			"<A-f>",
+			function()
+				require("conform").format({ async = true })
+			end,
+			mode = { "n", "i", "x", "s" },
+			desc = "Format buffer/selection",
+		},
 		{
 			"<leader>cf",
 			function()
-				require("conform").format({
-					async = true,
-					lsp_format = "fallback",
-				})
+				require("conform").format({ async = true })
 			end,
-			mode = { "n", "v" },
+			mode = { "n", "x" },
 			desc = "Format buffer/selection",
 		},
 	},

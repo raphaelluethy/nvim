@@ -25,7 +25,6 @@ return {
 			{ "<leader>s", group = "Search" },
 			{ "<leader>t", group = "Toggle / diagnostics" },
 			{ "<leader>v", group = "Split" },
-			{ "<leader>w", group = "Write / workspace" },
 			{ "<leader>x", group = "Quickfix / lists" },
 			{ "]", group = "Next" },
 			{ "[", group = "Previous" },

@@ -39,6 +39,11 @@ Per-server settings live in `lua/plugins/lsp.lua`; per-project overrides go
 in a `.nvim.lua` next to the project (`'exrc'`, confirmed once with `:trust`),
 e.g. `vim.lsp.config("gopls", { settings = { ... } })`.
 
+`<C-s>` saves and `<A-f>` formats in normal, insert, visual and select mode
+(`<leader>w` and `<leader>cf` too). Saving also formats (conform's
+`format_after_save`). Workspace symbols are `<leader>sS`; insert-mode signature
+help comes from blink.cmp.
+
 Folds come from tree-sitter (`foldexpr`), open by default (`foldlevel=99`).
 Diagnostics show inline text on the cursor line only; `gh` opens the float.
 

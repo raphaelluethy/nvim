@@ -34,7 +34,7 @@ return {
 
 				-- Symbol search keymaps (matching Zed: space o)
 				map("<leader>o", require("telescope.builtin").lsp_document_symbols, "Document symbols (Outline)")
-				map("<leader>ws", require("telescope.builtin").lsp_dynamic_workspace_symbols, "Workspace symbols")
+				map("<leader>sS", require("telescope.builtin").lsp_dynamic_workspace_symbols, "Workspace symbols")
 
 				-- Code actions
 				map("<leader>ca", vim.lsp.buf.code_action, "Code action", { "n", "x" })
@@ -45,10 +45,6 @@ return {
 				map("K", function()
 					vim.lsp.buf.hover({ max_width = 90, max_height = 24 })
 				end, "Hover documentation")
-
-				-- Signature help (matching Zed: ctrl-s)
-				map("<C-s>", vim.lsp.buf.signature_help, "Signature help")
-				map("<C-s>", vim.lsp.buf.signature_help, "Signature help", "i")
 
 				local client = vim.lsp.get_client_by_id(event.data.client_id)
 
