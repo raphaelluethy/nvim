@@ -107,18 +107,14 @@ configurations.
 
 - **99** is disabled; its Cursor SDK configuration and `<leader>9…` mappings
   are retained in `lua/plugins/99.lua` for re-enabling later.
-- **GitHub Copilot** provides AI completion through `copilot-language-server`
-  (installed by Mason). Sign in once with `:LspCopilotSignIn`.
-  - Ghost text uses Neovim's native `vim.lsp.inline_completion`: `<Tab>`
-    accepts, `<M-]>` / `<M-[>` cycle alternatives.
-  - [Sidekick](https://github.com/folke/sidekick.nvim) shows Copilot next edit
-    suggestions as inline diffs after you pause or leave insert mode. `<Tab>`
-    jumps to the suggested edit, then applies it.
-  - `<leader>ta` toggles both.
+- **[NinetyFive](https://github.com/numerataz/ninetyfive.nvim)** shows inline
+  ghost text in insert mode: `<Tab>` accepts, `<C-j>` accepts the next word,
+  `<C-l>` the next line, and `<C-]>` dismisses it.
 - **[Sidekick](https://github.com/folke/sidekick.nvim)** replaces CodeCompanion
-  for native AI CLI sessions and editor context.
+  for native AI CLI sessions and editor context. Its next edit suggestions are
+  off.
 
-Sidekick loads at startup for next edit suggestions. It uses the existing
+Sidekick loads at startup. It uses the existing
 Telescope integration and native Neovim terminals, without requiring a terminal
 multiplexer. Each CLI must be installed and authenticated separately.
 Cursor uses the local `agent` command; Factory Droid uses `droid`.
