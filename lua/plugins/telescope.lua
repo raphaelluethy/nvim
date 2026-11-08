@@ -44,7 +44,7 @@ return { -- Fuzzy Finder (files, lsp, etc)
 			{ "<leader>sf", builtin("find_files"), desc = "[S]earch [F]iles" },
 			{ "<leader>sa", find_all_files, desc = "[S]earch [A]ll Files" },
 			{ "<leader>sp", builtin("git_files"), desc = "[S]earch [P]roject" },
-			{ "<leader>ss", builtin("builtin"), desc = "[S]earch [S]elect Telescope" },
+			{ "<leader>sb", builtin("builtin"), desc = "[S]earch Telescope [B]uiltins" },
 			{ "<leader>sw", builtin("grep_string"), desc = "[S]earch current [W]ord" },
 			{ "<leader>sg", builtin("live_grep"), desc = "[S]earch by [G]rep" },
 			{

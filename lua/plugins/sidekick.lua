@@ -196,13 +196,14 @@ return {
 			mode = { "n", "v" },
 			desc = "Agent: send prompt template",
 		},
+		-- Normal mode: the cursor position. Visual: file, range and the fenced
+		-- selection, then focus the agent.
 		{
-			"<leader>ai",
+			"<leader>as",
 			function()
 				require("sidekick_ext.sessions").send_context({ msg = "{this}" })
 			end,
-			mode = { "n", "v" },
-			desc = "Agent: send cursor context",
+			desc = "Agent: send cursor position",
 		},
 		{
 			"<leader>as",
@@ -212,7 +213,7 @@ return {
 					focus = true,
 				})
 			end,
-			mode = "v",
+			mode = "x",
 			desc = "Agent: send selection with file and position",
 		},
 		{

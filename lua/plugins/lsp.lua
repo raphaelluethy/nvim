@@ -33,7 +33,7 @@ return {
 
 				-- Symbol search keymaps (matching Zed: space o)
 				map("<leader>o", require("telescope.builtin").lsp_document_symbols, "Document symbols (Outline)")
-				map("<leader>sS", require("telescope.builtin").lsp_dynamic_workspace_symbols, "Workspace symbols")
+				map("<leader>ss", require("telescope.builtin").lsp_dynamic_workspace_symbols, "Workspace symbols")
 
 				-- Code actions
 				map("<leader>ca", vim.lsp.buf.code_action, "Code action", { "n", "x" })

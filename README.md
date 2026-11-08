@@ -41,7 +41,7 @@ e.g. `vim.lsp.config("gopls", { settings = { ... } })`.
 
 `<C-s>` saves and `<A-f>` formats in normal, insert, visual and select mode
 (`<leader>w` and `<leader>cf` too). Saving also formats (conform's
-`format_after_save`). Workspace symbols are `<leader>sS`; insert-mode signature
+`format_after_save`). Workspace symbols are `<leader>ss`; insert-mode signature
 help comes from blink.cmp.
 
 Folds come from tree-sitter (`foldexpr`), open by default (`foldlevel=99`).
@@ -149,7 +149,7 @@ Cursor uses the local `agent` command; Factory Droid uses `droid`.
 | `<leader>aT` | List background tasks and open their terminals |
 | `<leader>al` | Select an installed CLI, including Codex |
 | `<leader>aA` | Select a prompt |
-| `<leader>ai` | Send cursor context |
+| `<leader>as` (normal) | Send cursor position |
 | `<leader>as` (visual) | Send file, selection position, and fenced selection, then focus the agent |
 | `<leader>aF` | Send current file reference |
 | `<leader>ad` | Send diagnostics: in Trouble the item / group under the cursor or the selection, elsewhere the open Trouble view, else all diagnostics, then focus the agent (`:SkDiagnostics[!] [all]`) |

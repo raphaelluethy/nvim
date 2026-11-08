@@ -9,7 +9,7 @@ return {
 	"folke/which-key.nvim",
 	event = "VeryLazy",
 	opts = {
-		preset = "modern",
+		preset = "helix",
 		delay = 250,
 		spec = {
 			{ "<leader>a", group = "Agents", icon = icon("\u{F06A9}", "purple"), mode = { "n", "x" } },
