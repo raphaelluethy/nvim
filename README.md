@@ -47,12 +47,31 @@ help comes from blink.cmp.
 Folds come from tree-sitter (`foldexpr`), open by default (`foldlevel=99`).
 Diagnostics show inline text on the cursor line only; `gh` opens the float.
 
+### Leader groups
+
+Press `<leader>` and wait for which-key (`<leader>?` shows buffer-local maps).
+
+| Prefix | Group |
+| --- | --- |
+| `<leader>a` | Agents: sessions, context, tasks (`at`/`aT`/`aH`) |
+| `<leader>c` | Code: `ca` action, `cf` format, `cr` rename |
+| `<leader>d` | Debug (also `<F5>`, `<F10>`–`<F12>`) |
+| `<leader>g` | Git: `gg` Neogit, `gm`/`gM` Magirev |
+| `<leader>h` | Hunks (`hp` `hs` `hr` `hb`) and `ha` Harpoon add; `<leader>e` Harpoon menu |
+| `<leader>m` | Review comments; `<leader>M` merge conflicts (codediff) |
+| `<leader>s` | Search (Telescope) |
+| `<leader>t` | Terminals: `tt` toggle (`<A-t>`), `tv` `ts` `tf` `tT` |
+| `<leader>u` | UI toggles: `uu` Undotree, `uh` inlay hints, `um`/`uM` markdown |
+| `<leader>v` | Splits |
+| `<leader>x` | Diagnostics & lists: `xx` Trouble, `xq` quickfix, `xl` loclist |
+| `<leader>9` | 99 |
+
 ## Markdown
 
 `lua/plugins/markvim.lua` loads the local markvim plugin
 (`~/Documents/projects/private/markvim`) for markdown files and LSP hover
-floats. Files open in live mode (only the cursor line is raw); `<leader>tm`
-toggles rendering and `<leader>tM` cycles live, preview and split mode.
+floats. Files open in live mode (only the cursor line is raw); `<leader>um`
+toggles rendering and `<leader>uM` cycles live, preview and split mode.
 Diagrams need a backend: `:Markvim install node` for mermaid/pele,
 `:checkhealth markvim` lists what is available.
 
@@ -124,23 +143,24 @@ Cursor uses the local `agent` command; Factory Droid uses `droid`.
 
 | Key | Action |
 | --- | --- |
-| `<leader>cc` | Toggle CLI; choose an installed tool if none is attached |
-| `<leader>cn` | Choose an agent, then submit a task and open its terminal (`<C-s>`) |
-| `<leader>jn` | Submit a task in the background |
-| `<leader>jj` | List background tasks and open their terminals |
-| `<leader>cl` | Select an installed CLI, including Codex |
-| `<leader>cA` | Select a prompt |
-| `<leader>ci` | Send cursor context |
-| `<leader>cs` (visual) | Send file, selection position, and fenced selection, then focus the agent |
-| `<leader>cF` | Send current file reference |
-| `<leader>cd` | Send diagnostics: in Trouble the item / group under the cursor or the selection, elsewhere the open Trouble view, else all diagnostics, then focus the agent (`:SkDiagnostics[!] [all]`) |
-| `<leader>cD` | Send every diagnostic in the open Trouble view |
-| `<leader>cN` | Start an agent session in a floating window |
-| `<leader>cj` | Manage interactive agent sessions |
-| `<leader>c]` / `<leader>c[` | Next / previous session |
-| `<leader>cw` | Switch the active session between split and float |
-| `<leader>ch` | Hide interactive agent sessions |
-| `<leader>cx` | Kill the active interactive session (with confirmation) |
+| `<leader>ac` | Toggle CLI; choose an installed tool if none is attached |
+| `<leader>an` | Choose an agent, then submit a task and open its terminal (`<C-s>`) |
+| `<leader>at` | Submit a task in the background |
+| `<leader>aT` | List background tasks and open their terminals |
+| `<leader>al` | Select an installed CLI, including Codex |
+| `<leader>aA` | Select a prompt |
+| `<leader>ai` | Send cursor context |
+| `<leader>as` (visual) | Send file, selection position, and fenced selection, then focus the agent |
+| `<leader>aF` | Send current file reference |
+| `<leader>ad` | Send diagnostics: in Trouble the item / group under the cursor or the selection, elsewhere the open Trouble view, else all diagnostics, then focus the agent (`:SkDiagnostics[!] [all]`) |
+| `<leader>aD` | Send every diagnostic in the open Trouble view |
+| `<leader>aN` | Start an agent session in a floating window |
+| `<leader>aj` | Manage interactive agent sessions |
+| `<leader>a]` / `<leader>a[` | Next / previous session |
+| `<leader>aw` | Switch the active session between split and float |
+| `<leader>ah` | Hide interactive agent sessions |
+| `<leader>ax` | Kill the active interactive session (with confirmation) |
+| `<leader>aH` | Hide all background task floats |
 
 Context is inserted into the CLI input for review, not automatically submitted.
 
@@ -180,7 +200,7 @@ Run the bridge tests with `nvim --headless -u NONE -l tests/droid_ide.lua`
 
 `<leader>mr` opens the [codediff](https://github.com/esmuellert/codediff.nvim)
 review panel. From a file buffer it preselects that file and keeps your line.
-`<leader>mg` opens [magirev-nvim](https://github.com/raphaelluethy/magirev-nvim),
+`<leader>gm` opens [magirev-nvim](https://github.com/raphaelluethy/magirev-nvim),
 a standalone full-width review tab, independent of codediff and Sidekick.
 `Tab` expands inline diffs, `]g`/`[g` move between groups, and `]h`/`[h` between
 hunks. `s` stages the selected group or hunk; `u` unstages it. `c` opens a commit
@@ -197,7 +217,7 @@ LSP navigation applies.
 The index is preserved; unstage with `u` first if needed. Selected untracked
 files are deleted, and there is no Magirev undo.
 
-`m` moves a selection into a named group; `e` renames it. `G` or `<leader>mG`
+`m` moves a selection into a named group; `e` renames it. `G` or `<leader>gM`
 requests AI grouping through opencode, with confirmation before sending code.
 Manual grouping works offline. `r` refreshes, `?` shows help, and `q` closes.
 The local development checkout is `~/Documents/projects/private/magirev-nvim`; configure its provider
@@ -206,11 +226,10 @@ in `lua/plugins/magirev.lua`. Existing codediff review-comment mappings remain.
 The task form offers model and effort selectors after choosing the agent.
 Set `backend = "buffer"` (default) or `backend = "rex"` in the
 `sidekick_ext.tasks.setup` call in `lua/plugins/sidekick.lua` to choose where tasks run.
-`<leader>cn` opens the task terminal; `<leader>jn` starts it hidden.
-Use `<leader>jj` to open tasks in the selected destination later.
+`<leader>an` opens the task terminal; `<leader>at` starts it hidden.
+Use `<leader>aT` to open tasks in the selected destination later.
 Buffer tasks run until Neovim closes. Rex tasks survive Neovim closing while the
 Rex session stays alive.
 Save buffers before asking a CLI to read files. In the CLI terminal, `<C-q>`
 leaves terminal mode and `q` in normal mode hides the window without stopping
-the session. Existing `<leader>cf` formatting and `<leader>a` Harpoon mappings
-are unchanged.
+the session. `<leader>aH` hides all task floats.

@@ -3,7 +3,7 @@
 -- Every session is a sidekick terminal with its own id (sidekick itself only
 -- keeps one session per tool and cwd), so sidekick's terminal handling, file
 -- watcher and context sending keep working. One session is "active": it is
--- what <leader>cc toggles and where context (`{this}`, `{file}`, ...) goes.
+-- what <leader>ac toggles and where context (`{this}`, `{file}`, ...) goes.
 -- Pane sessions share the right split, so showing one replaces the previous
 -- one. Float sessions open in a floating window and can stay open beside a
 -- pane session. Sessions die with Neovim (terminal jobs are stopped on exit).
@@ -206,7 +206,6 @@ end
 ---@param tool string
 ---@param sel sidekick_ext.Selection
 local function new_in_rex(opts, tool, sel)
-	local c = Agents.command(tool, sel, opts.prompt)
 	local layout = opts.layout or "right"
 	local panel_layout, position = SkPanels.layout(layout)
 	counter = counter + 1
@@ -484,7 +483,7 @@ local function when_ready(s, cb)
 end
 
 --- sidekick's send, to the active session. With none, start one the way
---- <leader>cc does (pick an agent, pane, Rex or Neovim per the "agents"
+--- <leader>ac does (pick an agent, pane, Rex or Neovim per the "agents"
 --- switch) and send once it is up. Context is rendered right away, so the
 --- selection and cursor are the ones from when the key was pressed.
 --- With `focus`, the session (Neovim window or Rex block) gets focus after
@@ -597,7 +596,7 @@ function M.pick()
 	prune()
 	local list = M.list()
 	if #list == 0 then
-		vim.notify("No agent sessions (<leader>cn starts one)", vim.log.levels.INFO)
+		vim.notify("No agent sessions (<leader>an starts one)", vim.log.levels.INFO)
 		return
 	end
 

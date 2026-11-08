@@ -18,7 +18,7 @@ return {
 		},
 		-- codediff installs buffer-local maps in the diff panes (the right pane
 		-- is your real file buffer). Keep them off prefixes used globally:
-		-- <leader>e is Harpoon, <leader>c* is code/agents, <leader>ct the terminal.
+		-- <leader>e is Harpoon, <leader>a* agents, <leader>c* code, <leader>t* terminals.
 		-- `g?` in a diff pane lists what is active.
 		keymaps = {
 			view = {

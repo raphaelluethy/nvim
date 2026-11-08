@@ -11,7 +11,7 @@ return {
 
 		_99.setup({
 			backend = "claude",
-			model = "sonnet", -- "opus", "haiku", or a full model id
+			model = "opus", -- "opus", "haiku", or a full model id
 			-- backend = "opencode",
 			-- model = "opencode/claude-sonnet-5-5", -- opencode's built-in default no longer exists
 			-- tmp_dir = "./tmp",

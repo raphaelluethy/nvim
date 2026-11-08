@@ -3,6 +3,6 @@ return {
   opts = {},
   cmd = "Trouble",
   keys = {
-    { "<leader>tt", "<cmd>Trouble diagnostics toggle<cr>", desc = "Toggle Trouble diagnostics" },
+    { "<leader>xx", "<cmd>Trouble diagnostics toggle<cr>", desc = "Toggle Trouble diagnostics" },
   },
 }

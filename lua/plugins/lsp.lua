@@ -30,7 +30,6 @@ return {
 				map("gI", require("telescope.builtin").lsp_implementations, "Goto implementation")
 				map("gD", vim.lsp.buf.declaration, "Goto declaration")
 				map("gt", require("telescope.builtin").lsp_type_definitions, "Goto type definition")
-				map("<leader>D", require("telescope.builtin").lsp_type_definitions, "Type definition")
 
 				-- Symbol search keymaps (matching Zed: space o)
 				map("<leader>o", require("telescope.builtin").lsp_document_symbols, "Document symbols (Outline)")
@@ -38,7 +37,7 @@ return {
 
 				-- Code actions
 				map("<leader>ca", vim.lsp.buf.code_action, "Code action", { "n", "x" })
-				map("<leader>rn", vim.lsp.buf.rename, "[R]e[n]ame symbol", { "n", "x" })
+				map("<leader>cr", vim.lsp.buf.rename, "Rename symbol", { "n", "x" })
 
 				-- Hover sizes to its longest line by default, so long type
 				-- unions span the whole screen; cap it.
@@ -91,13 +90,13 @@ return {
 				-- Inlay hints: enable by default and add toggle keymap if supported
 				if client and client:supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
 					vim.lsp.inlay_hint.enable(true, { bufnr = event.buf })
-					map("<leader>th", function()
+					map("<leader>uh", function()
 						local bufnr = event.buf
 						vim.lsp.inlay_hint.enable(
 							not vim.lsp.inlay_hint.is_enabled({ bufnr = bufnr }),
 							{ bufnr = bufnr }
 						)
-					end, "[T]oggle Inlay [H]ints")
+					end, "Toggle inlay hints")
 				end
 			end,
 		})

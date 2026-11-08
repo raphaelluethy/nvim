@@ -12,14 +12,14 @@ return {
 	},
 	keys = {
 		{
-			"<leader>mg",
+			"<leader>gm",
 			function()
 				require("magirev").toggle()
 			end,
 			desc = "Magirev: review, stage and commit",
 		},
 		{
-			"<leader>mG",
+			"<leader>gM",
 			function()
 				require("magirev").regroup()
 			end,

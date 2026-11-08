@@ -8,9 +8,9 @@
 --            (outside Rex it falls back to Neovim windows)
 --   "nvim" = always Neovim windows and buffers
 local use = {
-	terminal = "rex", -- <A-t>, <leader>ct, <leader>tv/ts/tT/tf, :Panels term
-	agents = "rex", -- <leader>cc, <leader>cN, <leader>cj, <leader>cl, <leader>c]/[ (sidekick sessions)
-	tasks = "rex", -- <leader>cn, <leader>jn/jo/jj/jh, :SkTask (background agent tasks)
+	terminal = "rex", -- <A-t>, <leader>tt, <leader>tv/ts/tT/tf, :Panels term
+	agents = "rex", -- <leader>ac, <leader>aN, <leader>aj, <leader>al, <leader>a]/[ (sidekick sessions)
+	tasks = "rex", -- <leader>an, <leader>at/aT/aH, :SkTask (background agent tasks)
 	markdown = "nvim", -- markvim diagram previews (<CR> on a diagram)
 }
 

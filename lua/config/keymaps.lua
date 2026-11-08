@@ -26,13 +26,9 @@ end
 
 vim.keymap.set("n", "]d", next_diagnostic, { desc = "Next diagnostic" })
 vim.keymap.set("n", "[d", prev_diagnostic, { desc = "Prev diagnostic" })
-vim.keymap.set("n", "<leader>tn", next_diagnostic, { desc = "Next diagnostic" })
-vim.keymap.set("n", "<leader>tp", prev_diagnostic, { desc = "Prev diagnostic" })
-vim.keymap.set("n", "<leader>xd", vim.diagnostic.setloclist, {
-	desc = "Diagnostics to location list",
-})
 
-vim.keymap.set("n", "<leader>u", function()
+-- <leader>u: UI toggles (also <leader>uh inlay hints in lsp.lua, um/uM markvim).
+vim.keymap.set("n", "<leader>uu", function()
 	vim.cmd("packadd nvim.undotree")
 	vim.cmd("Undotree")
 end, { desc = "Toggle Undotree" })
@@ -48,9 +44,9 @@ local function term(opts)
 		require("panels").term(opts)
 	end
 end
--- One toggled terminal at the bottom (matching Zed: alt-t, space c t).
+-- One toggled terminal at the bottom (alt-t, like Zed). All terminals: <leader>t.
 vim.keymap.set("n", "<A-t>", term({ id = "term:main", where = "split" }), { desc = "Toggle terminal" })
-vim.keymap.set("n", "<leader>ct", term({ id = "term:main", where = "split" }), { desc = "Toggle terminal" })
+vim.keymap.set("n", "<leader>tt", term({ id = "term:main", where = "split" }), { desc = "Toggle terminal" })
 vim.keymap.set("t", "<A-t>", "<C-\\><C-n>", { desc = "Exit terminal" })
 -- New terminals, like :vsplit | terminal etc.
 vim.keymap.set("n", "<leader>tv", term({ where = "vsplit" }), { desc = "Terminal: vertical split" })
@@ -74,15 +70,13 @@ vim.keymap.set("n", "<leader>w", "<Cmd>write<CR>", { desc = "Save buffer" })
 
 -- Splits: <leader>v (<leader>s is Telescope search, <leader>w is write)
 vim.keymap.set("n", "<leader>vv", "<CMD>vsplit<CR>", { desc = "Split right" })
-vim.keymap.set("n", "<leader>vr", "<CMD>vsplit<CR>", { desc = "Split right" })
 vim.keymap.set("n", "<leader>vl", "<CMD>aboveleft vsplit<CR>", { desc = "Split left" })
 vim.keymap.set("n", "<leader>vs", "<CMD>split<CR>", { desc = "Split down" })
-vim.keymap.set("n", "<leader>vd", "<CMD>split<CR>", { desc = "Split down" })
 vim.keymap.set("n", "<leader>vu", "<CMD>aboveleft split<CR>", { desc = "Split up" })
 vim.keymap.set("n", "<leader>vc", "<CMD>close<CR>", { desc = "Close split" })
 vim.keymap.set("n", "<leader>vo", "<CMD>only<CR>", { desc = "Close other splits" })
 
--- Quickfix / location list: <leader>x (<leader>c is code & agents)
+-- Diagnostics & lists: <leader>x (Trouble is <leader>xx in trouble.lua)
 vim.keymap.set("n", "]q", "<CMD>cnext<CR>", { desc = "Next quickfix entry" })
 vim.keymap.set("n", "[q", "<CMD>cprev<CR>", { desc = "Previous quickfix entry" })
 vim.keymap.set("n", "<leader>xq", function()
@@ -117,8 +111,8 @@ vim.keymap.set("v", "C", '"_C')
 vim.keymap.set("n", "c", '"_c')
 vim.keymap.set("n", "C", '"_C')
 
--- Remove defaults in favor of the LSP mappings in lua/plugins/lsp.lua.
-vim.keymap.del("", "grr")
-vim.keymap.del("", "gra")
-vim.keymap.del("", "grn")
-vim.keymap.del("", "gri")
+-- Remove defaults in favor of the LSP mappings in lua/plugins/lsp.lua. All gr*
+-- defaults go, or `gr` (references) waits for a second key.
+for _, lhs in ipairs({ "grr", "gra", "grn", "gri", "grt", "grx" }) do
+	pcall(vim.keymap.del, { "n", "x" }, lhs)
+end

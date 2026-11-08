@@ -10,7 +10,7 @@
 --
 -- Sending goes through sidekick_ext.sessions.send_context, so it reaches the
 -- active session wherever it runs (Neovim pane / float, or a Rex panel), and
--- with no session starts one the way <leader>cc does.
+-- with no session starts one the way <leader>ac does.
 local M = {}
 
 M.config = {

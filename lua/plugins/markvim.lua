@@ -1,5 +1,5 @@
 -- Markdown rendering for files and LSP hover floats (local plugin). Live mode
--- shows only the cursor line raw; `<leader>tm` toggles rendering, `<leader>tM`
+-- shows only the cursor line raw; `<leader>um` toggles rendering, `<leader>uM`
 -- cycles live -> preview -> split. Diagrams (mermaid/pele/plantuml/d2) render
 -- asynchronously once a backend is installed: `:Markvim install node`,
 -- `:checkhealth markvim`.
@@ -18,7 +18,7 @@ return {
 	dependencies = { "panels.nvim" },
 	keys = {
 		{
-			"<leader>tm",
+			"<leader>um",
 			function()
 				local buf = markdown_buffer()
 				if buf then
@@ -28,7 +28,7 @@ return {
 			desc = "Markvim: toggle markdown rendering",
 		},
 		{
-			"<leader>tM",
+			"<leader>uM",
 			function()
 				local buf = markdown_buffer()
 				if buf then

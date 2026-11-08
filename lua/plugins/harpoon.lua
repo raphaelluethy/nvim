@@ -12,7 +12,7 @@ return {
 			desc = "Harpoon Toggle Menu",
 		},
 		{
-			"<leader>a",
+			"<leader>ha",
 			function()
 				require("harpoon"):list():add()
 			end,

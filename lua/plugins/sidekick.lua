@@ -74,14 +74,14 @@ return {
 		-- Several agents can run at once; the "active" one is the session you
 		-- last entered. Pane sessions share the right split, floats stack.
 		{
-			"<leader>cc",
+			"<leader>ac",
 			function()
 				require("sidekick_ext.sessions").toggle_or_start()
 			end,
 			desc = "Agent: toggle active session (none: pick agent and start)",
 		},
 		{
-			"<leader>cn",
+			"<leader>an",
 			function()
 				require("sidekick_ext.tasks").prompt({ show = true })
 			end,
@@ -89,7 +89,7 @@ return {
 			desc = "Agent: submit task and open terminal",
 		},
 		{
-			"<leader>cN",
+			"<leader>aN",
 			function()
 				require("sidekick_ext.sessions").prompt({ layout = "float" })
 			end,
@@ -97,28 +97,28 @@ return {
 			desc = "Agent: new session (<C-s> starts as float)",
 		},
 		{
-			"<leader>cj",
+			"<leader>aj",
 			function()
 				require("sidekick_ext.sessions").pick()
 			end,
 			desc = "Agent: sessions (show / float / hide / send / rename / kill)",
 		},
 		{
-			"<leader>c]",
+			"<leader>a]",
 			function()
 				require("sidekick_ext.sessions").cycle(1)
 			end,
 			desc = "Agent: next session",
 		},
 		{
-			"<leader>c[",
+			"<leader>a[",
 			function()
 				require("sidekick_ext.sessions").cycle(-1)
 			end,
 			desc = "Agent: previous session",
 		},
 		{
-			"<leader>cw",
+			"<leader>aw",
 			function()
 				local S = require("sidekick_ext.sessions")
 				local s = S.get_active()
@@ -129,14 +129,14 @@ return {
 			desc = "Agent: active session pane <-> float",
 		},
 		{
-			"<leader>ch",
+			"<leader>ah",
 			function()
 				require("sidekick_ext.sessions").hide_all()
 			end,
 			desc = "Agent: hide all sessions",
 		},
 		{
-			"<leader>cx",
+			"<leader>ax",
 			function()
 				local S = require("sidekick_ext.sessions")
 				local s = S.get_active()
@@ -147,7 +147,7 @@ return {
 			desc = "Agent: kill active session",
 		},
 		{
-			"<leader>cl",
+			"<leader>al",
 			function()
 				-- Running sessions (also tmux / zellij) attach; a new agent starts
 				-- through sidekick_ext.sessions, so it follows the "agents" switch.
@@ -183,7 +183,7 @@ return {
 		},
 		-- Context goes to the active session.
 		{
-			"<leader>cA",
+			"<leader>aA",
 			function()
 				require("sidekick.cli").prompt({
 					cb = function(_, text)
@@ -197,7 +197,7 @@ return {
 			desc = "Agent: send prompt template",
 		},
 		{
-			"<leader>ci",
+			"<leader>ai",
 			function()
 				require("sidekick_ext.sessions").send_context({ msg = "{this}" })
 			end,
@@ -205,7 +205,7 @@ return {
 			desc = "Agent: send cursor context",
 		},
 		{
-			"<leader>cs",
+			"<leader>as",
 			function()
 				require("sidekick_ext.sessions").send_context({
 					msg = "{position}\n```\n{selection}\n```",
@@ -216,7 +216,7 @@ return {
 			desc = "Agent: send selection with file and position",
 		},
 		{
-			"<leader>cF",
+			"<leader>aF",
 			function()
 				require("sidekick_ext.sessions").send_context({ msg = "{file}" })
 			end,
@@ -226,7 +226,7 @@ return {
 		-- in Trouble the item / group under the cursor or the selection,
 		-- elsewhere the open Trouble view, else all diagnostics.
 		{
-			"<leader>cd",
+			"<leader>ad",
 			function()
 				require("sidekick_ext.diagnostics").send()
 			end,
@@ -234,7 +234,7 @@ return {
 			desc = "Agent: send diagnostics (Trouble item / selection / view)",
 		},
 		{
-			"<leader>cD",
+			"<leader>aD",
 			function()
 				require("sidekick_ext.diagnostics").send({ all = true })
 			end,
@@ -242,34 +242,26 @@ return {
 		},
 		-- Hidden tasks in minimized Rex floats (lua/sidekick_ext/tasks.lua)
 		{
-			"<leader>jn",
+			"<leader>at",
 			function()
 				require("sidekick_ext.tasks").prompt()
 			end,
 			mode = { "n", "v" },
-			desc = "Agent: new session (<C-s> starts hidden)",
+			desc = "Agent task: new (<C-s> starts hidden)",
 		},
 		{
-			"<leader>jo",
-			function()
-				require("sidekick_ext.tasks").prompt({ show = true })
-			end,
-			mode = { "n", "v" },
-			desc = "Agent: new session (<C-s> starts visible)",
-		},
-		{
-			"<leader>jj",
+			"<leader>aT",
 			function()
 				require("sidekick_ext.tasks").pick()
 			end,
-			desc = "Agent: sessions (show / hide / send / kill)",
+			desc = "Agent task: picker (show / hide / send / kill)",
 		},
 		{
-			"<leader>jh",
+			"<leader>aH",
 			function()
 				require("sidekick_ext.tasks").hide_all()
 			end,
-			desc = "Agent: hide all session floats",
+			desc = "Agent task: hide all floats",
 		},
 		-- Review comments (lua/sidekick_ext/review.lua)
 		{
