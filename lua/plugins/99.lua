@@ -1,17 +1,19 @@
+-- 99 (local fork): in-buffer AI edits on <leader>9.
+-- Backends: "claude" (Claude Agent SDK; Claude Code login or ANTHROPIC_API_KEY)
+-- or "opencode" (opencode CLI). An explicit `provider = ...` overrides `backend`.
 return {
 	"raphaelluethy/99",
-	-- Disabled until further notice (agent sessions are handled by sidekick_ext).
-	enabled = false,
+	dir = vim.fn.expand("~/Documents/projects/private/99"),
+	name = "99",
 	config = function()
 		local _99 = require("99")
 		local pickers = require("99.extensions.telescope")
 
 		_99.setup({
-			-- provider = _99.Providers.ClaudeCodeProvider, -- default: OpenCodeProvider
-			-- model = "opus",
-			provider = _99.Providers.CursorSdkProvider,
-			model = "composer-2.5",
-			-- model = "openai/gpt-5.5-fast",
+			backend = "claude",
+			model = "sonnet", -- "opus", "haiku", or a full model id
+			-- backend = "opencode",
+			-- model = "opencode/claude-sonnet-5-5", -- opencode's built-in default no longer exists
 			-- tmp_dir = "./tmp",
 			completion = {
 				source = "native",
@@ -58,7 +60,8 @@ return {
 			pickers.select_model()
 		end, { desc = "99 select model" })
 
-		vim.keymap.set("n", "<leader>9sp", function()
+		-- Not <leader>9sp: that would make <leader>9s wait for a third key.
+		vim.keymap.set("n", "<leader>9p", function()
 			pickers.select_provider()
 		end, { desc = "99 select provider" })
 	end,

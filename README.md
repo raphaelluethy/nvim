@@ -105,8 +105,11 @@ configurations.
 
 ## AI
 
-- **99** is disabled; its Cursor SDK configuration and `<leader>9…` mappings
-  are retained in `lua/plugins/99.lua` for re-enabling later.
+- **99** loads from the local fork (`~/Documents/projects/private/99`) with
+  `backend = "claude"` (Claude Agent SDK; switch to `"opencode"` in
+  `lua/plugins/99.lua`). Keys: `<leader>9s` search, `9f` vibe, `9v` visual,
+  `9t` tutorial, `9x` stop, `9o` last result, `9l` logs, `9c` clear,
+  `9m` model, `9p` provider.
 - **[NinetyFive](https://github.com/numerataz/ninetyfive.nvim)** shows inline
   ghost text in insert mode: `<Tab>` accepts, `<C-j>` accepts the next word,
   `<C-l>` the next line, and `<C-]>` dismisses it.
