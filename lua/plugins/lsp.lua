@@ -236,7 +236,7 @@ return {
 		-- Mason installs these (lua/plugins/mason.lua); enable them here so the
 		-- LSP starts even before Mason has loaded. Servers not in this list
 		-- (eslint, ts_ls, vtsls, jdtls, ...) stay off even if installed. Java
-		-- and Kotlin go through idea-nvim (lua/plugins/idea.lua).
+		-- and Kotlin go through intellij-lsp.nvim (lua/plugins/intellij-lsp.lua).
 		vim.lsp.enable(require("config.servers").lsp_names())
 	end,
 }

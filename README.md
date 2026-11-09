@@ -122,6 +122,16 @@ comments and trailing commas are not enabled. Adapter types are `python`,
 `delve`, and `codelldb`. Other languages need their own adapters and launch
 configurations.
 
+Java and Kotlin debug through intellij-lsp.nvim on the same keys. In those
+buffers `<F5>` / `<leader>dc` with no session running debugs the class at the
+cursor, `<leader>de` evaluates through IntelliJ, and a few keys are added:
+
+| Key | Action |
+| --- | --- |
+| `<leader>dd` | Debug the class at the cursor |
+| `<leader>dw` | Watch word / visual selection |
+| `<leader>dv` | IntelliJ debug panel (stack, locals, watches) |
+
 ## AI
 
 - **99** loads from the local fork (`~/Documents/projects/private/99`) with
