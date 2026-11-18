@@ -13,7 +13,15 @@ local jumped = false
 lsp.buf.definition = function()
 	jumped = true
 end
-lsp.enable = function() end
+local enabled_servers = {}
+lsp.enable = function(names, enabled)
+	for _, name in ipairs(type(names) == "table" and names or { names }) do
+		enabled_servers[name] = enabled ~= false
+	end
+end
+lsp.is_enabled = function(name)
+	return enabled_servers[name] == true
+end
 lsp.get_client_by_id = function(id)
 	return clients[id]
 end
@@ -43,6 +51,16 @@ package.preload["mini.extra"] = function()
 end
 
 require("plugins.lsp").config()
+local toggle_copilot = vim.fn.maparg("<leader>ua", "n", false, true).callback
+assert(lsp.is_enabled("copilot"), "Copilot should be enabled on startup")
+local old_notify = vim.notify
+vim.notify = function() end
+toggle_copilot()
+assert(not lsp.is_enabled("copilot"), "the toggle should disable the Copilot server")
+assert(lsp.is_enabled("lua_ls"), "regular language servers should stay enabled")
+toggle_copilot()
+vim.notify = old_notify
+assert(lsp.is_enabled("copilot"), "the toggle should re-enable the Copilot server")
 local buf = api.nvim_get_current_buf()
 local other = api.nvim_create_buf(true, false)
 local function event(name, b, id)

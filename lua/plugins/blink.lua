@@ -1,8 +1,5 @@
 -- Icon and highlight group for a menu item, from mini.icons.
 local function mini_icon(ctx)
-	if ctx.source_id == "copilot" then
-		return ctx.kind_icon, "MiniIconsPurple"
-	end
 	local MiniIcons = require("mini.icons")
 	if ctx.source_name == "Path" then
 		local is_dir = ctx.item.data and ctx.item.data.type == "directory"
@@ -11,12 +8,23 @@ local function mini_icon(ctx)
 	return MiniIcons.get("lsp", ctx.kind)
 end
 
-local function toggle(var, label)
-	return function()
-		vim.g[var] = vim.g[var] == false
-		require("blink.cmp").hide()
-		vim.notify(label .. (vim.g[var] == false and " off" or " on"))
+local function toggle_completion()
+	vim.g.completion = vim.g.completion == false
+	require("blink.cmp").hide()
+	vim.notify(vim.g.completion and "Completion menu on" or "Completion menu off")
+end
+
+local function accept_completion()
+	local cmp = require("blink.cmp")
+	-- Prefer an explicitly selected menu item, then ghost text, then the first menu item.
+	if cmp.accept() then
+		return
 	end
+	if vim.lsp.inline_completion.get() then
+		cmp.hide()
+		return
+	end
+	cmp.select_and_accept()
 end
 
 return {
@@ -26,18 +34,17 @@ return {
 	-- the insert session that loads it never gets a completion request.
 	-- Blink defers its own setup; let it load at startup.
 	lazy = false,
-	dependencies = { "rafamadriz/friendly-snippets", "fang2hou/blink-copilot" },
+	dependencies = { "rafamadriz/friendly-snippets" },
 	keys = {
-		{ "<leader>uc", toggle("completion", "Completion"), desc = "Toggle completion" },
-		{ "<leader>ua", toggle("copilot", "Copilot"), desc = "Toggle Copilot completions" },
+		{ "<leader>uc", toggle_completion, desc = "Toggle completion menu" },
+		-- Outside Blink's keymap so it can accept ghost text even when the menu is off.
+		{ "<M-Tab>", accept_completion, mode = "i", desc = "Accept completion" },
 	},
 	opts = {
-		-- <leader>uc turns the whole menu off, <leader>ua only Copilot.
 		enabled = function()
 			return vim.g.completion ~= false and vim.bo.buftype ~= "prompt" and vim.b.completion ~= false
 		end,
-		-- Enter accepts the menu item. Tab jumps through snippets. C-j / C-k
-		-- move through the menu.
+		-- Enter inserts a newline. Tab jumps through snippets. C-j / C-k move through the menu.
 		keymap = {
 			preset = "enter",
 			["<Tab>"] = { "snippet_forward", "fallback" },
@@ -48,7 +55,7 @@ return {
 			["<C-k>"] = { "select_prev", "fallback" },
 			["<C-n>"] = { "select_next", "fallback" },
 			["<C-p>"] = { "select_prev", "fallback" },
-			["<CR>"] = { "accept", "fallback" },
+			["<CR>"] = false,
 		},
 		appearance = {
 			nerd_font_variant = "mono",
@@ -95,18 +102,8 @@ return {
 			window = { border = "rounded" },
 		},
 		sources = {
-			default = { "lsp", "copilot", "path", "snippets", "buffer" },
+			default = { "lsp", "path", "snippets", "buffer" },
 			providers = {
-				-- Copilot suggestions as menu items (copilot LSP, lua/plugins/lsp.lua).
-				copilot = {
-					name = "Copilot",
-					module = "blink-copilot",
-					async = true,
-					enabled = function()
-						return vim.g.copilot ~= false
-					end,
-					opts = { max_completions = 2, max_attempts = 3 },
-				},
 				-- Blink holds the menu up to 2s for LSP by default; show other
 				-- sources sooner and merge slow LSP results in as they arrive.
 				lsp = { timeout_ms = 150 },

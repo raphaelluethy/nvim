@@ -48,12 +48,17 @@ are `<leader>ss`; insert-mode signature help comes from blink.cmp.
 
 ### Completion
 
-blink.cmp shows LSP, Copilot, path, snippet and buffer items in one menu.
-Copilot is the official language server (`copilot` in `lua/config/servers.lua`,
-installed by Mason) feeding the menu through blink-copilot. There is no ghost
-text and no next edit prediction, and telemetry is off. Sign in once with
-`:LspCopilotSignIn`. `<leader>uc` turns completion on / off, `<leader>ua`
-only Copilot.
+blink.cmp shows LSP, path, snippet and buffer items in its menu (`<leader>uc`
+toggles it). Copilot suggestions appear only as inline ghost text. `<leader>ua`
+starts or stops the Copilot server itself without affecting the completion
+menu or other LSP servers. Both start enabled; the toggles apply only to the
+current Neovim session. Telemetry is off and next edit suggestions are not
+enabled. Sign in once with `:LspCopilotSignIn`.
+
+In insert mode, **Option+Tab** (`<M-Tab>`, aka `<A-Tab>`) accepts the selected
+menu item, the Copilot ghost text if no item is selected, or the first menu
+item if there is no ghost text. Enter inserts a newline; plain Tab still
+jumps through snippets. The terminal must forward Option+Tab as Meta+Tab.
 
 Folds come from tree-sitter (`foldexpr`), open by default (`foldlevel=99`).
 Diagnostics show inline text on the cursor line only; `gh` opens the float.

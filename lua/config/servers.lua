@@ -5,7 +5,7 @@ local M = {}
 
 M.lsps = {
 	"clangd",
-	"copilot", -- completions only, in the blink menu (lua/plugins/blink.lua)
+	"copilot", -- inline ghost text only (lua/plugins/lsp.lua)
 	"cssls",
 	"emmet_language_server",
 	"gopls",

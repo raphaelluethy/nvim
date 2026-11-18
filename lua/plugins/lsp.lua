@@ -15,6 +15,14 @@ return {
 			end, { desc = "Alias to :checkhealth vim.lsp" })
 		end
 
+		-- Copilot is the only configured server that offers inline completions.
+		vim.lsp.inline_completion.enable(true)
+		vim.keymap.set("n", "<leader>ua", function()
+			local enabled = not vim.lsp.is_enabled("copilot")
+			vim.lsp.enable("copilot", enabled)
+			vim.notify(enabled and "Copilot on" or "Copilot off")
+		end, { desc = "Toggle Copilot server" })
+
 		local highlight_method = vim.lsp.protocol.Methods.textDocument_documentHighlight
 		local highlight_group = vim.api.nvim_create_augroup("raphaelluethy-lsp-highlight", { clear = true })
 
@@ -218,9 +226,11 @@ return {
 				},
 			},
 			tinymist = { offset_encoding = "utf-8" },
-			-- Copilot only feeds blink's menu (blink-copilot). Neovim's inline
-			-- completion (ghost text) is never enabled and there is no NES client.
+			-- Copilot is inline-only; never offer it in Blink's LSP menu.
 			copilot = {
+				on_init = function(client)
+					client.server_capabilities.completionProvider = nil
+				end,
 				settings = { telemetry = { telemetryLevel = "off" } },
 				-- Do not attach to secrets files.
 				root_dir = function(bufnr, on_dir)
