@@ -7,7 +7,7 @@ return {
 	lazy = false,
 	priority = 1000,
 	config = function()
-		-- `monokai-pro-zed` follows 'background' (see lua/config/appearance.lua).
+		-- `monokai-pro-zed` follows 'background' (dark; `:ThemeToggle` switches).
 		-- Any variant works, e.g. "monokai-pro-filter-spectrum-v3-no-italics".
 		require("monokai-pro-zed").setup({
 			dark = "monokai-pro-filter-spectrum-v3-no-italics",

@@ -1,31 +1,10 @@
--- Follow the macOS system appearance. Neovim 0.12 already detects the
--- terminal background (OSC 11) at startup and terminals like Ghostty, kitty
--- and WezTerm push theme changes live; this covers terminals that do not.
--- Spawning `defaults` costs 5-70 ms on macOS even asynchronously, so the first
--- check runs after the UI is up instead of during startup.
-local function sync()
-	if vim.fn.has("mac") == 0 then
-		return
-	end
-	vim.system({ "defaults", "read", "-g", "AppleInterfaceStyle" }, { text = true }, function(result)
-		local bg = (result.code == 0 and result.stdout:match("Dark")) and "dark" or "light"
-		vim.schedule(function()
-			if vim.o.background ~= bg then
-				vim.o.background = bg
-			end
-		end)
-	end)
-end
+-- Always start dark. Setting 'background' from the config pins it, so
+-- Neovim's terminal detection (OSC 11) stops overriding it.
+vim.o.background = "dark"
 
-local group = vim.api.nvim_create_augroup("raphaelluethy-appearance", { clear = true })
-vim.api.nvim_create_autocmd("UIEnter", {
-	group = group,
-	once = true,
-	callback = function()
-		vim.schedule(sync)
-	end,
-})
-vim.api.nvim_create_autocmd("FocusGained", {
-	group = group,
-	callback = sync,
-})
+vim.api.nvim_create_user_command("ThemeToggle", function()
+	vim.o.background = vim.o.background == "dark" and "light" or "dark"
+end, { desc = "Toggle between dark and light theme" })
+
+-- User commands must start uppercase; let `:themetoggle` work too.
+vim.cmd([[cnoreabbrev <expr> themetoggle getcmdtype() == ':' && getcmdline() ==# 'themetoggle' ? 'ThemeToggle' : 'themetoggle']])
