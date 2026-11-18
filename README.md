@@ -18,8 +18,9 @@ not the LazyVim distribution. Requires Neovim 0.12+ and Git.
 - `:Mason` manages language servers, formatters, and debug adapters.
 
 Plugins with maintained semver releases follow the latest release
-(`version = "*"`): gitsigns, mason, mason-nvim-dap, mini.icons,
-nvim-lspconfig, nvim-tree, oil, sidekick, and telescope. The rest track their
+(`version = "*"`): gitsigns, mason, mason-nvim-dap, mini.extra, mini.icons,
+mini.pick, nvim-lspconfig, nvim-tree, oil, sidekick, and telescope. FFF is pinned
+to a release tag to avoid its commit-named build tags. The rest track their
 default branch because their tags are stale or missing, or because the release
 lacks something this config needs (mason-lspconfig's `tsc` mapping;
 trouble.nvim's Neovim 0.12 decoration-provider fix). nvim-treesitter must stay
@@ -59,12 +60,23 @@ Press `<leader>` and wait for which-key (`<leader>?` shows buffer-local maps).
 | `<leader>g` | Git: `gg` Neogit, `gm`/`gM` Magirev |
 | `<leader>h` | Hunks (`hp` `hs` `hr` `hb`) and `ha` Harpoon add; `<leader>e` Harpoon menu |
 | `<leader>m` | Review comments; `<leader>M` merge conflicts (codediff) |
-| `<leader>s` | Search (Telescope) |
+| `<leader>s` | Search: FFF files (`sf`) and grep (`sg`), Mini workspace symbols (`ss`), Telescope for the other searches |
 | `<leader>t` | Terminals: `tt` toggle (`<A-t>`), `tv` `ts` `tf` `tT` |
 | `<leader>u` | UI toggles: `uu` Undotree, `uh` inlay hints, `um`/`uM` markdown |
 | `<leader>v` | Splits |
 | `<leader>x` | Diagnostics & lists: `xx` Trouble, `xq` quickfix, `xl` loclist |
 | `<leader>9` | 99 |
+
+### Pickers
+
+FFF loads on the first file or grep search and indexes the current directory.
+Use `:FFFResume` to resume that picker; `<leader>sr` still resumes Telescope.
+`:FFFHealth` checks FFF's native binary and setup.
+
+Mini displays LSP results for `gr`, `gI`, `gt`, `<leader>o` (document symbols),
+and `<leader>ss` (live workspace symbols). `gd` uses native navigation: it jumps
+to a single definition and puts multiple results in quickfix. Telescope still
+handles the generic selection UI and agent pickers.
 
 ## Markdown
 

@@ -1,3 +1,9 @@
+local function lsp_picker(scope)
+	return function()
+		require("mini.extra").pickers.lsp({ scope = scope })
+	end
+end
+
 return {
 	-- Main LSP Configuration
 	"neovim/nvim-lspconfig",
@@ -7,6 +13,40 @@ return {
 			vim.api.nvim_create_user_command("LspInfo", function()
 				vim.cmd("checkhealth vim.lsp")
 			end, { desc = "Alias to :checkhealth vim.lsp" })
+		end
+
+		local highlight_method = vim.lsp.protocol.Methods.textDocument_documentHighlight
+		local highlight_group = vim.api.nvim_create_augroup("raphaelluethy-lsp-highlight", { clear = true })
+
+		local function setup_highlights(buf)
+			local opts = { buffer = buf, group = highlight_group }
+			if #vim.api.nvim_get_autocmds(opts) > 0 then
+				return
+			end
+
+			local function on(events, callback)
+				vim.api.nvim_create_autocmd(events, { buffer = buf, group = highlight_group, callback = callback })
+			end
+
+			-- document_highlight() already dispatches to every supporting client.
+			on({ "CursorHold", "CursorHoldI" }, function()
+				if vim.api.nvim_buf_line_count(buf) <= 3000 then
+					vim.lsp.buf.document_highlight()
+				end
+			end)
+			on({ "CursorMoved", "CursorMovedI" }, function()
+				vim.lsp.util.buf_clear_references(buf)
+			end)
+			on("LspDetach", function(event)
+				-- LspDetach runs before Neovim removes this client from the buffer.
+				for _, client in ipairs(vim.lsp.get_clients({ bufnr = buf, method = highlight_method })) do
+					if client.id ~= event.data.client_id then
+						return
+					end
+				end
+				vim.lsp.util.buf_clear_references(buf)
+				vim.api.nvim_clear_autocmds(opts)
+			end)
 		end
 
 		-- LspAttach: Runs when an LSP client attaches to a buffer
@@ -25,15 +65,15 @@ return {
 				end
 
 				-- Navigation keymaps (matching Zed: g d, g D, g r, g i, g t)
-				map("gd", require("telescope.builtin").lsp_definitions, "Goto definition")
-				map("gr", require("telescope.builtin").lsp_references, "Goto references")
-				map("gI", require("telescope.builtin").lsp_implementations, "Goto implementation")
+				map("gd", vim.lsp.buf.definition, "Goto definition")
+				map("gr", lsp_picker("references"), "Goto references")
+				map("gI", lsp_picker("implementation"), "Goto implementation")
 				map("gD", vim.lsp.buf.declaration, "Goto declaration")
-				map("gt", require("telescope.builtin").lsp_type_definitions, "Goto type definition")
+				map("gt", lsp_picker("type_definition"), "Goto type definition")
 
 				-- Symbol search keymaps (matching Zed: space o)
-				map("<leader>o", require("telescope.builtin").lsp_document_symbols, "Document symbols (Outline)")
-				map("<leader>ss", require("telescope.builtin").lsp_dynamic_workspace_symbols, "Workspace symbols")
+				map("<leader>o", lsp_picker("document_symbol"), "Document symbols (Outline)")
+				map("<leader>ss", lsp_picker("workspace_symbol_live"), "Workspace symbols")
 
 				-- Code actions
 				map("<leader>ca", vim.lsp.buf.code_action, "Code action", { "n", "x" })
@@ -47,44 +87,8 @@ return {
 
 				local client = vim.lsp.get_client_by_id(event.data.client_id)
 
-				-- Document highlighting: highlights all references to symbol under cursor
-				if client and client:supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight) then
-					local highlight_augroup = vim.api.nvim_create_augroup("raphaelluethy-lsp-highlight", {
-						clear = false,
-					})
-
-					-- CursorHold/CursorHoldI: Highlight references when cursor stops moving
-					vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
-						buffer = event.buf,
-						group = highlight_augroup,
-						callback = function()
-							-- Only enable for smaller files to avoid performance issues
-							if vim.api.nvim_buf_line_count(event.buf) <= 3000 then
-								vim.lsp.buf.document_highlight()
-							end
-						end,
-					})
-
-					-- CursorMoved/CursorMovedI: Clear highlights when cursor moves
-					vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
-						buffer = event.buf,
-						group = highlight_augroup,
-						callback = vim.lsp.buf.clear_references,
-					})
-
-					-- LspDetach: Clean up highlights when LSP detaches
-					vim.api.nvim_create_autocmd("LspDetach", {
-						group = vim.api.nvim_create_augroup("raphaelluethy-lsp-detach", {
-							clear = true,
-						}),
-						callback = function(event2)
-							vim.lsp.buf.clear_references()
-							vim.api.nvim_clear_autocmds({
-								group = "raphaelluethy-lsp-highlight",
-								buffer = event2.buf,
-							})
-						end,
-					})
+				if client and client:supports_method(highlight_method, event.buf) then
+					setup_highlights(event.buf)
 				end
 
 				-- Inlay hints: enable by default and add toggle keymap if supported

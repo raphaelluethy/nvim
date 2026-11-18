@@ -68,7 +68,7 @@ end
 vim.keymap.set({ "n", "i", "x", "s" }, "<C-s>", "<Cmd>write<CR>", { desc = "Save buffer" })
 vim.keymap.set("n", "<leader>w", "<Cmd>write<CR>", { desc = "Save buffer" })
 
--- Splits: <leader>v (<leader>s is Telescope search, <leader>w is write)
+-- Splits: <leader>v (<leader>s is search, <leader>w is write)
 vim.keymap.set("n", "<leader>vv", "<CMD>vsplit<CR>", { desc = "Split right" })
 vim.keymap.set("n", "<leader>vl", "<CMD>aboveleft vsplit<CR>", { desc = "Split left" })
 vim.keymap.set("n", "<leader>vs", "<CMD>split<CR>", { desc = "Split down" })

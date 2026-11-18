@@ -1,8 +1,8 @@
-return { -- Fuzzy Finder (files, lsp, etc)
+return { -- General pickers; FFF handles the primary file and grep mappings.
 	"nvim-telescope/telescope.nvim",
 	version = "*",
 	-- Loaded on first use: :Telescope, one of the keys below, `require` from
-	-- lsp.lua / neogit / sidekick, or the first vim.ui.select() call.
+	-- other plugins, or the first vim.ui.select() call.
 	cmd = "Telescope",
 	dependencies = {
 		"nvim-lua/plenary.nvim",
@@ -41,12 +41,10 @@ return { -- Fuzzy Finder (files, lsp, etc)
 		return {
 			{ "<leader>sh", builtin("help_tags"), desc = "[S]earch [H]elp" },
 			{ "<leader>sk", builtin("keymaps"), desc = "[S]earch [K]eymaps" },
-			{ "<leader>sf", builtin("find_files"), desc = "[S]earch [F]iles" },
 			{ "<leader>sa", find_all_files, desc = "[S]earch [A]ll Files" },
 			{ "<leader>sp", builtin("git_files"), desc = "[S]earch [P]roject" },
 			{ "<leader>sb", builtin("builtin"), desc = "[S]earch Telescope [B]uiltins" },
 			{ "<leader>sw", builtin("grep_string"), desc = "[S]earch current [W]ord" },
-			{ "<leader>sg", builtin("live_grep"), desc = "[S]earch by [G]rep" },
 			{
 				"<leader>sG",
 				builtin("live_grep", { additional_args = { "--fixed-strings" } }),
