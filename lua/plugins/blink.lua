@@ -14,14 +14,25 @@ local function toggle_completion()
 	vim.notify(vim.g.completion and "Completion menu on" or "Completion menu off")
 end
 
+local eager = true
+
+local function toggle_copilot_acceptance()
+	eager = not eager
+	vim.notify(eager and "Copilot eager: Tab to accept" or "Copilot lazy: Option+Tab to accept")
+end
+
+local function accept_inline_completion(cmp)
+	if not vim.lsp.inline_completion.get() then
+		return false
+	end
+	cmp.hide()
+	return true
+end
+
 local function accept_completion()
 	local cmp = require("blink.cmp")
-	-- Prefer an explicitly selected menu item, then ghost text, then the first menu item.
-	if cmp.accept() then
-		return
-	end
-	if vim.lsp.inline_completion.get() then
-		cmp.hide()
+	-- Opt+Tab accepts the selected item, then ghost text (lazy mode only), then the first item.
+	if cmp.accept() or (not eager and accept_inline_completion(cmp)) then
 		return
 	end
 	cmp.select_and_accept()
@@ -35,9 +46,19 @@ return {
 	-- Blink defers its own setup; let it load at startup.
 	lazy = false,
 	dependencies = { "rafamadriz/friendly-snippets" },
+	init = function()
+		-- Blink's Tab jumps through snippets first, then falls back to this mapping.
+		-- Keep it outside Blink so it also works when the completion menu is disabled.
+		vim.keymap.set("i", "<Tab>", function()
+			if eager and accept_inline_completion(require("blink.cmp")) then
+				return ""
+			end
+			return "<Tab>"
+		end, { expr = true, desc = "Accept eager Copilot suggestion or insert Tab" })
+	end,
 	keys = {
 		{ "<leader>uc", toggle_completion, desc = "Toggle completion menu" },
-		-- Outside Blink's keymap so it can accept ghost text even when the menu is off.
+		{ "<leader>ue", toggle_copilot_acceptance, desc = "Toggle eager/lazy Copilot acceptance" },
 		{ "<M-Tab>", accept_completion, mode = "i", desc = "Accept completion" },
 	},
 	opts = {
@@ -71,7 +92,7 @@ return {
 						{ "kind_icon", "label", "label_description", gap = 1 },
 						{ "kind" },
 					},
-					-- Icons and colors from mini.icons, matching oil and telescope.
+					-- Icons and colors from mini.icons, matching oil and the Mini pickers.
 					-- Path completions get file/directory icons instead of the kind.
 					components = {
 						kind_icon = {

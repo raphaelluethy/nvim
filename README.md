@@ -55,10 +55,17 @@ menu or other LSP servers. Both start enabled; the toggles apply only to the
 current Neovim session. Telemetry is off and next edit suggestions are not
 enabled. Sign in once with `:LspCopilotSignIn`.
 
-In insert mode, **Option+Tab** (`<M-Tab>`, aka `<A-Tab>`) accepts the selected
-menu item, the Copilot ghost text if no item is selected, or the first menu
-item if there is no ghost text. Enter inserts a newline; plain Tab still
-jumps through snippets. The terminal must forward Option+Tab as Meta+Tab.
+`<leader>ue` toggles how you accept Copilot suggestions for the current session:
+
+- **Eager (default):** Tab accepts Copilot ghost text when it isn't jumping
+  through a snippet. Without a suggestion, Tab behaves normally. Option+Tab
+  only accepts menu items.
+- **Lazy:** Option+Tab accepts the selected menu item, then Copilot ghost
+  text if nothing is selected, then the first menu item.
+
+Ghost text appears in both modes, and Copilot acceptance works even with the
+Blink menu off. Enter inserts a newline. The terminal must forward Option+Tab
+as Meta+Tab (`<M-Tab>`, aka `<A-Tab>`).
 
 Folds come from tree-sitter (`foldexpr`), open by default (`foldlevel=99`).
 Diagnostics show inline text on the cursor line only; `gh` opens the float.
@@ -76,7 +83,7 @@ Press `<leader>` and wait for which-key (`<leader>?` shows buffer-local maps).
 | `<leader>m` | Review comments: `ma` add, `md` delete, `ml` list, `my` copy, `mc` clear; `<leader>M` merge conflicts (codediff) |
 | `<leader>s` | Search: FFF files (`sf`) and grep (`sg`, `sG`, `sw`); Mini symbols (`ss`) and other pickers |
 | `<leader>t` | Terminals: `tt` toggle (`<A-t>`), `tv` `ts` `tf` `tT` |
-| `<leader>u` | UI toggles: `uu` Undotree, `uh` inlay hints, `uc` completion, `ua` Copilot, `um`/`uM` markdown |
+| `<leader>u` | UI toggles: `uu` Undotree, `uh` inlay hints, `uc` completion menu, `ua` Copilot server, `ue` eager/lazy Copilot, `um`/`uM` markdown |
 | `<leader>v` | Splits |
 | `<leader>x` | Diagnostics & lists: `xx` Trouble, `xq` quickfix, `xl` loclist |
 
