@@ -2,11 +2,11 @@ return {
 	"NeogitOrg/neogit",
 	dependencies = {
 		"nvim-lua/plenary.nvim",
-		"nvim-telescope/telescope.nvim",
+		"nvim-mini/mini.extra", -- also loads mini.pick
 	},
 	opts = {
 		integrations = {
-			telescope = true,
+			mini_pick = true,
 		},
 	},
 	keys = {

@@ -19,7 +19,7 @@ not the LazyVim distribution. Requires Neovim 0.12+ and Git.
 
 Plugins with maintained semver releases follow the latest release
 (`version = "*"`): gitsigns, mason, mason-nvim-dap, mini.extra, mini.icons,
-mini.pick, nvim-lspconfig, oil, and telescope. FFF is pinned
+mini.pick, nvim-lspconfig, and oil. FFF is pinned
 to a release tag to avoid its commit-named build tags. The rest track their
 default branch because their tags are stale or missing, or because the release
 lacks something this config needs (mason-lspconfig's `tsc` mapping;
@@ -74,7 +74,7 @@ Press `<leader>` and wait for which-key (`<leader>?` shows buffer-local maps).
 | `<leader>g` | Git: `gg` Neogit, `gd` codediff, `gm` Magirev |
 | `<leader>h` | Hunks (`hp` `hs` `hr` `hb`) and `ha` Harpoon add; `<leader>e` Harpoon menu |
 | `<leader>m` | Review comments: `ma` add, `md` delete, `ml` list, `my` copy, `mc` clear; `<leader>M` merge conflicts (codediff) |
-| `<leader>s` | Search: FFF files (`sf`) and grep (`sg`), Mini workspace symbols (`ss`), Telescope for the other searches |
+| `<leader>s` | Search: FFF files (`sf`) and grep (`sg`, `sG`, `sw`); Mini symbols (`ss`) and other pickers |
 | `<leader>t` | Terminals: `tt` toggle (`<A-t>`), `tv` `ts` `tf` `tT` |
 | `<leader>u` | UI toggles: `uu` Undotree, `uh` inlay hints, `uc` completion, `ua` Copilot, `um`/`uM` markdown |
 | `<leader>v` | Splits |
@@ -82,14 +82,17 @@ Press `<leader>` and wait for which-key (`<leader>?` shows buffer-local maps).
 
 ### Pickers
 
-FFF loads on the first file or grep search and indexes the current directory.
-Use `:FFFResume` to resume that picker; `<leader>sr` still resumes Telescope.
-`:FFFHealth` checks FFF's native binary and setup.
+FFF indexes the current directory on first use. Use `:FFFResume` to resume a
+file or grep search and `:FFFHealth` to check its native binary and setup.
+
+Mini handles the other pickers, Neogit selections, and `vim.ui.select`.
+`<leader>sb` lists Mini pickers and `<leader>sr` resumes the last one.
+`<leader>/` fuzzy-finds lines in the current buffer; `<leader>s/` searches
+lines across open buffers, including unsaved edits.
 
 Mini displays LSP results for `gr`, `gI`, `gt`, `<leader>o` (document symbols),
 and `<leader>ss` (live workspace symbols). `gd` uses native navigation: it jumps
-to a single definition and puts multiple results in quickfix. Telescope still
-handles the generic selection UI.
+to a single definition and puts multiple results in quickfix.
 
 ## Markdown
 

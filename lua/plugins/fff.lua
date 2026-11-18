@@ -28,5 +28,19 @@ return {
 			end,
 			desc = "[S]earch by [G]rep (FFF)",
 		},
+		{
+			"<leader>sG",
+			function()
+				require("fff").live_grep({ grep = { modes = { "plain" } } })
+			end,
+			desc = "[S]earch [G]rep (plain)",
+		},
+		{
+			"<leader>sw",
+			function()
+				require("fff").live_grep_under_cursor({ grep = { modes = { "plain" } } })
+			end,
+			desc = "[S]earch current [W]ord",
+		},
 	},
 }

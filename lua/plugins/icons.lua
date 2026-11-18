@@ -1,4 +1,4 @@
--- mini.icons provides icons for oil, telescope, trouble and blink.
+-- mini.icons provides icons for oil, Mini pickers, trouble and blink.
 -- `mock_nvim_web_devicons` makes it answer `require("nvim-web-devicons")` so
 -- plugins written against devicons work without that dependency.
 return {
