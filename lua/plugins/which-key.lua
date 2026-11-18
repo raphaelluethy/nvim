@@ -14,7 +14,6 @@ return {
 		spec = {
 			{ "<leader>c", group = "Code", icon = icon("\u{F121}", "cyan"), mode = { "n", "x" } },
 			{ "<leader>d", group = "Debug", icon = icon("\u{F188}", "red") },
-			{ "<leader>f", group = "File", icon = icon("\u{F0645}", "grey") },
 			{ "<leader>g", group = "Git", icon = icon("\u{F02A2}", "orange") },
 			{ "<leader>h", group = "Hunks & harpoon", icon = icon("\u{F02A2}", "orange"), mode = { "n", "x" } },
 			{ "<leader>m", group = "Review comments", icon = icon("\u{F075}", "orange"), mode = { "n", "x" } },

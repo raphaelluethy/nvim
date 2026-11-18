@@ -19,7 +19,7 @@ not the LazyVim distribution. Requires Neovim 0.12+ and Git.
 
 Plugins with maintained semver releases follow the latest release
 (`version = "*"`): gitsigns, mason, mason-nvim-dap, mini.extra, mini.icons,
-mini.pick, nvim-lspconfig, nvim-tree, oil, and telescope. FFF is pinned
+mini.pick, nvim-lspconfig, oil, and telescope. FFF is pinned
 to a release tag to avoid its commit-named build tags. The rest track their
 default branch because their tags are stale or missing, or because the release
 lacks something this config needs (mason-lspconfig's `tsc` mapping;
@@ -40,10 +40,11 @@ Per-server settings live in `lua/plugins/lsp.lua`; per-project overrides go
 in a `.nvim.lua` next to the project (`'exrc'`, confirmed once with `:trust`),
 e.g. `vim.lsp.config("gopls", { settings = { ... } })`.
 
-`<C-s>` saves and `<A-f>` formats in normal, insert, visual and select mode
-(`<leader>w` and `<leader>cf` too). Saving also formats (conform's
-`format_after_save`). Workspace symbols are `<leader>ss`; insert-mode signature
-help comes from blink.cmp.
+`<leader>w` saves in normal mode. `<leader>f` (also `<leader>cf`) formats the
+buffer in normal mode or just the selection in characterwise/linewise Visual
+mode. `<C-s>` saves and `<A-f>` formats in normal, insert, visual and select
+mode. Saving also formats (conform's `format_after_save`). Workspace symbols
+are `<leader>ss`; insert-mode signature help comes from blink.cmp.
 
 ### Completion
 

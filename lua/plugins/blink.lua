@@ -64,7 +64,7 @@ return {
 						{ "kind_icon", "label", "label_description", gap = 1 },
 						{ "kind" },
 					},
-					-- Icons and colors from mini.icons, matching oil/nvim-tree/telescope.
+					-- Icons and colors from mini.icons, matching oil and telescope.
 					-- Path completions get file/directory icons instead of the kind.
 					components = {
 						kind_icon = {
