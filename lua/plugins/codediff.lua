@@ -1,10 +1,19 @@
--- Review panel (<leader>mr): file explorer with staged / unstaged groups and a
+-- Review panel (<leader>gd): file explorer with staged / unstaged groups and a
 -- VS Code style diff. `t` switches between side-by-side and unified (inline),
 -- ]c/[c next/prev hunk, ]f/[f next/prev file, - stage/unstage, q close.
 -- Note: downloads a prebuilt diff library on first use (`:CodeDiff install`).
 return {
 	"esmuellert/codediff.nvim",
 	cmd = "CodeDiff",
+	keys = {
+		{
+			"<leader>gd",
+			function()
+				require("config.review").open_panel()
+			end,
+			desc = "Git: review panel (codediff)",
+		},
+	},
 	opts = {
 		diff = {
 			layout = "side-by-side", -- or "inline" (unified); toggle with `t`
@@ -18,11 +27,11 @@ return {
 		},
 		-- codediff installs buffer-local maps in the diff panes (the right pane
 		-- is your real file buffer). Keep them off prefixes used globally:
-		-- <leader>e is Harpoon, <leader>a* agents, <leader>c* code, <leader>t* terminals.
+		-- <leader>e is Harpoon, <leader>c* code, <leader>t* terminals.
 		-- `g?` in a diff pane lists what is active.
 		keymaps = {
 			view = {
-				toggle_explorer = false, -- semantic panel: t / q; explorer: <leader>mr again
+				toggle_explorer = false,
 				focus_explorer = false, -- use <C-w>h
 				-- <leader>hs / <leader>hu / <leader>hr stay: same meaning as gitsigns' hunk keys.
 			},

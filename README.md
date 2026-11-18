@@ -19,7 +19,7 @@ not the LazyVim distribution. Requires Neovim 0.12+ and Git.
 
 Plugins with maintained semver releases follow the latest release
 (`version = "*"`): gitsigns, mason, mason-nvim-dap, mini.extra, mini.icons,
-mini.pick, nvim-lspconfig, nvim-tree, oil, sidekick, and telescope. FFF is pinned
+mini.pick, nvim-lspconfig, nvim-tree, oil, and telescope. FFF is pinned
 to a release tag to avoid its commit-named build tags. The rest track their
 default branch because their tags are stale or missing, or because the release
 lacks something this config needs (mason-lspconfig's `tsc` mapping;
@@ -45,6 +45,15 @@ e.g. `vim.lsp.config("gopls", { settings = { ... } })`.
 `format_after_save`). Workspace symbols are `<leader>ss`; insert-mode signature
 help comes from blink.cmp.
 
+### Completion
+
+blink.cmp shows LSP, Copilot, path, snippet and buffer items in one menu.
+Copilot is the official language server (`copilot` in `lua/config/servers.lua`,
+installed by Mason) feeding the menu through blink-copilot. There is no ghost
+text and no next edit prediction, and telemetry is off. Sign in once with
+`:LspCopilotSignIn`. `<leader>uc` turns completion on / off, `<leader>ua`
+only Copilot.
+
 Folds come from tree-sitter (`foldexpr`), open by default (`foldlevel=99`).
 Diagnostics show inline text on the cursor line only; `gh` opens the float.
 
@@ -54,18 +63,16 @@ Press `<leader>` and wait for which-key (`<leader>?` shows buffer-local maps).
 
 | Prefix | Group |
 | --- | --- |
-| `<leader>a` | Agents: sessions, context, tasks (`at`/`aT`/`aH`) |
 | `<leader>c` | Code: `ca` action, `cf` format, `cr` rename |
 | `<leader>d` | Debug (also `<F5>`, `<F10>`–`<F12>`) |
-| `<leader>g` | Git: `gg` Neogit, `gm`/`gM` Magirev |
+| `<leader>g` | Git: `gg` Neogit, `gd` codediff, `gm` Magirev |
 | `<leader>h` | Hunks (`hp` `hs` `hr` `hb`) and `ha` Harpoon add; `<leader>e` Harpoon menu |
-| `<leader>m` | Review comments; `<leader>M` merge conflicts (codediff) |
+| `<leader>m` | Review comments: `ma` add, `md` delete, `ml` list, `my` copy, `mc` clear; `<leader>M` merge conflicts (codediff) |
 | `<leader>s` | Search: FFF files (`sf`) and grep (`sg`), Mini workspace symbols (`ss`), Telescope for the other searches |
 | `<leader>t` | Terminals: `tt` toggle (`<A-t>`), `tv` `ts` `tf` `tT` |
-| `<leader>u` | UI toggles: `uu` Undotree, `uh` inlay hints, `um`/`uM` markdown |
+| `<leader>u` | UI toggles: `uu` Undotree, `uh` inlay hints, `uc` completion, `ua` Copilot, `um`/`uM` markdown |
 | `<leader>v` | Splits |
 | `<leader>x` | Diagnostics & lists: `xx` Trouble, `xq` quickfix, `xl` loclist |
-| `<leader>9` | 99 |
 
 ### Pickers
 
@@ -76,7 +83,7 @@ Use `:FFFResume` to resume that picker; `<leader>sr` still resumes Telescope.
 Mini displays LSP results for `gr`, `gI`, `gt`, `<leader>o` (document symbols),
 and `<leader>ss` (live workspace symbols). `gd` uses native navigation: it jumps
 to a single definition and puts multiple results in quickfix. Telescope still
-handles the generic selection UI and agent pickers.
+handles the generic selection UI.
 
 ## Markdown
 
@@ -97,9 +104,9 @@ Monokai Pro (Filter Spectrum) V3 when dark, Monokai Pro Light (Filter Sun) V3
 when light; change them in `lua/plugins/monokai-pro-zed.lua`. Every variant is
 also its own `:colorscheme`, e.g. `monokai-pro-filter-spectrum-v3-no-italics`
 (V3 draws inlay hints like Zed; No Italics drops every italic).
-`lua/config/appearance.lua` follows the system setting: on macOS it reads the
-system appearance once the UI is up and when Neovim regains focus. Terminals that
-send theme notifications (Ghostty, kitty, WezTerm) switch it live.
+`lua/config/appearance.lua` always starts dark, ignoring the system and
+terminal appearance; `:ThemeToggle` (or `:themetoggle`) switches between dark
+and light.
 
 ## Debugging
 
@@ -144,86 +151,12 @@ cursor, `<leader>de` evaluates through IntelliJ, and a few keys are added:
 | `<leader>dw` | Watch word / visual selection |
 | `<leader>dv` | IntelliJ debug panel (stack, locals, watches) |
 
-## AI
+## Review panel
 
-- **99** loads from the local fork (`~/Documents/projects/private/99`) with
-  `backend = "claude"` (Claude Agent SDK; switch to `"opencode"` in
-  `lua/plugins/99.lua`). Keys: `<leader>9s` search, `9f` vibe, `9v` visual,
-  `9t` tutorial, `9x` stop, `9o` last result, `9l` logs, `9c` clear,
-  `9m` model, `9p` provider.
-- **[NinetyFive](https://github.com/numerataz/ninetyfive.nvim)** shows inline
-  ghost text in insert mode: `<Tab>` accepts, `<C-j>` accepts the next word,
-  `<C-l>` the next line, and `<C-]>` dismisses it.
-- **[Sidekick](https://github.com/folke/sidekick.nvim)** replaces CodeCompanion
-  for native AI CLI sessions and editor context. Its next edit suggestions are
-  off.
-
-Sidekick loads at startup. It uses the existing
-Telescope integration and native Neovim terminals, without requiring a terminal
-multiplexer. Each CLI must be installed and authenticated separately.
-Cursor uses the local `agent` command; Factory Droid uses `droid`.
-
-| Key | Action |
-| --- | --- |
-| `<leader>ac` | Toggle CLI; choose an installed tool if none is attached |
-| `<leader>an` | Choose an agent, then submit a task and open its terminal (`<C-s>`) |
-| `<leader>at` | Submit a task in the background |
-| `<leader>aT` | List background tasks and open their terminals |
-| `<leader>al` | Select an installed CLI, including Codex |
-| `<leader>aA` | Select a prompt |
-| `<leader>as` (normal) | Send cursor position |
-| `<leader>as` (visual) | Send file, selection position, and fenced selection, then focus the agent |
-| `<leader>aF` | Send current file reference |
-| `<leader>ad` | Send diagnostics: in Trouble the item / group under the cursor or the selection, elsewhere the open Trouble view, else all diagnostics, then focus the agent (`:SkDiagnostics[!] [all]`) |
-| `<leader>aD` | Send every diagnostic in the open Trouble view |
-| `<leader>aN` | Start an agent session in a floating window |
-| `<leader>aj` | Manage interactive agent sessions |
-| `<leader>a]` / `<leader>a[` | Next / previous session |
-| `<leader>aw` | Switch the active session between split and float |
-| `<leader>ah` | Hide interactive agent sessions |
-| `<leader>ax` | Kill the active interactive session (with confirmation) |
-| `<leader>aH` | Hide all background task floats |
-
-Context is inserted into the CLI input for review, not automatically submitted.
-
-### Droid IDE connection (no hook required)
-
-Droid sessions launched through the agent mappings connect directly to Neovim.
-The local `sidekick_ext.droid_ide` bridge shares the last active file, cursor,
-visual selection, loaded files, unsaved-change flags, and diagnostics through
-Droid's IDE MCP protocol. Focus can stay in the agent terminal without losing
-the source-file context. File contents are not automatically saved.
-
-- Start a **new** Droid session after restarting Neovim. Use `/ide` in Droid
-  to inspect or disconnect the connection.
-- For a manually opened Neovim terminal, run `:DroidIDE start` **before**
-  launching `droid`. `:DroidIDE stop` closes the bridge.
-- No `UserPromptSubmit` hook is needed for Droid. If you previously configured
-  `bin/agent-editor-context` as a Droid hook, remove that specific hook through
-  Droid's `/hooks` manager to avoid duplicate context. Other agents can keep it.
-
-The bridge uses a loopback-only HTTP server, rejects browser origins, requires
-a random session ID after initialization, and removes its discovery lock on
-exit. It starts on demand, not at editor startup. It needs no extra runtime.
-
-This is an unofficial adapter for an undocumented Droid protocol. Droid may
-label an automatically connected session **VS Code**, even though Neovim is the
-server. Its disconnected `/ide` install/reconnect flow still checks for the
-official VS Code extension; start a new Droid session instead. External
-terminals may discover Neovim with Droid's `ideAutoConnect` setting, but this
-is not enabled by this configuration. Native diff approvals and waiting for
-an edited file to be saved are not implemented; normal terminal behavior remains.
-The bridge advertises only a file-opening tool, which opens a separate tab.
-
-Run the bridge tests with `nvim --headless -u NONE -l tests/droid_ide.lua`
-(requires Python 3).
-
-### Review panel
-
-`<leader>mr` opens the [codediff](https://github.com/esmuellert/codediff.nvim)
-review panel. From a file buffer it preselects that file and keeps your line.
+`<leader>gd` opens the [codediff](https://github.com/esmuellert/codediff.nvim)
+review panel; from a file buffer it preselects that file and keeps your line.
 `<leader>gm` opens [magirev-nvim](https://github.com/raphaelluethy/magirev-nvim),
-a standalone full-width review tab, independent of codediff and Sidekick.
+a standalone full-width review tab, independent of codediff.
 `Tab` expands inline diffs, `]g`/`[g` move between groups, and `]h`/`[h` between
 hunks. `s` stages the selected group or hunk; `u` unstages it. `c` opens a commit
 message editor showing **all staged changes**, with `Ctrl-c Ctrl-c` to confirm
@@ -239,19 +172,26 @@ LSP navigation applies.
 The index is preserved; unstage with `u` first if needed. Selected untracked
 files are deleted, and there is no Magirev undo.
 
-`m` moves a selection into a named group; `e` renames it. `G` or `<leader>gM`
-requests AI grouping through opencode, with confirmation before sending code.
-Manual grouping works offline. `r` refreshes, `?` shows help, and `q` closes.
-The local development checkout is `~/Documents/projects/private/magirev-nvim`; configure its provider
-in `lua/plugins/magirev.lua`. Existing codediff review-comment mappings remain.
+`m` moves a selection into a named group; `e` renames it. `r` refreshes, `?` shows help, and `q` closes.
+The local development checkout is `~/Documents/projects/private/magirev-nvim`.
 
-The task form offers model and effort selectors after choosing the agent.
-Set `backend = "buffer"` (default) or `backend = "rex"` in the
-`sidekick_ext.tasks.setup` call in `lua/plugins/sidekick.lua` to choose where tasks run.
-`<leader>an` opens the task terminal; `<leader>at` starts it hidden.
-Use `<leader>aT` to open tasks in the selected destination later.
-Buffer tasks run until Neovim closes. Rex tasks survive Neovim closing while the
-Rex session stays alive.
-Save buffers before asking a CLI to read files. In the CLI terminal, `<C-q>`
-leaves terminal mode and `q` in normal mode hides the window without stopping
-the session. `<leader>aH` hides all task floats.
+### Review comments
+
+`<leader>ma` comments the cursor line or the selection (also in codediff's
+revision panes), `<leader>ma` again on a comment edits it. Comments persist per
+repo and branch and follow the code as you edit. `<leader>my` (`:Review copy`)
+copies all of them, with locations and the commented code, as Markdown to the
+clipboard, ready to paste anywhere. `:Review add|edit|delete|list|copy|clear`.
+
+## Editor context for agents
+
+Neovim writes the current file, cursor and last visual selection to
+`~/.local/state/nvim/editor-context/<pid>.json` when you leave it (focus lost,
+cursor idle, buffer switch). `bin/agent-editor-context` prints the newest
+snapshot of a running Neovim for the current directory, so an agent in a Rex
+pane next to Neovim knows what "this" or "here" means. It is a plain file read
+with no connection to Neovim; when nothing matches it prints nothing.
+
+- Claude Code / Codex: `UserPromptSubmit` hook running
+  `"$HOME/.config/nvim/bin/agent-editor-context" json`.
+- Anything else: `agent-editor-context text` prints the same as plain text.

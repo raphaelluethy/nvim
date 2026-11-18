@@ -12,7 +12,6 @@ return {
 		preset = "helix",
 		delay = 250,
 		spec = {
-			{ "<leader>a", group = "Agents", icon = icon("\u{F06A9}", "purple"), mode = { "n", "x" } },
 			{ "<leader>c", group = "Code", icon = icon("\u{F121}", "cyan"), mode = { "n", "x" } },
 			{ "<leader>d", group = "Debug", icon = icon("\u{F188}", "red") },
 			{ "<leader>f", group = "File", icon = icon("\u{F0645}", "grey") },
@@ -25,7 +24,6 @@ return {
 			{ "<leader>u", group = "UI toggles", icon = icon("\u{F0521}", "cyan") },
 			{ "<leader>v", group = "Splits", icon = icon("\u{F0DB}", "green") },
 			{ "<leader>x", group = "Diagnostics & lists", icon = icon("\u{F0279}", "red") },
-			{ "<leader>9", group = "99", icon = icon("\u{F0E7}", "purple"), mode = { "n", "x" } },
 			{ "]", group = "Next" },
 			{ "[", group = "Previous" },
 			{ "g", group = "Goto" },

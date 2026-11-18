@@ -218,6 +218,19 @@ return {
 				},
 			},
 			tinymist = { offset_encoding = "utf-8" },
+			-- Copilot only feeds blink's menu (blink-copilot). Neovim's inline
+			-- completion (ghost text) is never enabled and there is no NES client.
+			copilot = {
+				settings = { telemetry = { telemetryLevel = "off" } },
+				-- Do not attach to secrets files.
+				root_dir = function(bufnr, on_dir)
+					local name = vim.fs.basename(vim.api.nvim_buf_get_name(bufnr))
+					if name == "" or name:match("^%.env") or name:match("%.pem$") or name:match("%.key$") then
+						return
+					end
+					on_dir(vim.fs.root(bufnr, ".git") or vim.fn.getcwd())
+				end,
+			},
 			lua_ls = {
 				settings = {
 					Lua = {

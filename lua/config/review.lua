@@ -1,23 +1,17 @@
--- Review comments: annotate lines/ranges, then send them all to the sidekick
--- CLI (or a hidden task) as one prompt. Comments persist per repo + branch
--- and follow the code while you edit (extmarks).
+-- Review comments: annotate lines / ranges (also in codediff's revision
+-- panes), then copy them all to the clipboard as one Markdown block. Comments
+-- persist per repo + branch and follow the code while you edit (extmarks).
 local M = {}
 
-local ns = vim.api.nvim_create_namespace("sidekick_review")
-local data_dir = vim.fn.stdpath("data") .. "/sidekick-review"
+local ns = vim.api.nvim_create_namespace("review_comments")
+local data_dir = vim.fn.stdpath("data") .. "/review-comments"
 
 M.config = {
 	sign = "▍",
 	header = "Please address these code review comments:",
-	clear_after_send = "ask", ---@type "ask"|boolean
-	-- Light themes often tint diff backgrounds only slightly. In light mode,
-	-- rebuild the gitsigns diff groups by mixing the theme's own add/change/delete
-	-- sign colors into Normal's background (0 = theme bg, 1 = full accent).
-	-- Set to false to keep the theme's diff colors untouched.
-	light_boost = { line = 0.24, inline = 0.42 }, ---@type false|{line:number, inline:number}
 }
 
----@class sidekick_ext.Comment
+---@class review.Comment
 ---@field id integer
 ---@field file string path relative to the repo root
 ---@field kind "line"|"char"|"point" linewise selection, charwise selection, or cursor position
@@ -28,9 +22,60 @@ M.config = {
 ---@field text string
 ---@field old? { range: string, lines: string[] } the old code when the comment was made on a revision pane
 
----@type { key: string?, root: string?, comments: sidekick_ext.Comment[], next_id: integer }
+--- Multi-line comment editor in a float. <C-s> (or <CR> in normal mode)
+--- saves, q / <Esc> in normal mode cancels.
+---@param opts { title: string, default?: string }
+---@param on_submit fun(text: string)
+local function input(opts, on_submit)
+	local buf = vim.api.nvim_create_buf(false, true)
+	vim.bo[buf].bufhidden = "wipe"
+	vim.bo[buf].filetype = "markdown"
+	if opts.default then
+		vim.api.nvim_buf_set_lines(buf, 0, -1, false, vim.split(opts.default, "\n", { plain = true }))
+	end
+	local width = math.min(80, math.floor(vim.o.columns * 0.8))
+	local height = math.min(12, math.floor(vim.o.lines * 0.4))
+	local win = vim.api.nvim_open_win(buf, true, {
+		relative = "editor",
+		width = width,
+		height = height,
+		row = math.floor((vim.o.lines - height) / 2),
+		col = math.floor((vim.o.columns - width) / 2),
+		style = "minimal",
+		border = "rounded",
+		title = " " .. opts.title .. " ",
+		footer = " <C-s> save · q cancel ",
+		footer_pos = "right",
+	})
+	vim.wo[win].wrap = true
+	local function close()
+		if vim.api.nvim_win_is_valid(win) then
+			vim.api.nvim_win_close(win, true)
+		end
+	end
+	local function submit()
+		local text = vim.trim(table.concat(vim.api.nvim_buf_get_lines(buf, 0, -1, false), "\n"))
+		vim.cmd.stopinsert()
+		close()
+		if text ~= "" then
+			on_submit(text)
+		end
+	end
+	local function map(mode, lhs, fn)
+		vim.keymap.set(mode, lhs, fn, { buffer = buf, nowait = true })
+	end
+	map({ "n", "i" }, "<C-s>", submit)
+	map("n", "<CR>", submit)
+	map("n", "q", close)
+	map("n", "<Esc>", close)
+	if not opts.default then
+		vim.cmd.startinsert()
+	end
+end
+
+---@type { key: string?, root: string?, comments: review.Comment[], next_id: integer }
 local store = { comments = {}, next_id = 1 }
-local current_text ---@type fun(c: sidekick_ext.Comment): string[]
+local current_text ---@type fun(c: review.Comment): string[]
 
 local function repo()
 	local root = vim.fs.root(0, ".git") or vim.fn.getcwd()
@@ -185,7 +230,7 @@ local function render(buf)
 				id = c.id,
 				end_row = e,
 				end_col = clamp(e, c.kind == "char" and c.end_col or 0),
-				hl_group = c.kind == "char" and "SidekickReviewRange" or nil,
+				hl_group = c.kind == "char" and "ReviewCommentRange" or nil,
 				sign_text = M.config.sign,
 				sign_hl_group = "DiagnosticSignInfo",
 				right_gravity = false,
@@ -233,7 +278,7 @@ function M.add()
 		return vim.notify("Buffer has no file", vim.log.levels.WARN)
 	end
 	local cur = vim.api.nvim_win_get_cursor(0)
-	---@type sidekick_ext.Comment
+	---@type review.Comment
 	local c = { kind = "point", lnum = cur[1], col = cur[2], end_lnum = cur[1], end_col = cur[2] }
 	local mode = vim.fn.mode()
 	if mode == "v" or mode == "V" or mode == "\22" then
@@ -268,7 +313,7 @@ function M.add()
 		c.lnum, c.end_lnum = math.min(a, b), math.max(a, b)
 		buf = vim.fn.bufnr(abs(file))
 	end
-	require("sidekick_ext.input").open({ title = "Comment · " .. file .. ":" .. title_range }, function(text)
+	input({ title = "Comment · " .. file .. ":" .. title_range }, function(text)
 		c.id, c.file, c.text = store.next_id, file, text
 		table.insert(store.comments, c)
 		store.next_id = store.next_id + 1
@@ -284,7 +329,7 @@ function M.edit()
 	if not c then
 		return vim.notify("No review comment here", vim.log.levels.WARN)
 	end
-	require("sidekick_ext.input").open({ title = "Edit comment", default = c.text }, function(text)
+	input({ title = "Edit comment", default = c.text }, function(text)
 		c.text = text
 		save()
 		rerender(c.file)
@@ -335,7 +380,7 @@ end
 
 --- The commented text as it is right now (buffer if loaded, else the file on
 --- disk). Point comments return their whole line.
----@param c sidekick_ext.Comment
+---@param c review.Comment
 ---@return string[]
 current_text = function(c)
 	local path = abs(c.file)
@@ -356,190 +401,56 @@ current_text = function(c)
 	return lines
 end
 
---- Build the review prompt as sidekick Text lines (keeps @file:L refs
---- highlighted so each tool can format them its own way).
----@return sidekick.Text[]?
+--- All comments as one Markdown block: location, the commented code, the
+--- comment.
+---@return string?
 function M.build()
 	local list = sorted()
 	if #list == 0 then
 		vim.notify("No review comments", vim.log.levels.INFO)
 		return
 	end
-	local Loc = require("sidekick.cli.context.location")
-	local ret = { { { M.config.header } }, {} }
+	local out = { M.config.header, "" }
+	local function fence(ft, lines)
+		out[#out + 1] = "```" .. ft
+		vim.list_extend(out, lines)
+		out[#out + 1] = "```"
+	end
 	for i, c in ipairs(list) do
-		local ctx = { name = abs(c.file), cwd = store.root }
-		if c.kind == "line" then
-			ctx.range = { from = { c.lnum, 0 }, to = { c.end_lnum, 0 }, kind = "line" }
-		elseif c.kind == "char" then
-			-- Location columns are 0-based and inclusive; end_col is exclusive.
-			ctx.range = { from = { c.lnum, c.col }, to = { c.end_lnum, math.max(c.col, c.end_col - 1) } }
-			if c.lnum == c.end_lnum and c.end_col - c.col <= 1 then
-				ctx.range, ctx.row, ctx.col = nil, c.lnum, c.col
-			end
+		local loc
+		if c.kind == "point" then
+			loc = ("%s:%d:%d"):format(c.file, c.lnum, c.col + 1)
+		elseif c.lnum == c.end_lnum then
+			loc = ("%s:%d"):format(c.file, c.lnum)
 		else
-			ctx.row, ctx.col = c.lnum, c.col
+			loc = ("%s:%d-%d"):format(c.file, c.lnum, c.end_lnum)
 		end
-		local loc = Loc.get(ctx, { kind = c.kind == "line" and "line" or "position" })[1]
-		table.insert(loc, 1, { ("%d. "):format(i) })
-		ret[#ret + 1] = loc
+		out[#out + 1] = ("%d. %s"):format(i, loc)
 		local ft = vim.filetype.match({ filename = c.file }) or ""
 		if c.old and #c.old.lines > 0 then
-			ret[#ret + 1] = { { ("Comment refers to the previous version (%s), which was:"):format(c.old.range) } }
-			ret[#ret + 1] = { { "```" .. ft } }
-			for _, l in ipairs(c.old.lines) do
-				ret[#ret + 1] = { { l } }
-			end
-			ret[#ret + 1] = { { "```" } }
-			ret[#ret + 1] = { { "Current code at the mapped position:" } }
+			out[#out + 1] = ("Comment refers to the previous version (%s), which was:"):format(c.old.range)
+			fence(ft, c.old.lines)
+			out[#out + 1] = "Current code at the mapped position:"
 		end
 		local code = current_text(c)
 		if #code > 0 then
-			ret[#ret + 1] = { { "```" .. ft } }
-			for _, l in ipairs(code) do
-				ret[#ret + 1] = { { l } }
-			end
-			ret[#ret + 1] = { { "```" } }
+			fence(ft, code)
 		end
-		for _, l in ipairs(vim.split(c.text, "\n", { plain = true })) do
-			ret[#ret + 1] = { { l } }
-		end
-		ret[#ret + 1] = {}
+		vim.list_extend(out, vim.split(c.text, "\n", { plain = true }))
+		out[#out + 1] = ""
 	end
-	return ret
+	return table.concat(out, "\n")
 end
 
-local function after_send()
-	local clear = M.config.clear_after_send
-	if clear == "ask" then
-		clear = vim.fn.confirm("Clear review comments?", "&Yes\n&No", 2) == 1
-	end
-	if clear then
-		M.clear()
-	end
-end
-
----@alias sidekick_ext.review.Target "sidekick"|"task"|"task_existing"|"clipboard"
-
----@param target? sidekick_ext.review.Target  nil = ask
-function M.send(target)
+--- Copy all comments to the system clipboard (and the unnamed register).
+function M.copy()
 	local text = M.build()
 	if not text then
 		return
 	end
-	local str = require("sidekick.text").to_string(text)
-
-	local targets = {
-		sidekick = function()
-			require("sidekick.cli").send({ text = text, submit = true })
-		end,
-		task = function()
-			require("sidekick_ext.tasks").new({ prompt = str, cwd = store.root })
-		end,
-		task_existing = function()
-			local Tasks = require("sidekick_ext.tasks")
-			local tasks = Tasks.list()
-			if #tasks == 0 then
-				return vim.notify("No running tasks", vim.log.levels.WARN)
-			end
-			vim.ui.select(tasks, {
-				prompt = "Send review to task",
-				format_item = function(t)
-					return t.tool .. ": " .. t.title
-				end,
-			}, function(t)
-				if t then
-					Tasks.send(t, str)
-					after_send()
-				end
-			end)
-			return true -- after_send handled async
-		end,
-		clipboard = function()
-			vim.fn.setreg("+", str)
-			vim.notify("Review copied to clipboard")
-		end,
-	}
-
-	local function run(name)
-		if not targets[name]() then
-			after_send()
-		end
-	end
-
-	if target then
-		return run(target)
-	end
-	local labels = {
-		{ "sidekick", "Sidekick CLI (attached)" },
-		{ "task", "New hidden task" },
-		{ "task_existing", "Existing task…" },
-		{ "clipboard", "Clipboard" },
-	}
-	vim.ui.select(labels, {
-		prompt = ("Send %d review comment(s) to"):format(#store.comments),
-		format_item = function(x)
-			return x[2]
-		end,
-	}, function(choice)
-		if choice then
-			run(choice[1])
-		end
-	end)
-end
-
-local function blend(fg, bg, a)
-	local function ch(c, shift)
-		return bit.band(bit.rshift(c, shift), 0xff)
-	end
-	local function mix(shift)
-		return math.floor(ch(fg, shift) * a + ch(bg, shift) * (1 - a) + 0.5)
-	end
-	return mix(16) * 0x10000 + mix(8) * 0x100 + mix(0)
-end
-
---- Stronger diff colors for light backgrounds, derived from the active theme.
-local function apply_light_boost()
-	vim.api.nvim_set_hl(0, "SidekickReviewRange", { link = "Visual", default = true })
-	local b = M.config.light_boost
-	if not b or vim.o.background ~= "light" then
-		return
-	end
-	local function color(name, key)
-		return vim.api.nvim_get_hl(0, { name = name, link = false })[key]
-	end
-	local bg = color("Normal", "bg")
-	if not bg then
-		return
-	end
-	for kind, fallback in pairs({ Add = "DiffAdd", Change = "DiffChange", Delete = "DiffDelete" }) do
-		local accent = color("GitSigns" .. kind, "fg") or color(fallback, "fg")
-		if accent then
-			local line, inline = blend(accent, bg, b.line), blend(accent, bg, b.inline)
-			vim.api.nvim_set_hl(0, "GitSigns" .. kind .. "Ln", { bg = line })
-			vim.api.nvim_set_hl(0, "GitSigns" .. kind .. "Inline", { bg = inline })
-			vim.api.nvim_set_hl(0, "GitSigns" .. kind .. "LnInline", { bg = inline })
-		end
-	end
-	-- Diff mode (review panel): same treatment for the core Diff groups.
-	local diff_accents = {
-		DiffAdd = color("GitSignsAdd", "fg") or color("Added", "fg"),
-		DiffChange = color("GitSignsChange", "fg") or color("Changed", "fg"),
-		DiffDelete = color("GitSignsDelete", "fg") or color("Removed", "fg"),
-	}
-	for group, accent in pairs(diff_accents) do
-		if accent then
-			vim.api.nvim_set_hl(0, group, { bg = blend(accent, bg, b.line), fg = group == "DiffDelete" and accent or nil })
-		end
-	end
-	if diff_accents.DiffChange then
-		vim.api.nvim_set_hl(0, "DiffText", { bg = blend(diff_accents.DiffChange, bg, b.inline) })
-	end
-	local del = color("GitSignsDelete", "fg")
-	if del then
-		vim.api.nvim_set_hl(0, "GitSignsDeleteVirtLn", { fg = del, bg = blend(del, bg, b.line) })
-		vim.api.nvim_set_hl(0, "GitSignsDeleteVirtLnInline", { bg = blend(del, bg, b.inline) })
-	end
+	vim.fn.setreg("+", text)
+	vim.fn.setreg('"', text)
+	vim.notify(("Copied %d review comment(s)"):format(#store.comments))
 end
 
 --- After `:CodeDiff` opens from a file buffer, put the cursor in the modified
@@ -550,7 +461,7 @@ end
 ---@param lnum integer
 local function follow_into_review(buf, lnum)
 	local name = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(buf), ":t")
-	local group = vim.api.nvim_create_augroup("sidekick_review_open", { clear = true })
+	local group = vim.api.nvim_create_augroup("review_open", { clear = true })
 	local deadline = vim.uv.now() + 10000 -- ignore a CodeDiffOpen from a later, unrelated open
 	vim.api.nvim_create_autocmd("User", {
 		group = group,
@@ -610,8 +521,25 @@ function M.toggle_mode()
 		if stat and stat.type == "file" then
 			follow_into_review(buf, vim.api.nvim_win_get_cursor(0)[1])
 		else
-			pcall(vim.api.nvim_del_augroup_by_name, "sidekick_review_open")
+			pcall(vim.api.nvim_del_augroup_by_name, "review_open")
 			vim.notify("Review: current buffer is not a file, showing all changes", vim.log.levels.INFO)
+		end
+	end
+	vim.cmd("CodeDiff")
+end
+
+--- Review panel: codediff.nvim. Opened from a file buffer, that file is
+--- preselected and the cursor lands on the same line.
+function M.open_panel()
+	local buf = vim.api.nvim_get_current_buf()
+	local ok, lifecycle = pcall(require, "codediff.ui.lifecycle")
+	local in_review = ok and lifecycle.get_session(vim.api.nvim_get_current_tabpage()) ~= nil
+	if not in_review then
+		local stat = vim.bo[buf].buftype == "" and vim.uv.fs_stat(vim.api.nvim_buf_get_name(buf))
+		if stat and stat.type == "file" then
+			follow_into_review(buf, vim.api.nvim_win_get_cursor(0)[1])
+		else
+			pcall(vim.api.nvim_del_augroup_by_name, "review_open")
 		end
 	end
 	vim.cmd("CodeDiff")
@@ -619,9 +547,12 @@ end
 
 function M.setup(opts)
 	M.config = vim.tbl_deep_extend("force", M.config, opts or {})
-	local group = vim.api.nvim_create_augroup("sidekick_review", { clear = true })
-	apply_light_boost()
-	vim.api.nvim_create_autocmd("ColorScheme", { group = group, callback = apply_light_boost })
+	local group = vim.api.nvim_create_augroup("review_comments", { clear = true })
+	local function range_hl()
+		vim.api.nvim_set_hl(0, "ReviewCommentRange", { link = "Visual", default = true })
+	end
+	range_hl()
+	vim.api.nvim_create_autocmd("ColorScheme", { group = group, callback = range_hl })
 	vim.api.nvim_create_autocmd({ "BufReadPost", "BufNewFile" }, {
 		group = group,
 		callback = function(ev)
@@ -638,21 +569,34 @@ function M.setup(opts)
 			end
 		end,
 	})
-	vim.api.nvim_create_user_command("SkReview", function(a)
-		local sub = a.args ~= "" and a.args or "list"
-		local fn = ({ mode = M.toggle_mode, add = M.add, edit = M.edit, delete = M.delete, clear = M.clear, list = M.list })[sub]
-		if fn then
-			fn()
-		elseif sub:match("^send") then
-			M.send(sub:match("^send%s+(%S+)"))
+
+	local subs = { add = M.add, edit = M.edit, delete = M.delete, list = M.list, copy = M.copy, clear = M.clear }
+	vim.api.nvim_create_user_command("Review", function(a)
+		local fn = subs[a.args ~= "" and a.args or "copy"]
+		if not fn then
+			return vim.notify("Review: unknown subcommand " .. a.args, vim.log.levels.ERROR)
 		end
+		fn()
 	end, {
-		nargs = "*",
+		nargs = "?",
 		complete = function()
-			return { "mode", "add", "edit", "delete", "clear", "list", "send", "send sidekick", "send task", "send clipboard" }
+			return vim.tbl_keys(subs)
 		end,
-		desc = "Sidekick review comments",
+		desc = "Review comments: add / edit / delete / list / copy / clear",
 	})
+
+	local function map(mode, lhs, fn, desc)
+		vim.keymap.set(mode, lhs, fn, { desc = "Review: " .. desc })
+	end
+	map({ "n", "x" }, "<leader>ma", M.add, "add / edit comment")
+	map("n", "<leader>md", M.delete, "delete comment")
+	map("n", "<leader>ml", M.list, "list comments (quickfix)")
+	map("n", "<leader>my", M.copy, "copy comments to clipboard")
+	map("n", "<leader>mc", function()
+		if vim.fn.confirm("Clear all review comments?", "&Yes\n&No", 2) == 1 then
+			M.clear()
+		end
+	end, "clear comments")
 end
 
 return M

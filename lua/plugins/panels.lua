@@ -9,8 +9,6 @@
 --   "nvim" = always Neovim windows and buffers
 local use = {
 	terminal = "rex", -- <A-t>, <leader>tt, <leader>tv/ts/tT/tf, :Panels term
-	agents = "rex", -- <leader>ac, <leader>aN, <leader>aj, <leader>al, <leader>a]/[ (sidekick sessions)
-	tasks = "rex", -- <leader>an, <leader>at/aT/aH, :SkTask (background agent tasks)
 	markdown = "nvim", -- markvim diagram previews (<CR> on a diagram)
 }
 
@@ -27,8 +25,6 @@ return {
 		-- panels groups are the first ":" segment of a panel's label.
 		groups = {
 			term = backend(use.terminal),
-			sidekick = backend(use.agents),
-			["sk-task"] = backend(use.tasks),
 			markvim = backend(use.markdown),
 		},
 	},

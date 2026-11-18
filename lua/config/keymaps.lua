@@ -56,7 +56,7 @@ vim.keymap.set("n", "<leader>tf", term({ where = "float" }), { desc = "Terminal:
 
 -- Window navigation: also into/out of floating panels, and at Neovim's edge
 -- on into the neighbouring Rex pane (panels.nvim). Terminal mode too, so
--- agent terminals are left the same way.
+-- terminals are left the same way.
 for key, name in pairs({ h = "left", j = "lower", k = "upper", l = "right" }) do
 	vim.keymap.set({ "n", "t" }, "<C-" .. key .. ">", function()
 		require("panels").navigate(key)
@@ -64,7 +64,7 @@ for key, name in pairs({ h = "left", j = "lower", k = "upper", l = "right" }) do
 end
 
 -- Save from normal, insert, visual and select mode; format is <A-f> (conform.lua).
--- Not in terminal mode, where agent CLIs use <C-s> themselves.
+-- Not in terminal mode, where terminal programs use <C-s> themselves.
 vim.keymap.set({ "n", "i", "x", "s" }, "<C-s>", "<Cmd>write<CR>", { desc = "Save buffer" })
 vim.keymap.set("n", "<leader>w", "<Cmd>write<CR>", { desc = "Save buffer" })
 
