@@ -24,7 +24,8 @@ to a release tag to avoid its commit-named build tags. The rest track their
 default branch because their tags are stale or missing, or because the release
 lacks something this config needs (mason-lspconfig's `tsc` mapping;
 trouble.nvim's Neovim 0.12 decoration-provider fix). nvim-treesitter must stay
-on `main`. blink.cmp stays on the latest 1.x release (`version = "1.*"`).
+on `main`. blink.cmp stays on the latest 1.x release (`version = "1.*"`),
+and indent-blankline.nvim stays on 3.x (`version = "3.*"`).
 Exact installed revisions are pinned in `lazy-lock.json`.
 
 On macOS, update Neovim with `brew update` followed by `brew upgrade neovim`.
@@ -83,7 +84,7 @@ Press `<leader>` and wait for which-key (`<leader>?` shows buffer-local maps).
 | `<leader>m` | Review comments: `ma` add, `md` delete, `ml` list, `my` copy, `mc` clear; `<leader>M` merge conflicts (codediff) |
 | `<leader>s` | Search: FFF files (`sf`) and grep (`sg`, `sG`, `sw`); Mini symbols (`ss`) and other pickers |
 | `<leader>t` | Terminals: `tt` toggle (`<A-t>`), `tv` `ts` `tf` `tT` |
-| `<leader>u` | UI toggles: `uu` Undotree, `uh` inlay hints, `uc` completion menu, `ua` Copilot server, `ue` eager/lazy Copilot, `um`/`uM` markdown |
+| `<leader>u` | UI toggles: `uu` Undotree, `uh` inlay hints, `ui` indent guides, `uc` completion menu, `ua` Copilot server, `ue` eager/lazy Copilot, `um`/`uM` markdown |
 | `<leader>v` | Splits |
 | `<leader>x` | Diagnostics & lists: `xx` Trouble, `xq` quickfix, `xl` loclist |
 
@@ -123,6 +124,9 @@ also its own `:colorscheme`, e.g. `monokai-pro-filter-spectrum-v3-no-italics`
 `lua/config/appearance.lua` always starts dark, ignoring the system and
 terminal appearance; `:ThemeToggle` (or `:themetoggle`) switches between dark
 and light.
+
+Indent guides are on by default, with a thicker line for the active scope in
+files with a Treesitter parser. Use `<leader>ui` or `:IBLToggle` to toggle the guides.
 
 ## Debugging
 
