@@ -28,6 +28,9 @@ return {
 			lsp_format = "fallback",
 		},
 		formatters = {
+			["google-java-format"] = {
+				prepend_args = { "--aosp", "--skip-reflowing-long-strings" },
+			},
 			stylua = {
 				range_args = function(self, ctx)
 					-- Conform's Visual range ends at the last included character;
