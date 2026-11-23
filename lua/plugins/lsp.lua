@@ -1,6 +1,6 @@
-local function lsp_picker(scope)
+local function lsp_picker(source)
 	return function()
-		require("mini.extra").pickers.lsp({ scope = scope })
+		require("snacks.picker")[source]()
 	end
 end
 
@@ -74,14 +74,14 @@ return {
 
 				-- Navigation keymaps (matching Zed: g d, g D, g r, g i, g t)
 				map("gd", vim.lsp.buf.definition, "Goto definition")
-				map("gr", lsp_picker("references"), "Goto references")
-				map("gI", lsp_picker("implementation"), "Goto implementation")
+				map("gr", lsp_picker("lsp_references"), "Goto references")
+				map("gI", lsp_picker("lsp_implementations"), "Goto implementation")
 				map("gD", vim.lsp.buf.declaration, "Goto declaration")
-				map("gt", lsp_picker("type_definition"), "Goto type definition")
+				map("gt", lsp_picker("lsp_type_definitions"), "Goto type definition")
 
 				-- Symbol search keymaps (matching Zed: space o)
-				map("<leader>o", lsp_picker("document_symbol"), "Document symbols (Outline)")
-				map("<leader>ss", lsp_picker("workspace_symbol_live"), "Workspace symbols")
+				map("<leader>o", lsp_picker("lsp_symbols"), "Document symbols (Outline)")
+				map("<leader>ss", lsp_picker("lsp_workspace_symbols"), "Workspace symbols")
 
 				-- Code actions
 				map("<leader>ca", vim.lsp.buf.code_action, "Code action", { "n", "x" })

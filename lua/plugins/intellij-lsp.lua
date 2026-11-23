@@ -11,7 +11,7 @@ return {
 		region = "europe",
 		data_sharing = "none",
 		progress = false,
-		single_key_select = false, -- keep Mini's vim.ui.select
+		single_key_select = false, -- keep Snacks' vim.ui.select
 
 		-- blink.cmp owns completion and the signature popup; the LspAttach
 		-- autocmd in lsp.lua already highlights references.

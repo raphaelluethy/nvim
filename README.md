@@ -18,8 +18,8 @@ not the LazyVim distribution. Requires Neovim 0.12+ and Git.
 - `:Mason` manages language servers, formatters, and debug adapters.
 
 Plugins with maintained semver releases follow the latest release
-(`version = "*"`): gitsigns, mason, mason-nvim-dap, mini.extra, mini.icons,
-mini.pick, nvim-lspconfig, and oil. FFF is pinned
+(`version = "*"`): gitsigns, mason, mason-nvim-dap, mini.icons,
+nvim-lspconfig, oil, and snacks.nvim. FFF is pinned
 to a release tag to avoid its commit-named build tags. The rest track their
 default branch because their tags are stale or missing, or because the release
 lacks something this config needs (mason-lspconfig's `tsc` mapping;
@@ -82,7 +82,7 @@ Press `<leader>` and wait for which-key (`<leader>?` shows buffer-local maps).
 | `<leader>g` | Git: `gg` Neogit, `gd` codediff, `gm` Magirev |
 | `<leader>h` | Hunks (`hp` `hs` `hr` `hb`) and `ha` Harpoon add; `<leader>e` Harpoon menu |
 | `<leader>m` | Review comments: `ma` add, `md` delete, `ml` list, `my` copy, `mc` clear; `<leader>M` merge conflicts (codediff) |
-| `<leader>s` | Search: FFF files (`sf`) and grep (`sg`, `sG`, `sw`); Mini symbols (`ss`) and other pickers |
+| `<leader>s` | Search: FFF files (`sf`) and grep (`sg`, `sG`, `sw`); Snacks symbols (`ss`) and other pickers |
 | `<leader>t` | Terminals: `tt` toggle (`<A-t>`), `tv` `ts` `tf` `tT` |
 | `<leader>u` | UI toggles: `uu` Undotree, `uh` inlay hints, `ui` indent guides, `uc` completion menu, `ua` Copilot server, `ue` eager/lazy Copilot, `um`/`uM` markdown |
 | `<leader>v` | Splits |
@@ -93,14 +93,15 @@ Press `<leader>` and wait for which-key (`<leader>?` shows buffer-local maps).
 FFF indexes the current directory on first use. Use `:FFFResume` to resume a
 file or grep search and `:FFFHealth` to check its native binary and setup.
 
-Mini handles the other pickers, Neogit selections, and `vim.ui.select`.
-`<leader>sb` lists Mini pickers and `<leader>sr` resumes the last one.
-`<leader>/` fuzzy-finds lines in the current buffer; `<leader>s/` searches
-lines across open buffers, including unsaved edits.
+Snacks (`snacks.picker`) handles the other pickers, Neogit selections, and
+`vim.ui.select`, with live syntax-highlighted previews. `<leader>sb` lists
+Snacks pickers and `<leader>sr` resumes the last one. `<leader>/` fuzzy-finds
+lines in the current buffer; `<leader>s/` greps across open buffers.
 
-Mini displays LSP results for `gr`, `gI`, `gt`, `<leader>o` (document symbols),
-and `<leader>ss` (live workspace symbols). `gd` uses native navigation: it jumps
-to a single definition and puts multiple results in quickfix.
+Snacks displays LSP results for `gr`, `gI`, `gt`, `<leader>o` (document
+symbols), and `<leader>ss` (live workspace symbols). `gd` uses native
+navigation: it jumps to a single definition and puts multiple results in
+quickfix.
 
 ## Markdown
 

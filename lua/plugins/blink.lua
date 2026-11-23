@@ -92,7 +92,7 @@ return {
 						{ "kind_icon", "label", "label_description", gap = 1 },
 						{ "kind" },
 					},
-					-- Icons and colors from mini.icons, matching oil and the Mini pickers.
+					-- Icons and colors from mini.icons, matching oil and the Snacks picker.
 					-- Path completions get file/directory icons instead of the kind.
 					components = {
 						kind_icon = {

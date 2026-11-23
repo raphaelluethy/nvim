@@ -2,11 +2,11 @@ return {
 	"NeogitOrg/neogit",
 	dependencies = {
 		"nvim-lua/plenary.nvim",
-		"nvim-mini/mini.extra", -- also loads mini.pick
+		"folke/snacks.nvim",
 	},
 	opts = {
 		integrations = {
-			mini_pick = true,
+			snacks = true,
 		},
 	},
 	keys = {

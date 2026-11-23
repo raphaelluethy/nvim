@@ -40,14 +40,14 @@ end
 lsp.util.buf_clear_references = function(buf)
 	cleared[buf] = (cleared[buf] or 0) + 1
 end
-package.preload["mini.extra"] = function()
-	return {
-		pickers = {
-			lsp = function(opts)
-				picked = opts.scope
-			end,
-		},
-	}
+package.preload["snacks.picker"] = function()
+	return setmetatable({}, {
+		__index = function(_, source)
+			return function()
+				picked = source
+			end
+		end,
+	})
 end
 
 require("plugins.lsp").config()
@@ -86,20 +86,20 @@ attach(buf, 1, true)
 attach(buf, 2, true)
 attach(buf, 3, false)
 attach(other, 4, true)
-assert(not package.loaded["mini.extra"], "LSP attach should not load Mini")
+assert(not package.loaded["snacks.picker"], "LSP attach should not load Snacks picker")
 vim.fn.maparg("gd", "n", false, true).callback()
-assert(jumped and not package.loaded["mini.extra"], "gd should use native navigation without loading Mini")
-local scopes = {
-	gr = "references",
-	gI = "implementation",
-	gt = "type_definition",
-	["<leader>o"] = "document_symbol",
-	["<leader>ss"] = "workspace_symbol_live",
+assert(jumped and not package.loaded["snacks.picker"], "gd should use native navigation without loading Snacks picker")
+local sources = {
+	gr = "lsp_references",
+	gI = "lsp_implementations",
+	gt = "lsp_type_definitions",
+	["<leader>o"] = "lsp_symbols",
+	["<leader>ss"] = "lsp_workspace_symbols",
 }
-for key, scope in pairs(scopes) do
+for key, source in pairs(sources) do
 	picked = nil
 	vim.fn.maparg(key, "n", false, true).callback()
-	assert(picked == scope, key .. " should dispatch to the Mini " .. scope .. " picker")
+	assert(picked == source, key .. " should dispatch to the Snacks " .. source .. " picker")
 end
 
 event("CursorHold", buf)

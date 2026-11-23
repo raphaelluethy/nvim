@@ -8,6 +8,7 @@ return {
 		require("fff.download").download_or_build_binary()
 	end,
 	opts = {
+		prompt = " ",
 		lazy_sync = true,
 		preview = { max_size = 1024 * 1024 },
 		-- Keep live grep regex-first, like ripgrep. Cycle modes with <S-Tab>.
