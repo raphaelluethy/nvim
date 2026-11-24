@@ -126,7 +126,7 @@ also its own `:colorscheme`, e.g. `monokai-pro-filter-spectrum-v3-no-italics`
 terminal appearance; `:ThemeToggle` (or `:themetoggle`) switches between dark
 and light.
 
-Indent guides are on by default, with a thicker line for the active scope in
+Indent guides are on by default, highlighting the active scope in
 files with a Treesitter parser. Use `<leader>ui` or `:IBLToggle` to toggle the guides.
 
 ## Debugging

@@ -8,9 +8,9 @@ return {
 	},
 	opts = {
 		indent = { char = "│" },
-		-- Like Zed, draw a thicker active guide without horizontal caps.
+		-- Highlight the active scope without horizontal caps.
 		scope = {
-			char = "┃",
+			char = "│",
 			highlight = "CursorLineNr",
 			show_start = false,
 			show_end = false,
