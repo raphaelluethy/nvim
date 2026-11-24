@@ -93,11 +93,26 @@ vim.opt.colorcolumn = "120"
 
 vim.opt.laststatus = 3
 
--- No empty cmdline row below the statusline: the cmdline only appears while
--- typing. ui2 (experimental in 0.12) shows messages in a floating window
--- instead of the hidden cmdline, without hit-enter prompts; g< opens them.
-vim.opt.cmdheight = 0
-require("vim._core.ui2").enable({ msg = { targets = "msg" } })
+-- Keep the default 1-line cmdline for routine messages (bufwrite, undo, yank,
+-- ...) so they stay single-line and never overlap code; ui2 still shows
+-- errors, warnings, notifications (echomsg) and progress as toasts, and g<
+-- opens message history without hit-enter prompts.
+vim.opt.cmdheight = 1
+require("vim._core.ui2").enable({
+	msg = {
+		targets = {
+			default = "cmd",
+			emsg = "msg",
+			echoerr = "msg",
+			lua_error = "msg",
+			rpc_error = "msg",
+			shell_err = "msg",
+			wmsg = "msg",
+			echomsg = "msg",
+			progress = "msg",
+		},
+	},
+})
 
 vim.opt.termguicolors = true
 
