@@ -1,118 +1,135 @@
--- [[ Basic Keymaps ]]
---  See `:help vim.keymap.set()`
+-- Keymaps follow Zed (~/.config/zed/keymap.json), the source of truth for the
+-- leader layout; ~/.ideavimrc mirrors it. Loaded on VeryLazy, after LazyVim's
+-- own keymaps. Plugin-owned keys are remapped in lua/plugins/keymaps.lua.
+require("config.rex").setup()
 
--- Clear highlights on search when pressing <Esc> in normal mode
---  See `:help hlsearch`
-vim.keymap.set("n", "<Esc>", "<cmd>nohlsearch<CR>")
+local map = vim.keymap.set
 
-vim.keymap.set("n", "gh", vim.diagnostic.open_float, {
-	desc = "Show diagnostic error messages",
-})
-
--- Diagnostic keymaps (matching Zed: ] d, [ d, space t n/p)
-local function diagnostic_float(diagnostic, bufnr)
-	if diagnostic then
-		vim.diagnostic.open_float(bufnr, { scope = "cursor", focus = false })
-	end
+-- LazyVim keys under prefixes that are single keys here (␣w save, ␣f format, ␣q close).
+for _, lhs in ipairs({ "<leader>wd", "<leader>wm", "<leader>fn", "<leader>ft", "<leader>fT", "<leader>qq" }) do
+  pcall(vim.keymap.del, "n", lhs)
 end
 
-local function next_diagnostic()
-	vim.diagnostic.jump({ count = 1, on_jump = diagnostic_float })
+map("n", "<leader>w", "<cmd>write<cr>", { desc = "Save" })
+map({ "n", "x" }, "<leader>f", function()
+  LazyVim.format({ force = true })
+end, { desc = "Format buffer/selection" })
+map("n", "<leader>q", function()
+  Snacks.bufdelete()
+end, { desc = "Close buffer" })
+map("n", "<leader>Qq", "<cmd>qa<cr>", { desc = "Quit all" })
+
+-- Diagnostics float (LazyVim also has it on ␣cd)
+map("n", "gh", vim.diagnostic.open_float, { desc = "Line diagnostics" })
+
+-- Move selected lines
+map("x", "J", ":m '>+1<cr>gv=gv", { desc = "Move lines down", silent = true })
+map("x", "K", ":m '<-2<cr>gv=gv", { desc = "Move lines up", silent = true })
+
+-- Expand / shrink selection by syntax node (Zed: v / V in visual mode)
+map("x", "v", "an", { desc = "Expand selection", remap = true })
+map("x", "V", "in", { desc = "Shrink selection", remap = true })
+
+-- Jump anywhere on screen (Zed: helix jump, IdeaVim: easymotion)
+map({ "n", "x" }, "gw", function()
+  require("flash").jump()
+end, { desc = "Jump to word" })
+
+-- Code (global, so it works even when the LSP keymap is not attached)
+map({ "n", "x" }, "<leader>ca", vim.lsp.buf.code_action, { desc = "Code action" })
+map({ "n", "x" }, "g.", vim.lsp.buf.code_action, { desc = "Code action" })
+map("n", "cd", vim.lsp.buf.rename, { desc = "Rename symbol" })
+
+-- r: refactorings (IntelliJ names; LSP code actions filtered by kind)
+local function refactor(kind)
+  return function()
+    vim.lsp.buf.code_action({ context = { only = { kind }, diagnostics = {} } })
+  end
 end
+map({ "n", "x" }, "<leader>rr", refactor("refactor"), { desc = "Refactor menu" })
+map({ "n", "x" }, "<leader>rm", refactor("refactor.extract.function"), { desc = "Extract method" })
+map({ "n", "x" }, "<leader>rv", refactor("refactor.extract.variable"), { desc = "Extract variable" })
+map({ "n", "x" }, "<leader>rf", refactor("refactor.extract.field"), { desc = "Extract field" })
+map("n", "<leader>ri", refactor("refactor.inline"), { desc = "Inline" })
 
-local function prev_diagnostic()
-	vim.diagnostic.jump({ count = -1, on_jump = diagnostic_float })
+-- v: splits
+map("n", "<leader>vv", "<cmd>vsplit<cr>", { desc = "Split right" })
+map("n", "<leader>vl", "<cmd>aboveleft vsplit<cr>", { desc = "Split left" })
+map("n", "<leader>vs", "<cmd>split<cr>", { desc = "Split down" })
+map("n", "<leader>vu", "<cmd>aboveleft split<cr>", { desc = "Split up" })
+map("n", "<leader>vc", "<cmd>close<cr>", { desc = "Close split" })
+map("n", "<leader>vo", "<cmd>only<cr>", { desc = "Close other splits" })
+
+-- t: terminal (tests live on ␣T)
+local function term_toggle()
+  Snacks.terminal(nil, { cwd = LazyVim.root() })
 end
+map("n", "<leader>tt", term_toggle, { desc = "Toggle terminal" })
+map({ "n", "t" }, "<A-t>", term_toggle, { desc = "Toggle terminal" })
+map("n", "<leader>tf", function()
+  Snacks.terminal.open(nil, { cwd = LazyVim.root(), win = { position = "float" } })
+end, { desc = "New terminal (float)" })
+map("n", "<leader>tT", function()
+  Snacks.terminal.open(nil, { cwd = LazyVim.root() })
+end, { desc = "New terminal" })
 
-vim.keymap.set("n", "]d", next_diagnostic, { desc = "Next diagnostic" })
-vim.keymap.set("n", "[d", prev_diagnostic, { desc = "Prev diagnostic" })
-
--- <leader>u: UI toggles (also <leader>uh inlay hints in lsp.lua, um/uM markvim).
-vim.keymap.set("n", "<leader>uu", function()
-	vim.cmd("packadd nvim.undotree")
-	vim.cmd("Undotree")
-end, { desc = "Toggle Undotree" })
-
-vim.keymap.set("t", "<Esc><Esc>", "<C-\\><C-n>", {
-	desc = "Exit terminal mode",
-})
-
--- Terminals (panels.nvim): Rex panes / tabs or Neovim splits / tabs per the
--- "terminal" switch in lua/plugins/panels.lua. Also :Panels term [where] [cmd].
-local function term(opts)
-	return function()
-		require("panels").term(opts)
-	end
+-- Multi-cursor (native, :h multicursor), as in Zed / IdeaVim:
+-- gl adds a cursor and jumps to the next match, ga puts a cursor on every match.
+-- Match = word under cursor, or the selection in Visual mode. Then edit (ciw, A, …);
+-- <C-l> clears the cursors.
+local mc_ns = vim.api.nvim_create_namespace("nvim.multicursor")
+local function mc_pattern()
+  if vim.v.cascading then
+    return -- replayed at an extra cursor: only the primary cursor adds cursors
+  end
+  local mode = vim.fn.mode()
+  local pat
+  if mode:match("[vV\22]") then
+    local text = vim.fn.getregion(vim.fn.getpos("v"), vim.fn.getpos("."), { type = mode })
+    vim.cmd("normal! \27")
+    pat = "\\V" .. vim.fn.escape(table.concat(text, "\n"), "\\"):gsub("\n", "\\n")
+  else
+    pat = "\\V\\<" .. vim.fn.escape(vim.fn.expand("<cword>"), "\\") .. "\\>"
+  end
+  vim.fn.setreg("/", pat)
+  vim.o.hlsearch = true
+  return pat
 end
--- One toggled terminal at the bottom (alt-t, like Zed). All terminals: <leader>t.
-vim.keymap.set("n", "<A-t>", term({ id = "term:main", where = "split" }), { desc = "Toggle terminal" })
-vim.keymap.set("n", "<leader>tt", term({ id = "term:main", where = "split" }), { desc = "Toggle terminal" })
-vim.keymap.set("t", "<A-t>", "<C-\\><C-n>", { desc = "Exit terminal" })
--- New terminals, like :vsplit | terminal etc.
-vim.keymap.set("n", "<leader>tv", term({ where = "vsplit" }), { desc = "Terminal: vertical split" })
-vim.keymap.set("n", "<leader>ts", term({ where = "split" }), { desc = "Terminal: horizontal split" })
-vim.keymap.set("n", "<leader>tT", term({ where = "tab" }), { desc = "Terminal: tab" })
-vim.keymap.set("n", "<leader>tf", term({ where = "float" }), { desc = "Terminal: float" })
-
--- Window navigation: also into/out of floating panels, and at Neovim's edge
--- on into the neighbouring Rex pane (panels.nvim). Terminal mode too, so
--- terminals are left the same way.
-for key, name in pairs({ h = "left", j = "lower", k = "upper", l = "right" }) do
-	vim.keymap.set({ "n", "t" }, "<C-" .. key .. ">", function()
-		require("panels").navigate(key)
-	end, { desc = "Move focus to the " .. name .. " window" })
+local function mc_add_here()
+  local pos = vim.api.nvim_win_get_cursor(0)
+  vim.api.nvim_buf_set_extmark(0, mc_ns, pos[1] - 1, pos[2], {})
 end
+map({ "n", "x" }, "gl", function()
+  local pat = mc_pattern()
+  if not pat then
+    return
+  end
+  vim.fn.search(pat, "bc")
+  mc_add_here()
+  vim.fn.search(pat, "w")
+end, { desc = "Add cursor, go to next match" })
+map({ "n", "x" }, "ga", function()
+  local pat = mc_pattern()
+  if not pat then
+    return
+  end
+  vim.fn.search(pat, "bc")
+  local cur = vim.api.nvim_win_get_cursor(0)
+  for _, m in ipairs(vim.fn.matchbufline("%", pat, 1, "$")) do
+    if not (m.lnum == cur[1] and m.byteidx == cur[2]) then
+      vim.api.nvim_buf_set_extmark(0, mc_ns, m.lnum - 1, m.byteidx, {})
+    end
+  end
+end, { desc = "Cursor on every match" })
+-- <C-l> (native clear) is window / Rex navigation here, so normal-mode <Esc> clears
+-- the cursors too (besides LazyVim's hlsearch / snippet clearing).
+map("n", "<Esc>", function()
+  vim.api.nvim_buf_clear_namespace(0, mc_ns, 0, -1)
+  vim.cmd("nohlsearch")
+  LazyVim.cmp.actions.snippet_stop()
+  return "<Esc>"
+end, { expr = true, desc = "Clear hlsearch / multicursors" })
 
--- Save from normal, insert, visual and select mode; format is <A-f> (conform.lua).
--- Not in terminal mode, where terminal programs use <C-s> themselves.
-vim.keymap.set({ "n", "i", "x", "s" }, "<C-s>", "<Cmd>write<CR>", { desc = "Save buffer" })
-vim.keymap.set("n", "<leader>w", "<Cmd>write<CR>", { desc = "Save buffer" })
-
--- Splits: <leader>v (<leader>s is search, <leader>w is write)
-vim.keymap.set("n", "<leader>vv", "<CMD>vsplit<CR>", { desc = "Split right" })
-vim.keymap.set("n", "<leader>vl", "<CMD>aboveleft vsplit<CR>", { desc = "Split left" })
-vim.keymap.set("n", "<leader>vs", "<CMD>split<CR>", { desc = "Split down" })
-vim.keymap.set("n", "<leader>vu", "<CMD>aboveleft split<CR>", { desc = "Split up" })
-vim.keymap.set("n", "<leader>vc", "<CMD>close<CR>", { desc = "Close split" })
-vim.keymap.set("n", "<leader>vo", "<CMD>only<CR>", { desc = "Close other splits" })
-
--- Diagnostics & lists: <leader>x (Trouble is <leader>xx in trouble.lua)
-vim.keymap.set("n", "]q", "<CMD>cnext<CR>", { desc = "Next quickfix entry" })
-vim.keymap.set("n", "[q", "<CMD>cprev<CR>", { desc = "Previous quickfix entry" })
-vim.keymap.set("n", "<leader>xq", function()
-	local open = vim.fn.getqflist({ winid = 0 }).winid ~= 0
-	vim.cmd(open and "cclose" or "copen")
-end, { desc = "Toggle quickfix list" })
-vim.keymap.set("n", "<leader>xl", function()
-	local open = vim.fn.getloclist(0, { winid = 0 }).winid ~= 0
-	vim.cmd(open and "lclose" or "lopen")
-end, { desc = "Toggle location list" })
-
--- move lines
-vim.keymap.set("v", "J", ":m '>+1<CR>gv=gv", {
-	desc = "Move line down",
-})
-vim.keymap.set("v", "K", ":m '<-2<CR>gv=gv", {
-	desc = "Move line up",
-})
-
--- reselect after indent
-vim.keymap.set("v", "<", "<gv", {
-	desc = "Reselect after indent",
-})
-vim.keymap.set("v", ">", ">gv", {
-	desc = "Reselect after indent",
-})
-
--- Redirect change operations to the blackhole to avoid spoiling 'y' register content
--- Shortcut to use blackhole register by default
-vim.keymap.set("v", "c", '"_c')
-vim.keymap.set("v", "C", '"_C')
-vim.keymap.set("n", "c", '"_c')
-vim.keymap.set("n", "C", '"_C')
-
--- Remove defaults in favor of the LSP mappings in lua/plugins/lsp.lua. All gr*
--- defaults go, or `gr` (references) waits for a second key.
-for _, lhs in ipairs({ "grr", "gra", "grn", "gri", "grt", "grx" }) do
-	pcall(vim.keymap.del, { "n", "x" }, lhs)
-end
+-- z: folds
+map("n", "<leader>zc", "zM", { desc = "Fold all" })
+map("n", "<leader>zo", "zR", { desc = "Unfold all" })
