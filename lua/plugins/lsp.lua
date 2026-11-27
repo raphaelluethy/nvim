@@ -38,6 +38,21 @@ return {
         cssls = {},
         emmet_language_server = {},
         html = {},
+        copilot = {
+          on_init = function(client)
+            client.server_capabilities.completionProvider = nil
+          end,
+          root_dir = function(bufnr, on_dir)
+            if vim.bo[bufnr].buftype ~= "" then
+              return
+            end
+            local name = vim.fs.basename(vim.api.nvim_buf_get_name(bufnr))
+            if name == "" or name:match("^%.env") or name:match("%.pem$") or name:match("%.key$") then
+              return
+            end
+            on_dir(vim.fs.root(bufnr, ".git") or vim.fn.getcwd())
+          end,
+        },
       },
     },
   },

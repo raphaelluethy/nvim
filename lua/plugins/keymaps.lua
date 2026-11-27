@@ -83,11 +83,20 @@ return {
       {
         "<M-Tab>",
         function()
-          return LazyVim.cmp.map({ "ai_nes" }, "<M-Tab>")()
+          LazyVim.cmp.map({ "ai_nes" })()
         end,
         mode = { "n" },
-        expr = true,
         desc = "Next edit suggestion",
+      },
+      {
+        "<M-Tab>",
+        function()
+          if LazyVim.cmp.map({ "ai_nes", "ai_accept" })() then
+            vim.cmd("let &undolevels = &undolevels")
+          end
+        end,
+        mode = { "i" },
+        desc = "Accept inline suggestion",
       },
     }),
   },
@@ -96,16 +105,21 @@ return {
   {
     "saghen/blink.cmp",
     opts = {
+      completion = {
+        list = {
+          selection = { auto_insert = false },
+        },
+      },
       keymap = {
         ["<Tab>"] = { "snippet_forward", "fallback" },
         ["<M-Tab>"] = {
           function(cmp)
             if LazyVim.cmp.map({ "ai_nes", "ai_accept" })() then
+              vim.cmd("let &undolevels = &undolevels")
               cmp.hide()
-              return true
             end
+            return true
           end,
-          "fallback",
         },
       },
     },
