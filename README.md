@@ -1,218 +1,256 @@
 # Neovim Configuration
 
-Custom configuration using [lazy.nvim](https://github.com/folke/lazy.nvim),
-not the LazyVim distribution. Requires Neovim 0.12+ and Git.
+Personal Neovim configuration built on [LazyVim](https://www.lazyvim.org/), with
+keymaps aligned to a shared Zed / IdeaVim leader layout, native GitHub Copilot
+inline completions + Sidekick Next Edit Suggestions (NES), `nvim-dap-view`
+debugging, `oil.nvim`, and language tooling for Rust, Go, TypeScript, Python,
+C/C++, Java/Kotlin, Typst, and web stacks.
 
-## Plugins
+## Requirements
 
-`lua/config/lazy.lua` bootstraps lazy.nvim and imports `lua/plugins/`.
-`lazy-lock.json` is the only plugin lockfile.
+- **Neovim >= 0.12** (native `vim.lsp.inline_completion`; Neovim nightly / 0.13+
+  for native multi-cursor support on `gl` / `ga`)
+- **Git** and a **Nerd Font**
+- **CLI tools:** `ripgrep`, `fd`, `tree-sitter` CLI, and Node.js (for
+  `copilot-language-server` and web/TS servers)
+- **Terminal key forwarding:** your terminal should forward `Option+Tab` as
+  `<M-Tab>` (`<A-Tab>`), `Option+[` / `Option+]` as `<M-[>` / `<M-]>`, and
+  `Option+t` as `<A-t>`
 
-- `:Lazy` opens the plugin manager.
-- `:Lazy install` installs missing plugins without updating existing ones.
-- `:Lazy check` checks for plugin updates; `:Lazy update` applies them and updates
-  `lazy-lock.json`.
-- `:Lazy restore` restores plugin revisions from the lockfile.
-- `:TSUpdate` updates installed Treesitter parsers. Requires the `tree-sitter`
-  CLI >= 0.26.1 (`brew install tree-sitter-cli` on macOS).
-- `:Mason` manages language servers, formatters, and debug adapters.
+## Installation
 
-Plugins with maintained semver releases follow the latest release
-(`version = "*"`): gitsigns, mason, mason-nvim-dap, mini.icons,
-nvim-lspconfig, oil, and snacks.nvim. FFF is pinned
-to a release tag to avoid its commit-named build tags. The rest track their
-default branch because their tags are stale or missing, or because the release
-lacks something this config needs (mason-lspconfig's `tsc` mapping;
-trouble.nvim's Neovim 0.12 decoration-provider fix). nvim-treesitter must stay
-on `main`. blink.cmp stays on the latest 1.x release (`version = "1.*"`),
-and indent-blankline.nvim stays on 3.x (`version = "3.*"`).
-Exact installed revisions are pinned in `lazy-lock.json`.
+1. Back up any existing Neovim config:
 
-On macOS, update Neovim with `brew update` followed by `brew upgrade neovim`.
-Restart Neovim after updating it or its plugins.
+   ```sh
+   mv ~/.config/nvim ~/.config/nvim.bak
+   ```
 
-## Language servers
+2. Clone this repository:
 
-`lua/config/servers.lua` lists the language servers and tools. Mason
-(`lua/plugins/mason.lua`, loaded after startup) installs them;
-`lua/plugins/lsp.lua` enables exactly that list with `vim.lsp.enable()`, so
-servers Mason happens to have installed but that are not listed stay off.
-Per-server settings live in `lua/plugins/lsp.lua`; per-project overrides go
-in a `.nvim.lua` next to the project (`'exrc'`, confirmed once with `:trust`),
-e.g. `vim.lsp.config("gopls", { settings = { ... } })`.
+   ```sh
+   git clone https://github.com/raphaelluethy/nvim.git ~/.config/nvim
+   ```
 
-`<leader>w` saves in normal mode. `<leader>f` (also `<leader>cf`) formats the
-buffer in normal mode or just the selection in characterwise/linewise Visual
-mode. `<C-s>` saves and `<A-f>` formats in normal, insert, visual and select
-mode. Saving also formats (conform's `format_after_save`). Workspace symbols
-are `<leader>ss`; insert-mode signature help comes from blink.cmp.
+3. Start Neovim (`nvim`). `lazy.nvim` will bootstrap itself and install plugins
+   from `lazy-lock.json`, and Mason will install configured language servers,
+   formatters, and debug adapters.
 
-### Completion
+4. Sign in to GitHub Copilot once (optional):
 
-blink.cmp shows LSP, path, snippet and buffer items in its menu (`<leader>uc`
-toggles it). Copilot suggestions appear only as inline ghost text. `<leader>ua`
-starts or stops the Copilot server itself without affecting the completion
-menu or other LSP servers. Both start enabled; the toggles apply only to the
-current Neovim session. Telemetry is off and next edit suggestions are not
-enabled. Sign in once with `:LspCopilotSignIn`.
+   ```vim
+   :LspCopilotSignIn
+   ```
 
-`<leader>ue` toggles how you accept Copilot suggestions for the current session:
+### Adapting to your own machine
 
-- **Eager (default):** Tab accepts Copilot ghost text when it isn't jumping
-  through a snippet. Without a suggestion, Tab behaves normally. Option+Tab
-  only accepts menu items.
-- **Lazy:** Option+Tab accepts the selected menu item, then Copilot ghost
-  text if nothing is selected, then the first menu item.
+A few files reference private repos or local binaries and should be edited or
+removed if you are setting this up yourself:
 
-Ghost text appears in both modes, and Copilot acceptance works even with the
-Blink menu off. Enter inserts a newline. The terminal must forward Option+Tab
-as Meta+Tab (`<M-Tab>`, aka `<A-Tab>`).
+- **Colorscheme (`lua/plugins/colorscheme.lua`):** uses the private SSH repo
+  `raphaelluethy/monokai-pro-zed`. Without access, switch `colorscheme` to
+  `"tokyonight"` or `"catppuccin"` (both are already included by LazyVim) and
+  remove the `monokai-pro-zed` spec.
+- **Markdown renderer (`lua/plugins/markvim.lua`):** points to a local checkout
+  at `~/Documents/projects/private/markvim`. Delete this file if you don't have
+  it.
+- **Go LSP (`lua/plugins/lsp.lua`):** disables `gopls` in favor of a local
+  `~/.config/zed-goland/bin/zed-goland` binary. Remove the `gopls` and `goland`
+  entries to use standard `gopls` from LazyVim's `lang.go` extra.
+- **Java / Kotlin (`lua/plugins/intellij-lsp.lua`):** uses JetBrains'
+  `intellij-lsp.nvim` (EU region, data sharing off). Remove if you don't use it.
+- **Rex pane navigation (`lua/config/rex.lua`, `lua/plugins/rex.lua`):**
+  crosses from Neovim splits into neighbouring Rex terminal panes on
+  `<C-h/j/k/l>`. Outside Rex it falls back cleanly to normal Neovim window
+  navigation, so no change is needed.
 
-Folds come from tree-sitter (`foldexpr`), open by default (`foldlevel=99`).
-Diagnostics show inline text on the cursor line only; `gh` opens the float.
+## Repository Structure
+
+```text
+init.lua                   Entry point (loads config.lazy)
+lazy-lock.json             Pinned plugin revisions
+lua/
+  config/
+    lazy.lua               lazy.nvim bootstrap and LazyVim extras list
+    options.lua            Editor options and LazyVim globals (ty, tsc, ai_cmp=false)
+    keymaps.lua            Core keymaps (Zed / IdeaVim layout, multicursor, folds, splits)
+    autocmds.lua           :ThemeToggle command and light-theme diff contrast boost
+    rex.lua                <C-h/j/k/l> navigation across Neovim windows and Rex panes
+  plugins/
+    colorscheme.lua        monokai-pro-zed (dark/light variants)
+    dap.lua                nvim-dap + nvim-dap-view (replaces nvim-dap-ui)
+    intellij-lsp.lua       JetBrains LSP & debugger for Java/Kotlin
+    keymaps.lua            Plugin keymap overrides (Snacks, Blink, Sidekick, Gitsigns, LSP, which-key)
+    lsp.lua                goland, web LSPs, Copilot guardrails, Java/Kotlin Treesitter & Conform
+    markvim.lua            Local Markdown renderer (live/preview/split modes)
+    neotest.lua            neotest-vitest adapter
+    oil.lua                oil.nvim as default directory explorer (-)
+    rex.lua                Rex navigation inside Snacks terminals
+    sidekick.lua           Sidekick AI CLI tool list and Agent Panel toggle
+    snacks.lua             Snacks overrides (smooth scrolling disabled)
+    ui.lua                 Noice LSP doc borders and mini progress height cap
+```
+
+## Included LazyVim Extras & Tooling
+
+Configured in `lua/config/lazy.lua`:
+
+- **AI:** `ai.copilot-native`, `ai.sidekick`
+- **Debugging & Testing:** `dap.core`, `test.core` (plus `neotest-vitest`)
+- **Languages:**
+  - Rust (`lang.rust` / `rustaceanvim`)
+  - Go (`lang.go`, overridden to `goland` in `lua/plugins/lsp.lua`)
+  - TypeScript / JavaScript (`lang.typescript` with `tsc`, `lang.typescript.oxc`)
+  - Python (`lang.python` with `ty`)
+  - C / C++ (`lang.clangd`)
+  - Java / Kotlin (`intellij-lsp.nvim`, `google-java-format` AOSP style, `ktfmt`)
+  - Web & docs (`lang.tailwind`, `lang.json`, `lang.typst`, `cssls`, `html`, `emmet_language_server`)
+
+Project-local overrides are supported via `'exrc'` (`.nvim.lua` in a project
+root, confirmed once with `:trust`).
+
+## Completions & AI
+
+### Regular completions (`blink.cmp`)
+
+- Provides LSP, path, snippet, and buffer completions in the popup menu.
+- `vim.g.ai_cmp = false` disables Blink's own ghost text so it never overlaps
+  Copilot's inline suggestions.
+- `auto_insert = false` keeps `<C-n>`/`<C-p>` menu browsing from mutating the
+  buffer; `<CR>` or `<C-y>` accepts the selected item.
+- `<Tab>` jumps forward through snippets or indents normally.
+
+### GitHub Copilot & Sidekick NES
+
+- **Insert mode (inline ghost text):** powered by Neovim's native
+  `vim.lsp.inline_completion` via `copilot-language-server`. Copilot never
+  appears in Blink's menu, skips unnamed/special buffers and secrets
+  (`.env*`, `*.pem`, `*.key`), and has telemetry disabled.
+- **Normal mode (Next Edit Suggestions):** `sidekick.nvim` predicts follow-up
+  edits across the file after you leave Insert mode or make a Normal-mode edit,
+  rendering them as inline diffs + gutter signs.
+- **Accepting & cycling:**
+  - `<M-Tab>` in Insert mode accepts Copilot ghost text (with an undo break so
+    `<Esc>u` reverts only the accepted completion) and hides the Blink menu.
+  - `<M-Tab>` in Normal mode jumps to the next Sidekick NES edit, then applies
+    it on the second press and chains to the next suggestion.
+  - `<M-]>` / `<M-[>` cycle through alternative Copilot inline suggestions.
+  - `<Esc>` dismisses active NES suggestions; `<leader>uN` toggles NES.
+
+### Sidekick AI CLIs
+
+`lua/plugins/sidekick.lua` restricts Sidekick's CLI launcher to:
+`claude`, `codex`, `copilot`, `pi`, `agy`, and `devin`.
+
+## Keybindings
+
+Leader is `<Space>`. Press `<Space>` and pause to inspect all groups via
+`which-key` (`<leader>?` shows buffer-local maps).
 
 ### Leader groups
 
-Press `<leader>` and wait for which-key (`<leader>?` shows buffer-local maps).
-
 | Prefix | Group |
 | --- | --- |
-| `<leader>c` | Code: `ca` action, `cf` format, `cr` rename |
-| `<leader>d` | Debug (also `<F5>`, `<F10>`–`<F12>`) |
-| `<leader>g` | Git: `gg` Neogit, `gd` codediff, `gm` Magirev |
-| `<leader>h` | Hunks (`hp` `hs` `hr` `hb`) and `ha` Harpoon add; `<leader>e` Harpoon menu |
-| `<leader>m` | Review comments: `ma` add, `md` delete, `ml` list, `my` copy, `mc` clear; `<leader>M` merge conflicts (codediff) |
-| `<leader>s` | Search: FFF files (`sf`) and grep (`sg`, `sG`, `sw`); Snacks symbols (`ss`) and other pickers |
-| `<leader>t` | Terminals: `tt` toggle (`<A-t>`), `tv` `ts` `tf` `tT` |
-| `<leader>u` | UI toggles: `uu` Undotree, `uh` inlay hints, `ui` indent guides, `uc` completion menu, `ua` Copilot server, `ue` eager/lazy Copilot, `um`/`uM` markdown |
+| `<leader><space>` | Open buffers (Snacks picker) |
+| `<leader>a` | AI (Sidekick CLIs & Agent Panel) |
+| `<leader>c` | Code actions, format, LSP |
+| `<leader>d` | Debug (DAP / `nvim-dap-view` / IntelliJ) |
+| `<leader>e` / `<leader>E` | File explorer (Snacks) |
+| `<leader>f` | Format buffer or visual selection |
+| `<leader>g` | Git (`<leader>gm` git status) |
+| `<leader>h` | Git hunks (Gitsigns) |
+| `<leader>o` | Document symbols outline |
+| `<leader>q` | Close buffer |
+| `<leader>Q` | Sessions & quit (`<leader>Qq` quit all) |
+| `<leader>r` | Refactorings (extract / inline) |
+| `<leader>s` | Search & finders (`sf` files, `sg` grep, `ss` workspace symbols, `s.` recent) |
+| `<leader>t` | Terminals |
+| `<leader>T` | Tests (Neotest) |
+| `<leader>u` | UI toggles (`uN` NES, `um`/`uM` Markdown, `un` dismiss notifications, etc.) |
 | `<leader>v` | Splits |
-| `<leader>x` | Diagnostics & lists: `xx` Trouble, `xq` quickfix, `xl` loclist |
+| `<leader>w` | Save buffer |
+| `<leader>x` | Diagnostics & Trouble |
+| `<leader>z` | Folds (`zc` fold all, `zo` unfold all) |
 
-### Pickers
+### Navigation, editing & code
 
-FFF indexes the current directory on first use. Use `:FFFResume` to resume a
-file or grep search and `:FFFHealth` to check its native binary and setup.
+| Key | Mode | Action |
+| --- | --- | --- |
+| `<C-h/j/k/l>` | `n`, `t` | Move focus across Neovim splits and Rex panes |
+| `-` | `n` | Open parent directory in `oil.nvim` |
+| `gw` | `n`, `x` | Jump to word (`flash.nvim`) |
+| `v` / `V` | `x` | Expand / shrink syntax selection |
+| `J` / `K` | `x` | Move selected lines down / up |
+| `gl` | `n`, `x` | Add multi-cursor and jump to next match |
+| `ga` | `n`, `x` | Put a multi-cursor on every match in buffer |
+| `<Esc>` | `n` | Clear search highlight, multi-cursors, and snippet session |
+| `gh` | `n` | Open line diagnostics float |
+| `g.` / `<leader>ca` | `n`, `x` | Code action |
+| `cd` | `n` | Rename symbol |
+| `<leader>rr` | `n`, `x` | Refactor menu |
+| `<leader>rm` / `rv` / `rf` | `n`, `x` | Extract method / variable / field |
+| `<leader>ri` | `n` | Inline symbol |
+| `<leader>o` | `n` | Document symbols outline |
+| `<leader>ss` | `n` | Workspace symbols |
 
-Snacks (`snacks.picker`) handles the other pickers, Neogit selections, and
-`vim.ui.select`, with live syntax-highlighted previews. `<leader>sb` lists
-Snacks pickers and `<leader>sr` resumes the last one. `<leader>/` fuzzy-finds
-lines in the current buffer; `<leader>s/` greps across open buffers.
+### Splits & terminals
 
-Snacks displays LSP results for `gr`, `gI`, `gt`, `<leader>o` (document
-symbols), and `<leader>ss` (live workspace symbols). `gd` uses native
-navigation: it jumps to a single definition and puts multiple results in
-quickfix.
+| Key | Mode | Action |
+| --- | --- | --- |
+| `<leader>vv` / `vl` | `n` | Vertical split right / left |
+| `<leader>vs` / `vu` | `n` | Horizontal split down / up |
+| `<leader>vc` / `vo` | `n` | Close split / close other splits |
+| `<A-t>` / `<leader>tt` | `n`, `t` | Toggle terminal |
+| `<leader>tf` / `tT` | `n` | New floating / split terminal |
 
-## Markdown
+### AI & completions
 
-`lua/plugins/markvim.lua` loads the local markvim plugin
-(`~/Documents/projects/private/markvim`) for markdown files and LSP hover
-floats. Files open in live mode (only the cursor line is raw); `<leader>um`
-toggles rendering and `<leader>uM` cycles live, preview and split mode.
-Diagrams need a backend: `:Markvim install node` for mermaid/pele,
-`:checkhealth markvim` lists what is available.
+| Key | Mode | Action |
+| --- | --- | --- |
+| `<M-Tab>` | `i` | Accept Copilot inline completion (or NES) |
+| `<M-Tab>` | `n` | Jump to / apply Sidekick Next Edit Suggestion |
+| `<M-]>` / `<M-[>` | `i`, `n` | Next / previous Copilot inline suggestion |
+| `<leader>ab` | `n` | Toggle Sidekick Agent Panel |
+| `<leader>ac` | `n` | Toggle Sidekick CLI |
+| `<leader>aj` | `n` | Select Sidekick CLI session |
+| `<leader>as` | `n`, `x` | Send context / selection to Sidekick |
+| `<leader>af` | `n` | Send current file to Sidekick |
+| `<leader>ap` | `n`, `x` | Select Sidekick prompt |
+| `<leader>ad` | `n` | Detach Sidekick CLI session |
+| `<C-.>` | `n`, `i`, `x`, `t` | Focus Sidekick |
+| `<leader>uN` | `n` | Toggle Sidekick NES |
 
-## Appearance
+### Git hunks
 
-The colorscheme is `monokai-pro-zed` from the private
-`raphaelluethy/monokai-pro-zed` repo (the zed-mp themes; they are licensed,
-so they are not part of this config). lazy.nvim clones it over SSH; without
-access, Neovim keeps its default colorscheme. It follows `'background'`:
-Monokai Pro (Filter Spectrum) V3 when dark, Monokai Pro Light (Filter Sun) V3
-when light; change them in `lua/plugins/monokai-pro-zed.lua`. Every variant is
-also its own `:colorscheme`, e.g. `monokai-pro-filter-spectrum-v3-no-italics`
-(V3 draws inlay hints like Zed; No Italics drops every italic).
-`lua/config/appearance.lua` always starts dark, ignoring the system and
-terminal appearance; `:ThemeToggle` (or `:themetoggle`) switches between dark
-and light.
+| Key | Mode | Action |
+| --- | --- | --- |
+| `]h` / `[h` | `n` | Next / previous hunk |
+| `]H` / `[H` | `n` | Last / first hunk |
+| `<leader>hs` / `hr` | `n`, `x` | Stage / reset hunk |
+| `<leader>hS` / `hR` | `n` | Stage / reset buffer |
+| `<leader>hp` | `n` | Preview hunk inline |
+| `<leader>hb` / `hB` | `n` | Blame line / buffer |
+| `<leader>hd` | `n` | Diff this |
+| `ih` | `o`, `x` | Select hunk text object |
 
-Indent guides are on by default, highlighting the active scope in
-files with a Treesitter parser. Use `<leader>ui` or `:IBLToggle` to toggle the guides.
+### Debugging
 
-## Debugging
+| Key | Mode | Action |
+| --- | --- | --- |
+| `<F5>` / `<leader>dc` | `n` | Start / continue (debugs class at cursor in Java/Kotlin) |
+| `<F10>` / `<leader>do` | `n` | Step over |
+| `<F11>` / `<leader>di` | `n` | Step into |
+| `<F12>` / `<leader>dO` | `n` | Step out |
+| `<leader>db` / `dB` | `n` | Toggle / conditional breakpoint |
+| `<leader>du` | `n` | Toggle `nvim-dap-view` |
+| `<leader>de` | `n`, `x` | Evaluate / hover expression |
+| `<leader>dW` | `n`, `x` | Add watch expression (`<leader>dw` in IntelliJ) |
+| `<leader>dd` / `dv` | `n` | Debug class at cursor / open panel (Java/Kotlin) |
 
-`lua/plugins/dap.lua` loads nvim-dap on a debugger command or keypress.
-Mason installs debugpy (Python), Delve (Go), and CodeLLDB (C/C++/Rust)
-when DAP first loads. Wait for installation to finish before starting a session.
-Python debugging detects project virtual environments, including `.venv`.
-Native-code debugging prompts for a compiled executable; build it with debug
-symbols first. Go debugging requires the Go toolchain.
+## Appearance & Maintenance
 
-| Key | Action |
-| --- | --- |
-| `<F5>` / `<leader>dc` | Start / continue |
-| `<leader>db` | Toggle breakpoint |
-| `<leader>dB` | Conditional breakpoint |
-| `<F10>` / `<leader>do` | Step over |
-| `<F11>` / `<leader>di` | Step into |
-| `<F12>` / `<leader>dO` | Step out |
-| `<leader>dl` | Run last configuration |
-| `<leader>dt` | Terminate |
-| `<leader>du` | Toggle debugger UI |
-| `<leader>de` | Evaluate word / visual selection |
-| `<leader>dr` | Toggle debugger REPL |
-
-The debugger UI opens when a session initializes and closes on exit,
-termination, or disconnect. It includes scopes, stack frames, watches,
-breakpoints, a REPL, and console.
-
-Project-specific configurations in `.vscode/launch.json` are loaded
-automatically when starting with `<F5>` / `<leader>dc`. Use standard JSON;
-comments and trailing commas are not enabled. Adapter types are `python`,
-`delve`, and `codelldb`. Other languages need their own adapters and launch
-configurations.
-
-Java and Kotlin debug through intellij-lsp.nvim on the same keys. In those
-buffers `<F5>` / `<leader>dc` with no session running debugs the class at the
-cursor, `<leader>de` evaluates through IntelliJ, and a few keys are added:
-
-| Key | Action |
-| --- | --- |
-| `<leader>dd` | Debug the class at the cursor |
-| `<leader>dw` | Watch word / visual selection |
-| `<leader>dv` | IntelliJ debug panel (stack, locals, watches) |
-
-## Review panel
-
-`<leader>gd` opens the [codediff](https://github.com/esmuellert/codediff.nvim)
-review panel; from a file buffer it preselects that file and keeps your line.
-`<leader>gm` opens [magirev-nvim](https://github.com/raphaelluethy/magirev-nvim),
-a standalone full-width review tab, independent of codediff.
-`Tab` expands inline diffs, `]g`/`[g` move between groups, and `]h`/`[h` between
-hunks. `s` stages the selected group or hunk; `u` unstages it. `c` opens a commit
-message editor showing **all staged changes**, with `Ctrl-c Ctrl-c` to confirm
-the commit and `Ctrl-c Ctrl-k` to cancel. To commit groups separately, stage
-one group, commit, then repeat.
-
-Inline diffs highlight changed words. `v` opens a unified file diff; `V` opens
-a side-by-side split. Inside a diff, `v` switches layouts and `q` returns.
-`gd` or `o` opens the real source file at the selected line, where your normal
-LSP navigation applies.
-
-`d` discards the selected **unstaged** group or entire hunk after confirmation.
-The index is preserved; unstage with `u` first if needed. Selected untracked
-files are deleted, and there is no Magirev undo.
-
-`m` moves a selection into a named group; `e` renames it. `r` refreshes, `?` shows help, and `q` closes.
-The local development checkout is `~/Documents/projects/private/magirev-nvim`.
-
-### Review comments
-
-`<leader>ma` comments the cursor line or the selection (also in codediff's
-revision panes), `<leader>ma` again on a comment edits it. Comments persist per
-repo and branch and follow the code as you edit. `<leader>my` (`:Review copy`)
-copies all of them, with locations and the commented code, as Markdown to the
-clipboard, ready to paste anywhere. `:Review add|edit|delete|list|copy|clear`.
-
-## Editor context for agents
-
-Neovim writes the current file, cursor and last visual selection to
-`~/.local/state/nvim/editor-context/<pid>.json` when you leave it (focus lost,
-cursor idle, buffer switch). `bin/agent-editor-context` prints the newest
-snapshot of a running Neovim for the current directory, so an agent in a Rex
-pane next to Neovim knows what "this" or "here" means. It is a plain file read
-with no connection to Neovim; when nothing matches it prints nothing.
-
-- Claude Code / Codex: `UserPromptSubmit` hook running
-  `"$HOME/.config/nvim/bin/agent-editor-context" json`.
-- Anything else: `agent-editor-context text` prints the same as plain text.
+- Starts in dark mode with rounded window borders (`winborder = "rounded"`),
+  `colorcolumn = "120"`, `scrolloff = 10`, and smooth scrolling disabled.
+- `:ThemeToggle` (or `:themetoggle`) switches between dark and light variants;
+  light mode automatically boosts diff and Gitsigns background contrast.
+- `:Lazy` manages plugins (`:Lazy update`, `:Lazy restore`), `:Mason` manages
+  LSPs/formatters/DAPs, and `:TSUpdate` updates Treesitter parsers.
