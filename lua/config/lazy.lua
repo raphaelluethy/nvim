@@ -37,6 +37,9 @@ require("lazy").setup({
     version = false,
   },
   install = { colorscheme = { "monokai-pro-zed", "habamax" } },
+  ui = {
+    border = "rounded",
+  },
   checker = {
     enabled = true,
     notify = false,
